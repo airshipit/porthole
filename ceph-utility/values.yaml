@@ -80,6 +80,10 @@ secrets:
 conf:
   features:
     utility: true
+  utility:
+    # Set to true for development sites,
+    # Set to false otherwise
+    always_log_user: true
   cephconf:
     etc: ceph-etc
   cephfilter:

@@ -1,6 +1,6 @@
 #!/bin/bash
 {{/*
-Copyright 2017 The Openstack-Helm Authors.
+Copyright 2019 The Openstack-Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,3 +23,13 @@ done < "$input"
 chmod 600 /etc/ceph/ceph.client.admin.keyring
 sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf
 /etc/init.d/rsyslog restart
+{{/*
+These lines will disable extra handler, extra formatter, extra level to the
+root logger by oslo-rootwrap module, imported in _openstack-utility-rootwrap.tpl.
+These lines will get rid of duplicate logs, generated because of the formatter
+attached by oslo-rootwrap.
+*/}}
+sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/lib/python2.7/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/handler.setFormatter/s/.*/#&/" /usr/lib/python2.7/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/os.path.basename/s/.*/#&/" /usr/lib/python2.7/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/lib/python2.7/dist-packages/oslo_rootwrap/wrapper.py
