@@ -93,6 +93,10 @@ conf:
   keystone_auth:
     auth_url: http://keystone.openstack.svc.cluster.local/v3
     auth_version: "3"
+  utility:
+    # Set to true for development sites,
+    # Set to false otherwise
+    always_log_user: true
 
 dependencies:
   dynamic:
