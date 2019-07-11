@@ -1,0 +1,143 @@
+{{/*
+Copyright 2019 The Openstack-Helm Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+{{- if and .Values.manifests.deployment_utility ( and .Values.deployment.mysqlclient .Values.conf.features.utility) }}
+{{- $envAll := . }}
+
+{{- $serviceAccountName := printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "utility" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ $serviceAccountName }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/exec
+    verbs:
+      - get
+      - list
+      - watch
+      - exec
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $serviceAccountName }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $serviceAccountName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $serviceAccountName }}
+    namespace: {{ $envAll.Release.Namespace }}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ printf "%s" $envAll.Release.Name }}
+  labels:
+{{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+spec:
+  replicas: {{ .Values.pod.replicas.utility }}
+  selector:
+    matchLabels:
+{{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
+  template:
+    metadata:
+      name: {{ printf "%s" $envAll.Release.Name }}
+      annotations:
+        {{ tuple . | include "helm-toolkit.snippets.release_uuid" }}
+      labels:
+{{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+    spec:
+      securityContext:
+        runAsUser: 65534
+      serviceAccountName: {{ $serviceAccountName }}
+      affinity:
+{{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_pod_anti_affinity" | indent 8 }}
+      nodeSelector:
+        {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
+      containers:
+        - name: {{ printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "mysqlclient_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
+{{ tuple $envAll $envAll.Values.pod.resources.mysql_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+          command:
+            - /tmp/bootstrap.sh
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - /tmp/done
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          livenessProbe:
+            exec:
+              command:
+              - utilscli
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          volumeMounts:
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /tmp/bootstrap.sh
+              subPath: bootstrap.sh
+              readOnly: true
+            - name: mysqlclient-utility-bin
+              mountPath: /tmp/start.sh
+              subPath: start.sh
+              readOnly: true
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
+              readOnly: true
+            - name: mysqlclient-utility-bin
+              mountPath: /usr/local/bin/mysqlclient-utility-rootwrap
+              subPath: mysqlclient-utility-rootwrap
+              readOnly: true
+            - name: mysqlclient-utility-sudoers
+              mountPath: /etc/sudoers.d/utilscli-sudo
+              subPath: utilscli-sudo
+              readOnly: true
+            - name: mysqlclient-utility-etc
+              mountPath: /etc/mysqlclient-utility/rootwrap.d/mysqlclient-rootwrap-filter
+              subPath: mysqlclient-rootwrap-filter
+              readOnly: true
+            - name: mysqlclient-utility-etc
+              mountPath: /etc/mysqlclient-utility/rootwrap.conf
+              subPath: rootwrap.conf
+              readOnly: true
+      volumes:
+        - name: mysqlclient-utility-sudoers
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
+            defaultMode: 0644
+        - name: mysqlclient-utility-bin
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
+            defaultMode: 0555
+        - name: mysqlclient-utility-etc
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
+            defaultMode: 0555
+        - name: mysqlclient-utility-bin-utilscli
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
+            defaultMode: 0755
+{{- end }}

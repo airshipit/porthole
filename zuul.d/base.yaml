@@ -1,0 +1,67 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- nodeset:
+    name: airship-porthole-single-node
+    nodes:
+      - name: primary
+        label: ubuntu-xenial
+
+- job:
+    name: porthole-images-build
+    parent: build-docker-image
+    abstract: true
+    ansible-version: 2.8
+    description: |
+    irrelevant-files:
+      - ^\.git.*
+      - ^.*\.(example|md|rst)$
+      - ^doc/.*
+      - ^releasenotes/.*
+    timeout: 3600
+
+- job:
+    name: porthole-images-upload
+    parent: upload-docker-image
+    abstract: true
+    ansible-version: 2.8
+    secrets:
+      name: quay_credentials
+      secret: quay_credentials
+      pass-to-parent: true
+    timeout: 3600
+
+- secret:
+    name: quay_credentials
+    data:
+      username: !encrypted/pkcs1-oaep
+        - SQ0e+mvFN7eU+snMDhXC417r3yy+OoZ+QQcAPAoI2xuUDbZOrCSXIlRATrNZX+NrRx/sT
+          GoxeeScqpX3hnBTHAvWn6iDzVoSIOgW8aG4+/kCjU1dtKzPgyuo4t+rFEe1iplLFyG1P1
+          xshMrc8dRpAJTjyUwWzY1zatb46LEBK1DD15kkAaS+6KKfD2dH/AX3XYzp3671cdsXtC7
+          R7Lm8lKh2MYYmF+ybuCd/JbeuH2aLQc1pLnigPBWJgslzxQ2F2hLXssj8cd+rGSxQ8jVG
+          SCqFkyggBdv/TGQdhihnse8Taj8tqgmqbh5KPZIKeCM5ekXbsCMuI1KNH0Fr7UeffOYNU
+          5CJsWnuZoX5xQxcRHWAprBaGr8jr6EeklW896GC7wMcFq+C4166H1Y44NMrLtzAlXEs8p
+          uO6Vl2AGqt4/ORkJ7aIUdjI21u0r7ULEFcj+Q7hMoC0q81f1RVqbvTWtAi6CfjiUdpEwm
+          vwpyfwUP4JugjC3UALe4tMyMO5pQiAIPzYs34/skqxvEQN+5+8BrBnr2tNAIbxMmgpZOU
+          Ov89WfURzb7pxBbVgC6HuyX2mQi3OHdYS33TM9e+pXgLN8XK7dzASaCFXa0zjA1xj4pHh
+          oBO66rVON6DsjEmliMUHLnkgXJnqqm9pLEa+avCuK0Kt7i5st1DBnxK/Goy2ec=
+      password: !encrypted/pkcs1-oaep
+        - CuInAjNp1dAXxxNzfs9O9I7+T6OJLx4gaPeafLxfjJs4uCRC8L6N1Kcyc1QPYlr6hfvFz
+          D8Er9OKTzbmQixDxGzCSJh/RRcpjwh8GJMn7cvGYMTsrWcYzvK2RC5778huxVnwT0gWiB
+          TaqUqOBsHQMlXumEAKO7qqaKxJ4LadXMp/eqcyVfCw1roEOO69QqhBajwhk/5RS3qm6QZ
+          KGr0T3AfDAtF276e4GI9L5paVNjME7Au22+S1pVaIxX91/qx3HFAz+HSErvhxGHVKhHr4
+          4G/YygeSJMWyKpk28kjoncxgzHNwREXZXbRabMwXoGuweOB4ZZ7JXy9yEkagojx0buBtn
+          Phv48p/8C/7ZN3v8xOiHRAnLk6jsWA4cu5Zhplark22Uq+d7MtlEgRpWvqDBWNF+9GCOQ
+          Vlpomy02Nj4PkZZDKY7Eo3uf/+3aa8/hhvJursqv6VvqwYl75euT8Immo1EUw/Hw4PBpJ
+          JXcwlGoK6kvXmYaG2c7yEiH2xNtTzVTai10fsalubQWR4FTmJA5LU9+HatHBa46XLy4gS
+          vMHs2uJudmxhqLIhs5Er248FVjfxw7le5dPun3ir4J7Mjgypu5y8eLCMZAFIwpeqlJrVU
+          uih8ByaTlSEh6FBzle7Hb330RjSztC4pX6xiNAmtkpxhF2rEEFS66B/ixwCphQ=

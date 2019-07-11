@@ -1,0 +1,75 @@
+# Copyright 2019 The Airship Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- project:
+    check:
+      jobs:
+        - porthole-mysqlclient-lint-ws
+        - porthole-mysqlclient-images-build
+
+    gate:
+      jobs:
+        - porthole-mysqlclient-lint-ws
+        - porthole-mysqlclient-images-build
+
+    post:
+      jobs:
+        - porthole-mysqlclient-images-upload
+
+- job:
+    name: porthole-mysqlclient-lint-ws
+    description: |
+      Lints all files for trailing whitespace
+    run: tools/gate/playbooks/zuul-linter.yaml
+    timeout: 300
+    nodeset: airship-porthole-single-node
+
+- job:
+    name: porthole-mysqlclient-images-build
+    parent: porthole-images-build
+    description: Build mysqclient images
+    vars: &mysqlclient_vars
+      currentdate: "{{ now(utc=True,fmt='%Y%m%d') }}"
+      docker_images:
+        - context: Dockerfiles/mysqlclient-utility
+          repository: porthole/mysqlclient-utility
+          dockerfile: Dockerfile.ubuntu_xenial
+          tags:
+            - latest-ubuntu_xenial
+            - "ubuntu_xenial-{{ currentdate }}"
+    files: &mysqlclient_files
+      - Dockerfiles/mysqlclient-utility/.*
+      - zuul.d/mysqlclient-utility.yaml
+
+- job:
+    name: porthole-mysqlclient-images-upload
+    timeout: 1800
+    run: tools/gate/playbooks/docker-image-upload.yaml
+    nodeset: airship-porthole-single-node
+    secrets:
+      - quay_credentials
+    vars:
+      publish: true
+      tags:
+        dynamic:
+          branch: true
+          commit: true
+        static:
+          - latest
+    irrelevant-files:
+      - ^charts/.*$
+      - ^etc/.*$
+      - ^tests/.*$
+      - ^tools/.*$
+

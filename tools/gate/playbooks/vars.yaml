@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: primary
-  tasks:
-    - name: Execute a Whitespace Linter check
-      command: find . -not -path "*/\.*" -not -path "*/doc/build/*" -not -name "*.tgz"  -type f -exec egrep -l " +$" {} \;
-      register: result
-      failed_when: result.stdout != ""
+docker_daemon:
+  group: zuul
+  registry-mirrors:
+    - "http://{{ zuul_site_mirror_fqdn }}:8082/"
+  storage-driver: overlay2

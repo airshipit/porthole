@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: primary
-  tasks:
-    - name: Execute a Whitespace Linter check
-      command: find . -not -path "*/\.*" -not -path "*/doc/build/*" -not -name "*.tgz"  -type f -exec egrep -l " +$" {} \;
-      register: result
-      failed_when: result.stdout != ""
+apiVersion: v1
+description: Porthole MySql Client
+name: mysqlclient-utility
+version: 0.1.0
