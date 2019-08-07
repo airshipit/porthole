@@ -118,17 +118,17 @@ spec:
               mountPath: {{ .Values.endpoints.etcd.auth.client.path.key }}
               subPath: tls.key
               readOnly: true
-            - name: calicoctl-utility-bin-nccli
+            - name: calicoctl-utility-bin-utilscli
               mountPath: /usr/local/bin/version_check.sh
               subPath: version_check.sh
               readOnly: true
-            - name: calicoctl-utility-bin-nccli
+            - name: calicoctl-utility-bin-utilscli
               mountPath: /usr/local/bin/bootstrap.sh
               subPath: bootstrap.sh
               readOnly: true
-            - name: calicoctl-utility-bin-nccli
-              mountPath: /usr/local/bin/nccli
-              subPath: nccli
+            - name: calicoctl-utility-bin-utilscli
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
               readOnly: true
             - name: calicoctl-utility-bin
               mountPath: /usr/local/bin/calicoctl-utility-rootwrap
@@ -136,7 +136,7 @@ spec:
               readOnly: true
             - name: calicoctl-utility-sudoers
               mountPath: /etc/sudoers.d/nobody
-              subPath: nccli-sudo
+              subPath: utilscli-sudo
               readOnly: true
             - name: calicoctl-utility-etc
               mountPath: /etc/calicoctl/rootwrap.d/calicoctl.filter
@@ -159,9 +159,9 @@ spec:
           configMap:
             name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
             defaultMode: 0500
-        - name: calicoctl-utility-bin-nccli
+        - name: calicoctl-utility-bin-utilscli
           configMap:
-            name: {{ printf "%s-%s" $envAll.Release.Name "bin-nccli" }}
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
             defaultMode: 0555
         - name: calicoctl-utility-etc
           configMap:

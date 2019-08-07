@@ -32,7 +32,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-%s" $envAll.Release.Name "bin-nccli" }}
+  name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
 data:
   version_check.sh: |
 {{ tuple "bin/_version_check.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
@@ -40,7 +40,7 @@ data:
   bootstrap.sh: |
 {{ tuple "bin/_bootstrap.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
-  nccli: |
-{{ tuple "bin/_nccli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+  utilscli: |
+{{ tuple "bin/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
 {{- end }}
