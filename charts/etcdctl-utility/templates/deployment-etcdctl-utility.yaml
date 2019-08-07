@@ -1,0 +1,168 @@
+{{/*
+Copyright 2019 The Openstack-Helm Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+{{- if and .Values.manifests.deployment_etcdctl_utility ( and .Values.deployment.etcdctl) }}
+{{- $envAll := . }}
+
+{{- $serviceAccountName := printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "utility" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ $serviceAccountName }}
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - nodes
+      - pods
+      - persistentvolumeclaims
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $serviceAccountName }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $serviceAccountName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $serviceAccountName }}
+    namespace: {{ $envAll.Release.Namespace }}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ printf "%s" $envAll.Release.Name }}
+  annotations:
+    {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+  labels:
+{{ tuple $envAll "utility" "etcdctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+spec:
+  replicas: {{ .Values.pod.replicas.utility }}
+  selector:
+    matchLabels:
+{{ tuple $envAll "utility" "etcdctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
+  template:
+    metadata:
+      name: {{ printf "%s" $envAll.Release.Name }}
+      labels:
+{{ tuple $envAll "utility" "etcdctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+      annotations:
+        configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
+        configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
+        {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+    spec:
+      securityContext:
+        runAsUser: 65534
+      serviceAccountName: {{ $serviceAccountName }}
+      affinity:
+{{ tuple $envAll "etcdctl" "utility" | include "helm-toolkit.snippets.kubernetes_pod_anti_affinity" | indent 8 }}
+      nodeSelector:
+        {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
+      containers:
+        - name: {{ printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "etcdctl_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
+{{ tuple $envAll $envAll.Values.pod.resources.etcdctl_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+          env:
+            - name: ETCDCTL_API
+              value: "{{ .Values.conf.etcd.etcdctl_api }}"
+            - name: ETCDCTL_DIAL_TIMEOUT
+              value: 10s
+            - name: ETCDCTL_CACERT
+              value: /etc/kubernetes/apiserver/pki/etcd-client-ca.pem
+            - name: ETCDCTL_CERT
+              value: /etc/kubernetes/apiserver/pki/etcd-client.pem
+            - name: ETCDCTL_KEY
+              value: /etc/kubernetes/apiserver/pki/etcd-client-key.pem
+            - name: ETCDCTL_ENDPOINTS
+              value: https://{{ .Values.conf.etcd.endpoints }}:{{ .Values.endpoints.etcd.port.client.default }}
+          command:
+            - /tmp/bootstrap.sh
+          volumeMounts:
+            - name: etcdctl-etcd-secrets
+              mountPath: {{ .Values.endpoints.etcd.auth.client.path.ca }}
+              subPath: tls.ca
+              readOnly: true
+            - name: etcdctl-etcd-secrets
+              mountPath: {{ .Values.endpoints.etcd.auth.client.path.crt }}
+              subPath: tls.crt
+              readOnly: true
+            - name: etcdctl-etcd-secrets
+              mountPath: {{ .Values.endpoints.etcd.auth.client.path.key }}
+              subPath: tls.key
+              readOnly: true
+            - name: etcdctl-utility-bin-utilscli
+              mountPath: /tmp/bootstrap.sh
+              subPath: bootstrap.sh
+              readOnly: true
+            - name: etcdctl-utility-bin
+              mountPath: /tmp/start.sh
+              subPath: start.sh
+              readOnly: true
+            - name: etcdctl-utility-bin-utilscli
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
+              readOnly: true
+            - name: etcdctl-utility-bin
+              mountPath: /usr/local/bin/etcdctl-utility-rootwrap
+              subPath: etcdctl-utility-rootwrap
+              readOnly: true
+            - name: etcdctl-utility-sudoers
+              mountPath: /etc/sudoers.d/utilscli-sudo
+              subPath: utilscli-sudo
+              readOnly: true
+            - name: etcdctl-utility-etc
+              mountPath: /etc/etcdctl-utility/rootwrap.d/etcdctl-rootwrap-filter
+              subPath: etcdctl-rootwrap-filter
+              readOnly: true
+            - name: etcdctl-utility-etc
+              mountPath: /etc/etcdctl-utility/rootwrap.conf
+              subPath: rootwrap.conf
+              readOnly: true
+            - name: etcdctl-utility-etc
+              mountPath: /etc/etcd/etcdctl.cfg
+              subPath: etcdctl.cfg
+              readOnly: true
+      volumes:
+        - name: etcdctl-utility-sudoers
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
+            defaultMode: 0644
+        - name: etcdctl-utility-bin
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
+            defaultMode: 0500
+        - name: etcdctl-utility-etc
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
+            defaultMode: 0400
+        - name: etcdctl-utility-bin-utilscli
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
+            defaultMode: 0755
+        - name: etcdctl-etcd-secrets
+          secret:
+            secretName: etcdctl-etcd-secrets
+            defaultMode: 0444
+{{- end }}
