@@ -1,0 +1,138 @@
+# Default values for openstack-utility.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# name: value
+
+
+deployment:
+  openstack: true
+
+release_group: null
+
+images:
+  pull_policy: IfNotPresent
+  tags:
+    openstack_utility: 'docker.io/diwakarthyagaraj/openstackutility:v0.0.2'
+    image_repo_sync: docker.io/docker:17.07.0
+  local_registry:
+    active: false
+    exclude:
+      - dep_check
+      - image_repo_sync
+
+labels:
+  utility:
+    node_selector_key: openstack-helm-node-class
+    node_selector_value: primary
+
+pod:
+  dns_policy: "ClusterFirstWithHostNet"
+  replicas:
+    utility: 1
+  affinity:
+    anti:
+      type:
+        default: preferredDuringSchedulingIgnoredDuringExecution
+      topologyKey:
+        default: kubernetes.io/hostname
+  resources:
+    enabled: false
+    utility:
+      requests:
+        memory: "100Mi"
+        cpu: "250m"
+      limits:
+        memory: "250Mi"
+        cpu: "500m"
+    jobs:
+      bootstrap:
+        limits:
+          memory: "1024Mi"
+          cpu: "2000m"
+        requests:
+          memory: "128Mi"
+          cpu: "500m"
+      image_repo_sync:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "1024Mi"
+          cpu: "2000m"
+
+
+conf:
+  openstackfilter:
+    Filters:
+      # openstack-rootwrap command filters for openstack utility container
+      # This file should be owned by (and only-writeable by) the root user
+      openstack: CommandFilter, openstack, root
+  openstackrootwrapconf:
+    DEFAULT:
+      # Configuration for openstack-rootwrap
+      # This file should be owned by (and only-writeable by) the root user
+      # List of directories to load filter definitions from (separated by ',').
+      # These directories MUST all be only writeable by root !
+      filters_path: /etc/openstack-utility/rootwrap.d
+      # List of directories to search executables in, in case filters do not
+      # explicitely specify a full path (separated by ',')
+      # If not specified, defaults to system PATH environment variable.
+      # These directories MUST all be only writeable by root !
+      exec_dirs: /sbin,/usr/sbin,/bin,/usr/bin,/usr/local/bin,/usr/local/sbin
+      # Enable logging to syslog
+      # Default value is False
+      use_syslog: True
+      # Which syslog facility to use.
+      # Valid values include auth, authpriv, syslog, local0, local1...
+      # Default value is 'syslog'
+      syslog_log_facility: syslog
+      # Which messages to log.
+      # INFO means log all usage
+      # ERROR means only log unsuccessful attempts
+      syslog_log_level: INFO
+  keystone_auth:
+    auth_url: http://keystone.openstack.svc.cluster.local/v3
+    auth_version: "3"
+
+dependencies:
+  dynamic:
+    common:
+      local_image_registry:
+        jobs:
+          - openstack-utility-image-repo-sync
+        services:
+          - endpoint: node
+            service: local_image_registry
+  static:
+    image_repo_sync:
+      services:
+        - endpoint: internal
+          service: local_image_registry
+
+bootstrap:
+  enabled: true
+
+endpoints:
+  cluster_domain_suffix: cluster.local
+  local_image_registry:
+    name: docker-registry
+    namespace: docker-registry
+    hosts:
+      default: localhost
+      internal: docker-registry
+      node: localhost
+    host_fqdn_override:
+      default: null
+    port:
+      registry:
+        node: 5000
+
+monitoring:
+  prometheus:
+    enabled: true
+
+manifests:
+  configmap_bin: true
+  configmap_etc_client: true
+  configmap_etc_sudoers: true
+  deployment_utility: true
