@@ -16,28 +16,28 @@ This MOP covers Maintenance Activities related to Ceph.
 To check the current status of OSDs, execute the following:
 
 ```
-nccli osd-maintenance check_osd_status
+utilscli osd-maintenance check_osd_status
 ```
 
 ### OSD Removal
 To purge OSDs in down state, execute the following:
 
 ```
-nccli osd-maintenance osd_remove
+utilscli osd-maintenance osd_remove
 ```
 
 ### OSD Removal By OSD ID
 To purge OSDs by OSD ID in down state, execute the following:
 
 ```
-nccli osd-maintenance remove_osd_by_id --osd-id <OSDID>
+utilscli osd-maintenance remove_osd_by_id --osd-id <OSDID>
 ```
 
 ### Reweight OSDs
 To adjust an OSD’s crush weight in the CRUSH map of a running cluster, execute the following:
 
 ```
-nccli osd-maintenance reweight_osds
+utilscli osd-maintenance reweight_osds
 ```
 
 ## 2. Replace failed OSD  ##
@@ -46,11 +46,11 @@ In the context of a failed drive, Please follow below procedure. Following comma
 
 Capture the failed OSD ID. Check for status `down`
 
-	nccli ceph osd tree
+	utilscli ceph osd tree
 
 Remove the OSD from Cluster. Replace `<OSD_ID>` with above captured failed OSD ID
 
-	nccli osd-maintenance osd_remove_by_id --osd-id <OSD_ID>
+	utilscli osd-maintenance osd_remove_by_id --osd-id <OSD_ID>
 
 Remove the failed drive and replace it with a new one without bringing down the node.
 
@@ -60,5 +60,5 @@ Once new drive is placed, delete the concern OSD pod in `error` or `CrashLoopBac
 
 Once pod is deleted, kubernetes will re-spin a new pod for the OSD. Once Pod is up, the osd is added to ceph cluster with weight equal to `0`. we need to re-weight the osd.
 
-	nccli osd-maintenance reweight_osds
+	utilscli osd-maintenance reweight_osds
 

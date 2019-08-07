@@ -22,6 +22,6 @@ kind: ConfigMap
 metadata:
   name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
 data:
-  nccli-sudo: |
-{{ tuple "bin/_nccli-sudo.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+  utilscli-sudo: |
+{{ tuple "bin/_utilscli-sudo.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 {{- end }}

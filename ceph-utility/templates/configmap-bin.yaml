@@ -38,8 +38,8 @@ data:
   ceph-utility-rootwrap: |
 {{ tuple "bin/utility/_ceph-utility-rootwrap.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
-  nccli: |
-{{ tuple "bin/utility/_nccli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+  utilscli: |
+{{ tuple "bin/utility/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
   osd-maintenance: |
 {{ tuple "bin/utility/_osd-maintenance.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}

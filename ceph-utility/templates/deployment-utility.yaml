@@ -89,8 +89,8 @@ spec:
               subPath: managekey.sh
               readOnly: true
             - name: ceph-utility-bin
-              mountPath: /usr/local/bin/nccli
-              subPath: nccli
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
               readOnly: true
             - name: ceph-utility-bin
               mountPath: /usr/local/bin/ceph-utility-rootwrap
@@ -105,8 +105,8 @@ spec:
               subPath: rbd_pv
               readOnly: true
             - name: ceph-utility-sudoers
-              mountPath: /etc/sudoers.d/nccli-sudo
-              subPath: nccli-sudo
+              mountPath: /etc/sudoers.d/utilscli-sudo
+              subPath: utilscli-sudo
               readOnly: true
             - name: ceph-etc
               mountPath: /etc/ceph/ceph.conf

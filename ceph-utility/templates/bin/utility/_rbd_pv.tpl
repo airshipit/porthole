@@ -17,9 +17,9 @@ limitations under the License.
 */}}
 
 usage() {
-  echo "Backup Usage: nccli rbd_pv [-b <pvc name>] [-n <namespace>] [-d <backup dest> (optional, default: /backup)] [-p <ceph rbd pool> (optional, default: rbd)]"
-  echo "Restore Usage: nccli rbd_pv [-r <restore_file>] [-p <ceph rbd pool> (optional, default: rbd)]"
-  echo "Snapshot Usage: nccli rbd_pv [-b <pvc name>] [-n <namespace>] [-p <ceph rbd pool> (optional, default: rbd] [-s <create|rollback|remove|show> (required) ]"
+  echo "Backup Usage: utilscli rbd_pv [-b <pvc name>] [-n <namespace>] [-d <backup dest> (optional, default: /backup)] [-p <ceph rbd pool> (optional, default: rbd)]"
+  echo "Restore Usage: utilscli rbd_pv [-r <restore_file>] [-p <ceph rbd pool> (optional, default: rbd)]"
+  echo "Snapshot Usage: utilscli rbd_pv [-b <pvc name>] [-n <namespace>] [-p <ceph rbd pool> (optional, default: rbd] [-s <create|rollback|remove|show> (required) ]"
   exit 1
 }
 
@@ -53,11 +53,11 @@ timestamp="$(date +%F_%T)"
 if [[ ! -z "${restore_file}" ]]; then
   if [[ -e "${restore_file}" ]]; then
     rbd_image="$(echo "${restore_file}" | rev | awk -v FS='/' '{print $1}' | rev | cut -f 1 -d '.')"
-    if (nccli rbd info "${rbd_pool}"/"${rbd_image}" | grep -q id); then
-      nccli rbd mv ${rbd_pool}/${rbd_image} ${rbd_pool}/${rbd_image}.orig-${timestamp}
+    if (utilscli rbd info "${rbd_pool}"/"${rbd_image}" | grep -q id); then
+      utilscli rbd mv ${rbd_pool}/${rbd_image} ${rbd_pool}/${rbd_image}.orig-${timestamp}
       echo "WARNING: Existing PVC/RBD image has been moved to ${rbd_pool}/${rbd_image}.orig-${timestamp}"
     fi
-    nccli rbd import ${restore_file} ${rbd_pool}/${rbd_image}
+    utilscli rbd import ${restore_file} ${rbd_pool}/${rbd_image}
     echo "INFO: Backup has been restored into ${rbd_pool}/${rbd_image}"
   else
     echo "ERROR: Missing restore file!"
@@ -69,26 +69,26 @@ elif [[ ! -z "${snapshot}" ]]; then
 
   if [[ "x${snapshot}x" == "xcreatex" ]]; then
     snap_name="${pvc_name}-${timestamp}"
-    nccli rbd snap create ${rbd_pool}/${rbd_image}@${snap_name}
+    utilscli rbd snap create ${rbd_pool}/${rbd_image}@${snap_name}
     echo "INFO: Snapshot ${rbd_pool}/${rbd_image}@${snap_name} has been created for PVC ${pvc_name}"
   elif [[ "x${snapshot}x" == "xrollback" ]]; then
-    snap_name=$(nccli rbd snap ls ${rbd_pool}/${rbd_image})
-    nccli rbd snap rollback ${rbd_pool}/${rbd_image}@${snap_name}
+    snap_name=$(utilscli rbd snap ls ${rbd_pool}/${rbd_image})
+    utilscli rbd snap rollback ${rbd_pool}/${rbd_image}@${snap_name}
     echo "WARNING: Rolled back snapshot ${rbd_pool}/${rbd_image}@${snap_name} for ${pvc_name}"
   elif [[ "x${snapshot}x" == "xremovex" ]]; then
-    nccli rbd snap purge ${rbd_pool}/${rbd_image}
+    utilscli rbd snap purge ${rbd_pool}/${rbd_image}
     echo "Removed snapshot(s) for ${pvc_name}"
   elif [[ "x${snapshot}x" == "xshowx" ]]; then
     echo "INFO: This PV is mapped to the following RBD Image:"
     echo "${rbd_pool}/${rbd_image}"
     echo -e "\nINFO: Current open sessions to RBD Image:"
-    nccli rbd status ${rbd_pool}/${rbd_image}
+    utilscli rbd status ${rbd_pool}/${rbd_image}
     echo -e "\nINFO: RBD Image information:"
-    nccli rbd info ${rbd_pool}/${rbd_image}
+    utilscli rbd info ${rbd_pool}/${rbd_image}
     echo -e "\nINFO: RBD Image snapshot details:"
     rbd snap ls ${rbd_pool}/${rbd_image}
     echo -e "\nINFO: RBD Image size details:"
-    nccli rbd du ${rbd_pool}/${rbd_image}
+    utilscli rbd du ${rbd_pool}/${rbd_image}
   else
     echo "ERROR: Missing arguement for snapshot option!"
   fi
@@ -105,17 +105,17 @@ else
   volume="$(kubectl -n ${nspace} get pvc ${pvc_name} --no-headers | awk '{ print $3 }')"
   rbd_image="$(kubectl get pv "${volume}" -o json | jq -r '.spec.rbd.image')"
 
-  if [[ -z "${volume}" ]] || (! nccli rbd info "${rbd_pool}"/"${rbd_image}" | grep -q id); then
+  if [[ -z "${volume}" ]] || (! utilscli rbd info "${rbd_pool}"/"${rbd_image}" | grep -q id); then
     echo "ERROR: PVC does not exist or is missing! Cannot continue with backup for ${pvc_name}"
     exit 1
   else
     # Create current snapshot and export to a file
     snap_name="${pvc_name}-${timestamp}"
     backup_name="${rbd_image}.${pvc_name}-${timestamp}"
-    nccli rbd snap create ${rbd_pool}/${rbd_image}@${snap_name}
-    nccli rbd export ${rbd_pool}/${rbd_image}@${snap_name} ${backup_dest}/${backup_name}
+    utilscli rbd snap create ${rbd_pool}/${rbd_image}@${snap_name}
+    utilscli rbd export ${rbd_pool}/${rbd_image}@${snap_name} ${backup_dest}/${backup_name}
     # Remove snapshot otherwise we may see an issue cleaning up the PVC from K8s, and from Ceph.
-    nccli rbd snap rm ${rbd_pool}/${rbd_image}@${snap_name}
+    utilscli rbd snap rm ${rbd_pool}/${rbd_image}@${snap_name}
     echo "INFO: PV ${pvc_name} saved to:"
     echo "${backup_dest}/${backup_name}"
   fi

@@ -18,7 +18,7 @@ limitations under the License.
 set -ex
 
 function check_osd_status () {
-  OSD_ID=$(nccli ceph osd tree -f json-pretty | jq '.nodes[]|select(.type=="osd")|select(.status == "down")|.id')
+  OSD_ID=$(utilscli ceph osd tree -f json-pretty | jq '.nodes[]|select(.type=="osd")|select(.status == "down")|.id')
   if [ "${OSD_ID}" != '' ];then
       for i in $OSD_ID; do
       echo "OSD id $i is in Down Status"
@@ -35,7 +35,7 @@ function osd_remove () {
    read -p "Enter 'yes' to purge OSD=$id and 'no' to skip=" YN
    if [[ $YN == "y" || $YN == "Y" || $YN == "yes" || $YN == "YES" ]]; then
        echo "Purging OSD=$id"
-       nccli ceph osd purge $id --yes-i-really-mean-it
+       utilscli ceph osd purge $id --yes-i-really-mean-it
        sleep 3
    elif [[ $YN == "n" || $YN == "N" || $YN == "no" || $YN == "NO" ]]; then
        echo "Not purging OSD=$id"
@@ -47,10 +47,10 @@ function osd_remove () {
 
 function osd_remove_by_id () {
       OSDID=$1
-      OSD_STATUS=$(nccli ceph osd tree -f json-pretty | jq '.nodes[]|select(.type=="osd")|select(.id == '$OSDID')|.status')
+      OSD_STATUS=$(utilscli ceph osd tree -f json-pretty | jq '.nodes[]|select(.type=="osd")|select(.id == '$OSDID')|.status')
       if [ "$OSD_STATUS" == '"down"' ]; then
           echo "OSD id $OSDID is in Down Status, So purging it"
-          nccli ceph osd purge $OSDID --yes-i-really-mean-it
+          utilscli ceph osd purge $OSDID --yes-i-really-mean-it
       elif [[ -z "$OSD_STATUS" ]]; then
           echo "OSD id $OSDID is not found, Please enter correct OSD id"
           exit
@@ -61,18 +61,18 @@ function osd_remove_by_id () {
 }
 
 function reweight_osds () {
-  for OSD_ID in $(nccli ceph osd df | awk '$3 == "0" {print $1}'); do
-    OSD_WEIGHT=$(nccli ceph osd df --format json-pretty| grep -A7 "\bosd.${OSD_ID}\b" | awk '/"kb"/{ gsub(",",""); d= $2/1073741824 ; r = sprintf("%.2f", d); print r }');
-    nccli ceph osd crush reweight osd.${OSD_ID} ${OSD_WEIGHT};
+  for OSD_ID in $(utilscli ceph osd df | awk '$3 == "0" {print $1}'); do
+    OSD_WEIGHT=$(utilscli ceph osd df --format json-pretty| grep -A7 "\bosd.${OSD_ID}\b" | awk '/"kb"/{ gsub(",",""); d= $2/1073741824 ; r = sprintf("%.2f", d); print r }');
+    utilscli ceph osd crush reweight osd.${OSD_ID} ${OSD_WEIGHT};
   done
 }
 
 usage() {
   set +ex
-  echo "Usage:  nccli osd-maintenance check_osd_status"
-  echo "        nccli osd-maintenance osd_remove"
-  echo "        nccli osd-maintenance osd_remove_by_id --osd-id <OSDID>"
-  echo "        nccli osd-maintenance reweight_osds"
+  echo "Usage:  utilscli osd-maintenance check_osd_status"
+  echo "        utilscli osd-maintenance osd_remove"
+  echo "        utilscli osd-maintenance osd_remove_by_id --osd-id <OSDID>"
+  echo "        utilscli osd-maintenance reweight_osds"
   exit 1
 }
 

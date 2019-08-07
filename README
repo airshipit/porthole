@@ -79,9 +79,9 @@ Usage
 Get in to the utility pod using kubectl exec. To perform any operation on the ceph cluster use the below example.
 
 example:
-   nccli ceph osd tree
-   nccli rbd ls
-   nccli rados lspools
+   utilscli ceph osd tree
+   utilscli rbd ls
+   utilscli rados lspools
 
 TODO
 ----
