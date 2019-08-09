@@ -170,6 +170,7 @@ conf:
 
       calicoctl_version_00: RegExpFilter, calicoctl, root, calicoctl, version
       calicoctl_version_01: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, version
+      calicoq_00: CommandFilter, calicoq, root
   calicoctl_rootwrap:
     DEFAULT:
       # Configuration for calicoctl-rootwrap
@@ -197,6 +198,9 @@ conf:
     # Set to true for development sites,
     # Set to false otherwise
     always_log_user: true
+    # Specify whether we need to check for exact match of calicoctl and cluster
+    # versions during readiness probe
+    match_versions: false
 
 manifests:
   configmap_bin: true

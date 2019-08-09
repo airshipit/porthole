@@ -94,7 +94,13 @@ spec:
           readinessProbe:
             exec:
               command:
+              {{- if .Values.conf.utility.match_versions }}
                 - /usr/local/bin/version_check.sh
+              {{- else }}
+                - sudo
+                - calicoctl
+                - version
+              {{- end }}
             initialDelaySeconds: 5
             periodSeconds: 15
           livenessProbe:

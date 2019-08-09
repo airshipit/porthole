@@ -15,4 +15,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-sudo /usr/local/bin/calicoctl-utility-rootwrap /etc/calicoctl/rootwrap.conf $*
+sudo -E /usr/local/bin/calicoctl-utility-rootwrap /etc/calicoctl/rootwrap.conf $*

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-nobody ALL = (root) NOPASSWD: /usr/bin/socat -d -v -s -t0 -T0 -u \
+nobody ALL=SETENV: NOPASSWD: /usr/bin/socat -d -v -s -t0 -T0 -u \
   UNIX-RECV\:/dev/log\,reuseaddr stdout, \
   /usr/local/bin/calicoctl-utility-rootwrap /etc/calicoctl/rootwrap.conf *, \
   /usr/local/bin/calicoctl version
