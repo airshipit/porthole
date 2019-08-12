@@ -1,0 +1,16 @@
+{{- if or (.Values.deployment.postgresql) (.Values.deployment.client_secrets) }}
+{{- $envAll := . }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
+data:
+  rootwrap.conf: |
+{{ include "helm-toolkit.utils.to_ini" .Values.conf.postgresqlrootwrap | indent 4 }}
+
+  postgresql-rootwrap-filter: |
+{{ include "helm-toolkit.utils.to_ini" .Values.conf.postgresqlfilter | indent 4 }}
+
+{{- end }}

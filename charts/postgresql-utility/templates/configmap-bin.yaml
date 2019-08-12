@@ -1,0 +1,28 @@
+{{- if and .Values.manifests.configmap_bin .Values.deployment.postgresql }}
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
+data:
+{{- if .Values.images.local_registry.active }}
+  image-repo-sync.sh: |
+{{- include "helm-toolkit.scripts.image_repo_sync" . | indent 4 }}
+{{- end }}
+
+{{- if .Values.bootstrap.enabled }}
+  bootstrap.sh: |
+{{ tuple "bin/_bootstrap.sh.tpl" . | include "helm-toolkit.utils.template" | indent 4 }}
+{{- end }}
+
+  start.sh: |
+{{ tuple "bin/_start.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  postgresql-utility-rootwrap: |
+{{ tuple "bin/utility/_postgresql-utility-rootwrap.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  utilscli: |
+{{ tuple "bin/utility/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+{{- end }}

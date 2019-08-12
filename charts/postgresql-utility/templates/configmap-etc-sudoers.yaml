@@ -1,0 +1,11 @@
+{{- if and .Values.manifests.configmap_etc_sudoers .Values.deployment.postgresql }}
+{{- $envAll := . }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
+data:
+  utilscli-sudo: |
+{{ tuple "bin/_utilscli-sudo.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+{{- end }}

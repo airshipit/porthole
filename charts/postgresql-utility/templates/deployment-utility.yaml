@@ -1,0 +1,126 @@
+{{- if and .Values.manifests.deployment_utility ( and .Values.deployment.postgresql .Values.conf.features.utility) }}
+{{- $envAll := . }}
+
+{{- $serviceAccountName := printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "utility" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ $serviceAccountName }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - persistentvolumeclaims
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $serviceAccountName }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $serviceAccountName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $serviceAccountName }}
+    namespace: {{ $envAll.Release.Namespace }}
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ printf "%s" $envAll.Release.Name }}
+  annotations:
+    {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+  labels:
+{{ tuple $envAll "postgresql" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+spec:
+  replicas: {{ .Values.pod.replicas.utility }}
+  selector:
+    matchLabels:
+{{ tuple $envAll "postgresql" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
+  template:
+    metadata:
+      name: {{ printf "%s" $envAll.Release.Name }}
+      labels:
+{{ tuple $envAll "postgresql" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+    spec:
+      securityContext:
+        runAsUser: 65534
+      serviceAccountName: {{ $serviceAccountName }}
+      affinity:
+{{ tuple $envAll "postgresql" "utility" | include "helm-toolkit.snippets.kubernetes_pod_anti_affinity" | indent 8 }}
+      nodeSelector:
+        {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
+      containers:
+        - name: {{ printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "postgresql_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
+{{ tuple $envAll $envAll.Values.pod.resources.postgresql_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+          command:
+            - /tmp/bootstrap.sh
+          volumeMounts:
+            - name: postgresql-utility-bin
+              mountPath: /tmp/bootstrap.sh
+              subPath: bootstrap.sh
+              readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /tmp/start.sh
+              subPath: start.sh
+              readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
+              readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /usr/local/bin/postgresql-utility-rootwrap
+              subPath: postgresql-utility-rootwrap
+              readOnly: true
+            - name: postgresql-utility-sudoers
+              mountPath: /etc/sudoers.d/utilscli-sudo
+              subPath: utilscli-sudo
+              readOnly: true
+            - name: postgresql-etc
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf
+              readOnly: true
+            - name: postgresql-client-admin-password
+              mountPath: /opt/client-password
+              subPath: key
+            - name: postgresql-utility-etc
+              mountPath: /etc/postgresql/rootwrap.d/postgresql-rootwrap.filter
+              subPath: postgresql-rootwrap-filter
+              readOnly: true
+            - name: postgresql-utility-etc
+              mountPath: /etc/postgresql/rootwrap.conf
+              subPath: rootwrap.conf
+              readOnly: true
+
+      volumes:
+        - name: postgresql-utility-sudoers
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
+            defaultMode: 0644
+        - name: postgresql-utility-bin
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
+            defaultMode: 0555
+        - name: postgresql-utility-etc
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
+            defaultMode: 0555
+        - name: postgresql-etc
+          configMap:
+            name: {{ .Values.conf.postgresqlconf.etc }}
+            defaultMode: 0600
+        - name: postgresql-client-admin-password
+          secret:
+            secretName: {{ .Values.secrets.password.admin | quote }}
+            defaultMode: 0600
+{{- end }}
