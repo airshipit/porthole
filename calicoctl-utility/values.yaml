@@ -194,7 +194,9 @@ conf:
       # ERROR means only log unsuccessful attempts
       syslog_log_level: DEBUG
   utility:
-    location_corridor: c1
+    # Set to true for development sites,
+    # Set to false otherwise
+    always_log_user: true
 
 manifests:
   configmap_bin: true

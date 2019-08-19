@@ -26,20 +26,18 @@ host_name = os.environ.get("HOSTNAME")
 log_level = {{ .Values.conf.calicoctl_rootwrap.DEFAULT.syslog_log_level | quote }}
 facility = {{ .Values.conf.calicoctl_rootwrap.DEFAULT.syslog_log_facility | quote }}
 
-if "OS_USERNAME" in os.environ:
-    user_id = os.environ.get("OS_USERNAME")
-elif "OS_USERNAME" not in os.environ and 'c1' == '{{ .Values.conf.utility.location_corridor }}':
-    os.environ["OS_USERNAME"] = "devlab"
-    user_id = os.environ.get("OS_USERNAME")
+if "AUSER" in os.environ:
+    user_id = os.environ.get("AUSER")
+elif {{ .Values.conf.utility.always_log_user | quote }} == 'true':
+    user_id = 'development site'
 else:
-    print("User environment not configured properly, please follow the steps as mentioned "
-            "on wiki to execute commands on a utility container.")
+    print("No username set in AUSER environment variable, for security reasons access restricted from connecting to container.")
     exit()
 
 try:
     handler = logging.handlers.SysLogHandler(address='/dev/log',facility=facility)
 except IOError:
-    print("Unable to setup logging, for security reasons pod will not start")
+    print("Unable to setup logging, for security reasons access restricted from connecting to container.")
     exit()
 
 formatter = logging.Formatter('%(asctime)s ' + host_name + ' ' +
