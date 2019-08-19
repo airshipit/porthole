@@ -63,6 +63,8 @@ spec:
   template:
     metadata:
       name: {{ printf "%s" $envAll.Release.Name }}
+      annotations:
+        {{ tuple . | include "helm-toolkit.snippets.release_uuid" }}
       labels:
 {{ tuple $envAll "ceph" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
