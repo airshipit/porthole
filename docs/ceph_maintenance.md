@@ -42,23 +42,38 @@ utilscli osd-maintenance reweight_osds
 
 ## 2. Replace failed OSD  ##
 
-In the context of a failed drive, Please follow below procedure. Following commands should be run from utility container
+In the context of a failed drive, Please follow below procedure.
+
+Disable OSD pod on the host from being rescheduled
+
+    kubectl label nodes --all ceph_maintenance_window=inactive
+
+Replace `<NODE>` with the name of the node were the failed osd pods exist.
+
+    kubectl label nodes <NODE> --overwrite ceph_maintenance_window=active
+
+Replace `<POD_NAME>` with failed OSD pod name
+
+    kubectl patch -n ceph ds <POD_NAME> -p='{"spec":{"template":{"spec":{"nodeSelector":{"ceph-osd":"enabled","ceph_maintenance_window":"inactive"}}}}}'
+
+Following commands should be run from utility container
 
 Capture the failed OSD ID. Check for status `down`
 
-	utilscli ceph osd tree
+    utilscli ceph osd tree
 
 Remove the OSD from Cluster. Replace `<OSD_ID>` with above captured failed OSD ID
 
-	utilscli osd-maintenance osd_remove_by_id --osd-id <OSD_ID>
+    utilscli osd-maintenance osd_remove_by_id --osd-id <OSD_ID>
 
 Remove the failed drive and replace it with a new one without bringing down the node.
 
-Once new drive is placed, delete the concern OSD pod in `error` or `CrashLoopBackOff` state. Replace `<pod_name>` with failed OSD pod name.
+Once new drive is placed, change the label and delete the concern OSD pod in `error` or `CrashLoopBackOff` state. Replace `<POD_NAME>` with failed OSD pod name.
 
-	kubectl delete pod <pod_name> -n ceph
+    kubectl label nodes <NODE> --overwrite ceph_maintenance_window=inactive
+    kubectl delete pod <POD_NAME> -n ceph
 
 Once pod is deleted, kubernetes will re-spin a new pod for the OSD. Once Pod is up, the osd is added to ceph cluster with weight equal to `0`. we need to re-weight the osd.
 
-	utilscli osd-maintenance reweight_osds
+    utilscli osd-maintenance reweight_osds
 
