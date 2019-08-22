@@ -91,24 +91,20 @@ conf:
       # ceph-rootwrap command filters for ceph utility container
       # This file should be owned by (and only-writeable by) the root user
       # Below are example command filters. access to ceph cluster can be restricted by creating a user with less privilages
-      ceph: CommandFilter, ceph, root
-      rados: CommandFilter, rados, root
-      radosgw-admin: CommandFilter, radosgw-admin, root
-      rbd: CommandFilter, rbd, root
+      ceph00: CommandFilter, ceph, root
+      rados00: CommandFilter, rados, root
+      rgwadm00: CommandFilter, radosgw-admin, root
+      rbd00: CommandFilter, rbd, root
       osd-maintenance: CommandFilter, osd-maintenance, root
       rbd_pv: CommandFilter, rbd_pv, root
-      kubectl: CommandFilter, kubectl, root
-      # Below are examples of RegExpFilter. This will restict access to ceph cluster even with admin user
-      #rbd00: RegExpFilter, rbd, root, rbd, (^((?!clone|copy|cp|create|export|export-diff|flatten|import|import-diff|map|merge-diff|pool|remove|rm|rename|mv|resize|unmap).)*$)
-      #rbd01: RegExpFilter, rbd, root, rbd, image-meta, (^((?!get|remove|set).)*$)
-      #rbd02: RegExpFilter, rbd, root, rbd, journal, (^((?!client|export|import|reset).)*$)
-      #rbd03: RegExpFilter, rbd, root, rbd, lock, (^((?!add|remove).)*$)
-      #rbd04: RegExpFilter, rbd, root, rbd, mirror, image, (^((?!demote|disable|enable|promote).)*$)
-      #rbd05: RegExpFilter, rbd, root, rbd, mirror, pool, (^((?!demote|disable|enable|peer|promote).)*$)
-      #rbd06: RegExpFilter, rbd, root, rbd, nbd, (^((?!map|unmap).)*$)
-      #rbd07: RegExpFilter, rbd, root, rbd, object-map, (^((?!rm|del).)*$)
-      #rbd08: RegExpFilter, rbd, root, rbd, snap, (^((?!create|limit|protect|purge|remove|rm|rename|mv|rollback|revert|unprotect).)*$)
-      #rbd09: RegExpFilter, rbd, root, rbd, trash, (^((?!move|mv|remove|rm|restore).)*$)
+      help: CommandFilter, help, root
+      #Below are examples of RegExpFilter. This will restict access to ceph cluster even with admin user
+      #rados00: RegExpFilter, rados, root, rados, --help
+      #rados01: RegExpFilter, rados, root, rados, df
+      #rbd02: RegExpFilter, rbd, root, rbd, --image, .*, info
+      #rbd03: RegExpFilter, rbd, root, rbd, snap, ls, .*
+      #ceph07: RegExpFilter, ceph, root, ceph, fsid
+      #ceph08: RegExpFilter, ceph, root, ceph, --watch
   cephrootwrap:
     DEFAULT:
       # Configuration for ceph-rootwrap

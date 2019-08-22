@@ -103,6 +103,10 @@ spec:
               subPath: osd-maintenance
               readOnly: true
             - name: ceph-utility-bin
+              mountPath: /tmp/help
+              subPath: help
+              readOnly: true
+            - name: ceph-utility-bin
               mountPath: /tmp/rbd_pv
               subPath: rbd_pv
               readOnly: true
