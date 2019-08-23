@@ -14,22 +14,14 @@
 
 SHELL := /bin/bash
 
-DOCKER_REGISTRY            ?= quay.io
-IMAGE_NAME                 ?= calicoctl-utility
-IMAGE_PREFIX               ?= attcomdev
-IMAGE_TAG                  ?= latest
-PROXY                      ?= http://proxy.foo.com:8000
-NO_PROXY                   ?= localhost,127.0.0.1,.svc.cluster.local
-USE_PROXY                  ?= false
-PUSH_IMAGE                 ?= false
-# use this variable for image labels added in internal build process
-LABEL                      ?= org.attcomdev.build=community
-COMMIT                     ?= $(shell git rev-parse HEAD)
-CALICOCTL_BASE_IMAGE       ?= ${DOCKER_REGISTRY}/calico/ctl:${CALICOCTL_VERSION}
-CALICOCTL_BUILD_CTX        ?= calicoctl-utility
-export
+DOCKER_REGISTRY ?= quay.io
+IMAGE_NAME      ?= calico-utility
+IMAGE_PREFIX    ?= airship/porthole
+IMAGE_TAG       ?= latest
+BUILD_TYPE      ?= community
+OS_RELEASE      ?= alpine
 
-IMAGE := ${DOCKER_REGISTRY}/${IMAGE_PREFIX}/${IMAGE_NAME}:${IMAGE_TAG}
+IMAGE := $(DOCKER_REGISTRY)/$(IMAGE_PREFIX)/$(IMAGE_NAME):$(IMAGE_TAG)
 
 # Build calico-utility Docker image for this project
 .PHONY: images
@@ -38,33 +30,16 @@ images: build_$(IMAGE_NAME)
 # Make targets intended for use by the primary targets above.
 .PHONY: build_$(IMAGE_NAME)
 build_$(IMAGE_NAME):
-ifeq ($(USE_PROXY), true)
-    docker build -t $(IMAGE) --network=host -f Dockerfile.alpine \
-        --label $(LABEL) \
-        --label CALICOCTL_VERSION=$(IMAGE_TAG) \
-        --label "org.opencontainers.image.revision=$(COMMIT)" \
-        --label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
-        --label "org.opencontainers.image.title=$(IMAGE_NAME)" \
-        -f Dockerfile.alpine \
-        --build-arg FROM=$(CALICOCTL_BASE_IMAGE) \
-        --build-arg http_proxy=$(PROXY) \
-        --build-arg https_proxy=$(PROXY) \
-        --build-arg HTTP_PROXY=$(PROXY) \
-        --build-arg HTTPS_PROXY=$(PROXY) \
-        --build-arg no_proxy=$(NO_PROXY) \
-        --build-arg NO_PROXY=$(NO_PROXY) \
-        --build-arg ctx_base=$(CALICOCTL_BUILD_CTX) .
+ifeq ($(BUILD_TYPE), community)
+	docker build -f Dockerfile_calicoctl_only.$(OS_RELEASE) \
+		--network host \
+		$(EXTRA_BUILD_ARGS) \
+		-t $(IMAGE) \
+		.
 else
-    docker build -t $(IMAGE) --network=host -f Dockerfile.alpine \
-        --label $(LABEL) \
-        --label CALICOCTL_VERSION=$(IMAGE_TAG) \
-        --label "org.opencontainers.image.revision=$(COMMIT)" \
-        --label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
-        --label "org.opencontainers.image.title=$(IMAGE_NAME)" \
-        -f Dockerfile.alpine \
-        --build-arg FROM=$(CALICOCTL_BASE_IMAGE) \
-        --build-arg ctx_base=$(CALICOCTL_BUILD_CTX) .
-endif
-ifeq ($(PUSH_IMAGE), true)
-    docker push $(IMAGE)
+	docker build -f Dockerfile_calicoq_calicoctl.$(OS_RELEASE) \
+		--network host \
+		$(EXTRA_BUILD_ARGS) \
+		-t $(IMAGE) \
+		.
 endif

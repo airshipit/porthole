@@ -1,0 +1,36 @@
+ARG DOCKER_REGISTRY=quay.io
+ARG CALICOCTL_IMAGE_PREFIX=calico/ctl
+ARG CALICOCTL_VERSION=v3.4.4
+
+ARG CALICOCTL_IMAGE="${DOCKER_REGISTRY}/${CALICOCTL_IMAGE_PREFIX}:${CALICOCTL_VERSION}"
+
+FROM ${CALICOCTL_IMAGE}
+
+ARG CALICOCTL_VERSION=v3.4.4
+
+LABEL org.opencontainers.image.authors='Openstack-Helm Authors' \
+    org.opencontainers.image.url='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/calicoctl-utility' \
+    org.opencontainers.image.documentation='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/calicoctl-utility/README' \
+    org.opencontainers.image.source='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/calicoctl-utility' \
+    org.opencontainers.image.vendor='Openstack-Helm Authors' \
+    org.opencontainers.image.licenses='BSD-3-Clause' \
+    org.projectcalico.calicoctl.version="${CALICOCTL_VERSION}"
+
+RUN set -xe \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apk add dpkg --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    && apk add --update dpkg \
+    && touch /var/lib/dpkg/status \
+    && apk update \
+    && apk add --update \
+       python python-dev py-pip build-base \
+       sudo vim screen rsyslog \
+       wget curl socat \
+    && pip install oslo.rootwrap
+
+RUN mv /calicoctl /usr/local/bin/calicoctl \
+    && chmod 0754 /usr/local/bin/calicoctl \
+    && chmod 0754 /usr/bin/socat
+
+WORKDIR /tmp
+ENTRYPOINT ["/bin/sh", "-c"]
