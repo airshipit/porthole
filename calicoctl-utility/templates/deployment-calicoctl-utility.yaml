@@ -141,6 +141,10 @@ spec:
               mountPath: /usr/local/bin/calicoctl-utility-rootwrap
               subPath: calicoctl-utility-rootwrap
               readOnly: true
+            - name: calicoctl-utility-bin
+              mountPath: /tmp/override-oslo-rootwrap-logging.sh
+              subPath: override-oslo-rootwrap-logging.sh
+              readOnly: true
             - name: calicoctl-utility-sudoers
               mountPath: /etc/sudoers.d/nobody
               subPath: utilscli-sudo

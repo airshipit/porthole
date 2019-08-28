@@ -25,6 +25,9 @@ data:
   image-repo-sync.sh: |
 {{- include "helm-toolkit.scripts.image_repo_sync" . | indent 4 }}
 
+  override-oslo-rootwrap-logging.sh: |
+{{ tuple "bin/_override-oslo-rootwrap-logging.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
   calicoctl-utility-rootwrap: |
 {{ tuple "bin/_calicoctl-utility-rootwrap.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
