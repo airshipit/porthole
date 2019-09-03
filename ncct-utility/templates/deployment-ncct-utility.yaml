@@ -1,0 +1,129 @@
+{{/*
+Copyright 2019 The Openstack-Helm Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/}}
+
+{{- if .Values.manifests.deployment_ncct_utility }}
+{{- $envAll := . }}
+
+{{- $serviceAccountName := printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "utility" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $serviceAccountName }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $serviceAccountName }}
+subjects:
+- kind: ServiceAccount
+  name: {{ $serviceAccountName }}
+  namespace: {{ .Release.Namespace }}
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: {{ $serviceAccountName }}
+rules:
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ printf "%s" $envAll.Release.Name }}
+  labels:
+{{ tuple $envAll "utility" "ncct-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+spec:
+  replicas: {{ .Values.pod.replicas.utility }}
+  selector:
+    matchLabels:
+{{ tuple $envAll "utility" "ncct-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
+  template:
+    metadata:
+      name: {{ printf "%s" $envAll.Release.Name }}
+      labels:
+{{ tuple $envAll "utility" "ncct-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+      annotations:
+        configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
+        configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
+    spec:
+      securityContext:
+        runAsUser: {{ $envAll.Values.pod.sec_context.run_as_user }}
+        allowPrivilegeEscalation: false
+      serviceAccountName: {{ $serviceAccountName }}
+      nodeSelector:
+        {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
+      containers:
+        - name: {{ printf "%s" $envAll.Release.Name }}
+{{ tuple $envAll "ncct_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
+{{ tuple $envAll $envAll.Values.pod.resources.ncct_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+          command:
+            - "bootstrap.sh"
+          volumeMounts:
+            - name: ncct-utility-bin-utilscli
+              mountPath: /usr/local/bin/bootstrap.sh
+              subPath: bootstrap.sh
+              readOnly: true
+            - name: ncct-utility-bin-utilscli
+              mountPath: /usr/local/bin/utilscli
+              subPath: utilscli
+              readOnly: true
+            - name: ncct-utility-bin
+              mountPath: /usr/local/bin/ncct-utility-rootwrap
+              subPath: ncct-utility-rootwrap
+              readOnly: true
+            - name: ncct-utility-bin
+              mountPath: /usr/local/bin/override-oslo-rootwrap-logging.sh
+              subPath: override-oslo-rootwrap-logging.sh
+              readOnly: true
+            - name: ncct-utility-sudoers
+              mountPath: /etc/sudoers.d/nobody
+              subPath: utilscli-sudo
+              readOnly: true
+            - name: ncct-utility-etc
+              mountPath: /etc/ncct/rootwrap.d/ncct.filter
+              subPath: ncct.filter
+              readOnly: true
+            - name: ncct-utility-etc
+              mountPath: /etc/ncct/rootwrap.conf
+              subPath: rootwrap.conf
+              readOnly: true
+      volumes:
+        - name: ncct-utility-sudoers
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "sudoers" }}
+            defaultMode: 0644
+        - name: ncct-utility-bin
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin" }}
+            defaultMode: 0500
+        - name: ncct-utility-bin-utilscli
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
+            defaultMode: 0555
+        - name: ncct-utility-etc
+          configMap:
+            name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
+            defaultMode: 0400
+{{- end }}
