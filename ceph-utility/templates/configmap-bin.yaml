@@ -41,6 +41,9 @@ data:
   utilscli: |
 {{ tuple "bin/utility/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
+  help: |
+{{ tuple "bin/utility/_help.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
   osd-maintenance: |
 {{ tuple "bin/utility/_osd-maintenance.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
