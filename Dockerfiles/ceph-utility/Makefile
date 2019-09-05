@@ -24,7 +24,7 @@ SHELL := /bin/bash
 
 DOCKER_REGISTRY            ?= quay.io
 IMAGE_NAME                 ?= ceph-utility
-IMAGE_PREFIX               ?= attcomdev
+IMAGE_PREFIX               ?= airshipit
 IMAGE_TAG                  ?= latest
 LABEL                      ?= mimic
 
