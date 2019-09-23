@@ -1,3 +1,17 @@
+# Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 - hosts: all
   tasks:
     - include_vars: vars.yaml
@@ -46,8 +60,12 @@
             jump: ACCEPT
       become: True
 
-    - name: Debug tag generation inputs
+    - name: Debug inputs
       block:
+        - debug:
+            var: distro_suffix
+        - debug:
+            var: image_name
         - debug:
             var: publish
         - debug:
@@ -75,20 +93,20 @@
       block:
         - make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: images
+            target: "build-image-{{ image_name }}"
             params:
+              DISTRO_SUFFIX: "{{ distro_suffix }}"
+              IMAGE_NAME: "{{ image_name }}"
               IMAGE_TAG: "{{ item }}"
           with_items: "{{ image_tags.stdout_lines }}"
-
         - shell: "docker images"
           register: docker_images
-
         - debug:
             var: docker_images
-
       become: True
 
     - name: Publish images
+      when: publish
       block:
         - docker_login:
             username: "{{ quay_credentials.username }}"
@@ -96,17 +114,18 @@
             registry_url: "https://quay.io/api/v1/"
         - make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: images
+            target: "build-image-{{ image_name }}"
             params:
+              COMMIT: "{{ zuul.newrev | default('') }}"
+              DISTRO_SUFFIX: "{{ distro_suffix }}"
               DOCKER_REGISTRY: "quay.io"
+              IMAGE_NAME: "{{ image_name }}"
               IMAGE_PREFIX: "airshipit"
               IMAGE_TAG: "{{ item }}"
-              COMMIT: "{{ zuul.newrev | default('') }}"
               PUSH_IMAGE: "true"
           with_items: "{{ image_tags.stdout_lines }}"
         - shell: "docker images"
           register: docker_images
         - debug:
             var: docker_images
-      when: publish
       become: True

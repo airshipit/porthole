@@ -1,28 +1,35 @@
-ARG FROM=docker.io/ubuntu:xenial
+ARG FROM=ubuntu:16.04
 FROM ${FROM}
-MAINTAINER Trung Thai <tthai@att.com>
 
-RUN set -xe \
-  && sed -i '/nobody/d' /etc/passwd \
-  && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd ;\
-  apt-get update ;\
-  apt-get dist-upgrade -y ;\
-  apt-get install -y \
-  bash \
-  moreutils \
-  vim \
-  sudo \
-  screen \
-  rsyslog \
-  python-oslo.rootwrap \
-  python3-oslo.rootwrap \
-  mysql-client ;\
-  sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf ; \
-  apt-get clean -y ;\
-  rm -rf \
-  /var/cache/debconf/* \
-  /var/lib/apt/lists/* \
-  /var/log/* \
-  /tmp/* \
-  /var/tmp/*
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+RUN set -xe && \
+    sed -i '/nobody/d' /etc/passwd && \
+    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
+    apt-get update && \
+    apt-get dist-upgrade -y && \
+    apt-get install -y \
+      bash \
+      moreutils \
+      mysql-client \
+      python-oslo.rootwrap \
+      python3-oslo.rootwrap \
+      screen \
+      sudo \
+      rsyslog \
+      vim && \
+    sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf && \
+    apt-get clean -y && \
+    rm -rf \
+      /tmp/* \
+      /var/cache/debconf/* \
+      /var/lib/apt/lists/* \
+      /var/log/* \
+      /var/tmp/*
+
 CMD ["/bin/bash"]
