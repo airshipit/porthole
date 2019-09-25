@@ -13,12 +13,12 @@
 # limitations under the License.
 
 - job:
-    name: porthole-image-build-mysqlclient-utility
-    parent: &parent porthole-images
+    name: airship-porthole-images-build-gate-mysqlclient-utility
+    parent: &parent airship-porthole-images
     vars:
       image_name: &image_name mysqlclient-utility
       distro_suffix: &distro_suffix ubuntu_xenial
-    files: &mysqlclient_files
+    files:
       - ^Dockerfiles/mysqlclient-utility/.*$
       - ^install_mysqlclient_utility.sh$
       - ^mysqlclient-utility/.*$
@@ -27,7 +27,7 @@
       - ^zuul.d/.*$
 
 - job:
-    name: porthole-image-upload-mysqlclient-utility
+    name: airship-porthole-images-publish-mysqlclient-utility
     parent: *parent
     secrets:
       - name: quay_credentials
@@ -40,4 +40,3 @@
       tags:
         dynamic:
           commit: true
-    files: *mysqlclient_files

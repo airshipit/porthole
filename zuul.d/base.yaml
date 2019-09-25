@@ -15,17 +15,17 @@
 - project:
     check:
       jobs:
-        - porthole-lint
-        - porthole-image-build-mysqlclient-utility
+        - airship-porthole-linter
+        - airship-porthole-images-build-gate-mysqlclient-utility
 
     gate:
       jobs:
-        - porthole-lint
-        - porthole-image-build-mysqlclient-utility
+        - airship-porthole-linter
+        - airship-porthole-images-build-gate-mysqlclient-utility
 
     post:
       jobs:
-        - porthole-image-upload-mysqlclient-utility
+        - airship-porthole-images-publish-mysqlclient-utility
 
 - nodeset:
     name: airship-porthole-single-node
@@ -34,7 +34,7 @@
         label: ubuntu-xenial
 
 - job:
-    name: porthole-images
+    name: airship-porthole-images
     abstract: true
     timeout: 1800
     post-timeout: 1800
@@ -50,7 +50,7 @@
           - latest
 
 - job:
-    name: porthole-lint
+    name: airship-porthole-linter
     description: |
       Lints files for trailing whitespace
     run: tools/gate/playbooks/zuul-linter.yaml

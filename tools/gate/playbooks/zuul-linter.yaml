@@ -15,10 +15,8 @@
 - hosts: primary
   tasks:
     - name: Execute a Whitespace Linter check
-      command: >
-        find .
-        -not -path "*/.git/*"
-        -type f
-        -exec egrep -l " +$" {} \;
+      command: git grep -E -l " +$"
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
       register: result
       failed_when: result.stdout != ""
