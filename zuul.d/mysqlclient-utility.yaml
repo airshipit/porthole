@@ -16,7 +16,7 @@
     name: airship-porthole-images-build-gate-mysqlclient-utility
     parent: &parent airship-porthole-images
     vars:
-      image_name: &image_name mysqlclient-utility
+      image_name: &image_name porthole-mysqlclient-utility
       distro_suffix: &distro_suffix ubuntu_xenial
     files:
       - ^Dockerfiles/mysqlclient-utility/.*$
