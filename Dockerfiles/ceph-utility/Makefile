@@ -24,7 +24,7 @@ SHELL := /bin/bash
 
 DOCKER_REGISTRY            ?= quay.io
 IMAGE_NAME                 ?= ceph-utility
-IMAGE_PREFIX               ?= airshipit
+IMAGE_PREFIX               ?= airship/porthole
 IMAGE_TAG                  ?= latest
 LABEL                      ?= mimic
 
@@ -41,6 +41,7 @@ build_$(IMAGE_NAME):
 	--network host \
 	--build-arg CEPH_RELEASE=$(CEPH_RELEASE) \
 	--build-arg UBUNTU_RELEASE=$(UBUNTU_RELEASE) \
+	$(EXTRA_BUILD_ARGS) \
 	-t $(IMAGE) \
 	--label $(LABEL) --label CEPH_RELEASE=$(CEPH_RELEASE) \
 	.
