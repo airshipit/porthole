@@ -42,9 +42,12 @@ ifdef VERSION
 endif
 
 ifeq "$(DISTRO_SUFFIX)" ""
-	DOCKERFILE = "Dockerfiles/$(IMAGE_NAME)/Dockerfile"
+	# We expect that container is named 'porthole-xxxxx', and
+	# subdirectory is named 'xxxxx'; so we cut 'porthole-' from
+	# directory names here below and in next statement
+	DOCKERFILE = "Dockerfiles/$(subst porthole-,,$(IMAGE_NAME))/Dockerfile"
 else
-	DOCKERFILE = "Dockerfiles/$(IMAGE_NAME)/Dockerfile.$(DISTRO_SUFFIX)"
+	DOCKERFILE = "Dockerfiles/$(subst porthole-,,$(IMAGE_NAME))/Dockerfile.$(DISTRO_SUFFIX)"
 endif
 
 info:
