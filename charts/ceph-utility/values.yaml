@@ -25,8 +25,8 @@ release_group: null
 images:
   pull_policy: IfNotPresent
   tags:
-    ceph_utility: 'docker.io/sreejithpunnapuzha/ceph-utility:v0.0.3'
-    image_repo_sync: docker.io/docker:17.07.0
+    ceph_utility: 'quay.io/airshipit/porthole-ceph-utility:latest'
+    image_repo_sync: docker.io/docker:18.09.02
   local_registry:
     active: false
     exclude:
