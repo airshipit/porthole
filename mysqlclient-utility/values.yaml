@@ -24,7 +24,7 @@ release_group: null
 
 images:
   tags:
-    mysqlclient_utility: 'quay.io/trthai/tuc:mysql-client-utility-v1.0.1'
+    mysqlclient_utility: 'quay.io/airshipit/porthole-mysqlclient-utility:latest'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent
   local_registry:
