@@ -15,48 +15,157 @@
 # It's necessary to set this because some environments don't link sh -> bash.
 SHELL := /bin/bash
 
-HELM := helm
-TASK := build
+# APP INFO
+DOCKER_REGISTRY   ?= quay.io
+IMAGE_PREFIX      ?= airshipit
+IMAGE_NAME        ?=
+IMAGE_TAG         ?= latest
+BUILD_DIR         := $(shell mktemp -d)
+HELM              ?= $(BUILD_DIR)/helm
+CHARTS            := $(patsubst charts/%/.,%,$(wildcard charts/*/.))
+IMAGES            := $(patsubst images/%/.,%,$(wildcard images/*/.))
+PROXY             ?= http://proxy.foo.com:8000
+NO_PROXY          ?= localhost,127.0.0.1,.svc.cluster.local
+USE_PROXY         ?= false
+PUSH_IMAGE        ?= false
+# use this variable for image labels added in internal build process
+LABEL             ?= org.airshipit.build=community
+COMMIT            ?= $(shell git rev-parse HEAD)
+DISTRO_SUFFIX     ?= $(DISTRO)
+IMAGE             := ${DOCKER_REGISTRY}/${IMAGE_PREFIX}/${IMAGE_NAME}:${IMAGE_TAG}-${DISTRO_SUFFIX}
+BASE_IMAGE        ?=
 
-EXCLUDES := helm-toolkit docs tools logs tmp Dockerfiles zuul.d jmphost
-CHARTS := helm-toolkit $(filter-out $(EXCLUDES), $(patsubst %/.,%,$(wildcard */.)))
+# VERSION INFO
+GIT_COMMIT = ${COMMIT}
+GIT_SHA    = $(shell git rev-parse --short HEAD)
+GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
 
-.PHONY: $(EXCLUDES) $(CHARTS)
+HELM_PIDFILE ?= $(abspath ./.helm-pid)
 
-all: $(CHARTS)
+ifdef VERSION
+	DOCKER_VERSION = $(VERSION)
+endif
 
-$(CHARTS):
-	@echo
-	@echo "===== Processing [$@] chart ====="
-	@make $(TASK)-$@
+ifeq "$(DISTRO_SUFFIX)" ""
+	# We expect that container is named 'porthole-xxxxx', and
+	# subdirectory is named 'xxxxx'; so we cut 'porthole-' from
+	# directory names here below and in next statement
+	DOCKERFILE = "images/$(subst porthole-,,$(IMAGE_NAME))/Dockerfile"
+else
+	DOCKERFILE = "images/$(subst porthole-,,$(IMAGE_NAME))/Dockerfile.$(DISTRO_SUFFIX)"
+endif
 
-init-%:
-	if [ -f $*/Makefile ]; then make -C $*; fi
-	if [ -f $*/requirements.yaml ]; then helm dep up $*; fi
+info:
+	@echo "Version:           ${VERSION}"
+	@echo "Git Tag:           ${GIT_TAG}"
+	@echo "Git Commit:        ${GIT_COMMIT}"
+	@echo "Git Tree State:    ${GIT_DIRTY}"
+	@echo "Docker Version:    ${DOCKER_VERSION}"
+	@echo "Registry:          ${DOCKER_REGISTRY}"
 
-lint-%: init-%
-	if [ -d $* ]; then $(HELM) lint $*; fi
+all: lint charts images
+	@echo "And what is there's nothing in there? You die, and there's" \
+	      "nothing beyond that. Nothing. Nothing remains. Someone might" \
+	      "remember you for a little while after but not for long."
 
-build-%: lint-%
-	if [ -d $* ]; then $(HELM) package $*; fi
+check-docker:
+	@if [ -z $$(which docker) ]; then \
+		echo "Missing \`docker\` client which is required for development"; \
+		exit 2; \
+	fi
+
+dry-run: clean $(addprefix dry-run-,$(CHARTS))
+
+dry-run-%: helm-lint-%
+	echo Running Dry-Run on chart $*
+	cd charts; $(HELM) template --set pod.resources.enabled=true $*
+
+charts: $(CHARTS)
+	@echo "Done building charts."
+
+$(CHARTS): $(addprefix dry-run-,$(CHARTS)) chartbanner
+	$(HELM) package -d charts charts/$@
+
+chartbanner:
+	@echo "Building charts: $(CHARTS)"
+
+lint: helm_lint
+
+helm-lint: $(addprefix helm-lint-,$(CHARTS))
+
+helm-lint-%: helm-init-%
+	@echo "Linting chart $*"
+	cd charts;$(HELM) lint $*
+
+helm-init-%: helm-serve
+	@echo "Initializing chart $*"
+	cd charts;if [ -s $*/requirements.yaml ]; then echo "Initializing $*";$(HELM) dep up $*; fi
+
+helm-serve: helm-install
+	./tools/helm_tk.sh $(HELM) $(HELM_PIDFILE)
+
+# Install helm binary
+helm-install:
+	./tools/helm_install.sh $(HELM)
+
+dry-run:
+
+docs:
+	@echo "Not implemented." >&2; exit 2
 
 clean:
-	@echo "Removed .b64, _partials.tpl, and _globals.tpl files"
-	rm -f helm-toolkit/secrets/*.b64
-	rm -f */templates/_partials.tpl
-	rm -f */templates/_globals.tpl
-	rm -f *tgz */charts/*tgz
-	rm -f */requirements.lock
-	-rm -rf */charts */tmpcharts
+	rm -rf build
+	rm -f charts/*.tgz
+	rm -f charts/*/requirements.lock
+	rm -rf charts/*/charts
 
-pull-all-images:
-	@./tools/pull-images.sh
+run_images:
+	@echo "Not implemented." >&2; exit 2
 
-pull-images:
-	@./tools/pull-images.sh $(filter-out $@,$(MAKECMDGOALS))
+run_$(IMAGE_NAME):
+	@echo "Not implemented." >&2; exit 2
 
-dev-deploy:
-	@./tools/gate/devel/start.sh $(filter-out $@,$(MAKECMDGOALS))
+tests:
+	@echo "Not implemented." >&2; exit 2
 
-%:
-	@:
+format:
+	@echo "Not implemented." >&2; exit 2
+
+images: $(addprefix build-image-,$(IMAGES))
+	@echo "Done building images."
+
+_BASE_IMAGE_ARG := $(if $(BASE_IMAGE),--build-arg FROM="${BASE_IMAGE}" ,)
+
+build-image-%: IMAGE_NAME = $*
+build-image-%:
+	@echo "Building $(IMAGE_NAME)..."
+ifeq ($(USE_PROXY), true)
+	@echo docker build --network host -t $(IMAGE) --label $(LABEL) \
+		--label "org.opencontainers.image.revision=$(COMMIT)" \
+		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
+		--label "org.opencontainers.image.title=$(IMAGE_NAME)" \
+		-f $(DOCKERFILE) \
+		$(_BASE_IMAGE_ARG) \
+		--build-arg http_proxy=$(PROXY) \
+		--build-arg https_proxy=$(PROXY) \
+		--build-arg HTTP_PROXY=$(PROXY) \
+		--build-arg HTTPS_PROXY=$(PROXY) \
+		--build-arg no_proxy=$(NO_PROXY) \
+		--build-arg NO_PROXY=$(NO_PROXY) .
+else
+	@echo docker build --network host -t $(IMAGE) --label $(LABEL) \
+		--label "org.opencontainers.image.revision=$(COMMIT)" \
+		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
+		--label "org.opencontainers.image.title=$(IMAGE_NAME)" \
+		-f $(DOCKERFILE) \
+		$(_BASE_IMAGE_ARG) .
+endif
+ifeq ($(PUSH_IMAGE), true)
+	@echo docker push $(IMAGE)
+endif
+
+.PHONY: $(CHARTS) all build-image-% chartbanner charts check-docker clean \
+        docs dry-run-% dry-run format helm-init-% helm-install helm-lint-% \
+		helm-lint helm-serve images info lint run_$(IMAGE_NAME) run_images \
+        tests
