@@ -93,7 +93,7 @@
       block:
         - make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: "build-image-{{ image_name }}"
+            target: "build-image"
             params:
               DISTRO_SUFFIX: "{{ distro_suffix }}"
               IMAGE_NAME: "{{ image_name }}"
@@ -103,6 +103,12 @@
           register: docker_images
         - debug:
             var: docker_images
+        - shell: |
+            docker images --format \
+            '{{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}'
+          register: docker_images_formatted
+          with_items: "{{ image_tags.stdout_lines }}"
+          failed_when: "'{{ image_name }}:{{ item }}' not in docker_images_formatted.stdout"
       become: True
 
     - name: Publish images
@@ -128,4 +134,10 @@
           register: docker_images
         - debug:
             var: docker_images
+        - shell: |
+            docker images --format \
+            '{{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}'
+          register: docker_images_formatted
+          with_items: "{{ image_tags.stdout_lines }}"
+          failed_when: "'{{ image_name }}:{{ item }}' not in docker_images_formatted.stdout"
       become: True
