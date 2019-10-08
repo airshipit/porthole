@@ -142,11 +142,11 @@ images: $(IMAGES)
 $(IMAGES):
 	@echo
 	@echo "===== Processing [$@] image  ====="
-	@make build-image IMAGE_NAME=$(IMAGE_NAME) DOCKERFILE=$(DOCKERFILE)
+	@make build IMAGE_NAME=$(IMAGE_NAME) DOCKERFILE=$(DOCKERFILE)
 
 _BASE_IMAGE_ARG := $(if $(BASE_IMAGE),--build-arg FROM="${BASE_IMAGE}" ,)
 
-build-image:
+build:
 	@echo "Building $(IMAGE_NAME)..."
 ifeq ($(USE_PROXY), true)
 	docker build --network host -t $(IMAGE) --label $(LABEL) \
@@ -173,7 +173,7 @@ ifeq ($(PUSH_IMAGE), true)
 	docker push $(IMAGE)
 endif
 
-.PHONY: $(CHARTS) all build-image-% chartbanner charts check-docker clean \
+.PHONY: $(CHARTS) $(IMAGES) all build chartbanner charts check-docker clean \
         docs dry-run-% dry-run format helm-init-% helm-install helm-lint-% \
-		helm-lint helm-serve images info lint run_$(IMAGE_NAME) run_images \
+        helm-lint helm-serve images info lint run_$(IMAGE_NAME) run_images \
         tests

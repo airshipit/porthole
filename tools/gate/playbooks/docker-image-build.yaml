@@ -93,7 +93,7 @@
       block:
         - make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: "build-image"
+            target: "build"
             params:
               DISTRO_SUFFIX: "{{ distro_suffix }}"
               IMAGE_NAME: "{{ image_name }}"
@@ -120,7 +120,7 @@
             registry_url: "https://quay.io/api/v1/"
         - make:
             chdir: "{{ zuul.project.src_dir }}"
-            target: "build-image-{{ image_name }}"
+            target: "build"
             params:
               COMMIT: "{{ zuul.newrev | default('') }}"
               DISTRO_SUFFIX: "{{ distro_suffix }}"
