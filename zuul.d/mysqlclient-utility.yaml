@@ -19,9 +19,8 @@
       image_name: &image_name porthole-mysqlclient-utility
       distro_suffix: &distro_suffix ubuntu_xenial
     files:
-      - ^Dockerfiles/mysqlclient-utility/.*$
-      - ^install_mysqlclient_utility.sh$
-      - ^mysqlclient-utility/.*$
+      - ^charts/mysqlclient-utility/.*$
+      - ^images/mysqlclient-utility/.*$
       - ^Makefile$
       - ^tools/.*$
       - ^zuul.d/.*$
