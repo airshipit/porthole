@@ -23,10 +23,8 @@ from oslo_rootwrap.cmd import main
 
 exec_name = sys.argv[0]
 host_name = os.environ.get("HOSTNAME")
-log_level = {{
-    .Values.conf.etcdctlrootwrapconf.DEFAULT.syslog_log_level | quote}}
-facility = {{
-    .Values.conf.etcdctlrootwrapconf.DEFAULT.syslog_log_facility | quote}}
+log_level = {{ .Values.conf.etcdctlrootwrapconf.DEFAULT.syslog_log_level | quote}}
+facility = {{ .Values.conf.etcdctlrootwrapconf.DEFAULT.syslog_log_facility | quote}}
 
 if "AUSER" in os.environ:
     user_id = os.environ["AUSER"]
