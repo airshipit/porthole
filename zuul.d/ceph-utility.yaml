@@ -16,12 +16,11 @@
     name: airship-porthole-images-build-gate-ceph-utility
     parent: &parent airship-porthole-images
     vars:
-      image_name: &image_name ceph-utility
+      image_name: &image_name porthole-ceph-utility
       distro_suffix: &distro_suffix ubuntu_xenial
     files:
-      - ^Dockerfiles/ceph-utility/.*$
-      - ^install_ceph_utility.sh$
-      - ^ceph-utility/.*$
+      - ^charts/ceph-utility/.*$
+      - ^images/ceph-utility/.*$
       - ^Makefile$
       - ^tools/.*$
       - ^zuul.d/.*$
