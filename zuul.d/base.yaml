@@ -16,19 +16,22 @@
     check:
       jobs:
         - airship-porthole-linter
-        - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-ceph-utility
+        - airship-porthole-images-build-gate-etcdctl-utility
+        - airship-porthole-images-build-gate-mysqlclient-utility
 
     gate:
       jobs:
         - airship-porthole-linter
-        - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-ceph-utility
+        - airship-porthole-images-build-gate-etcdctl-utility
+        - airship-porthole-images-build-gate-mysqlclient-utility
 
     post:
       jobs:
-        - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-ceph-utility
+        - airship-porthole-images-publish-etcdctl-utility
+        - airship-porthole-images-publish-mysqlclient-utility
 
 - nodeset:
     name: airship-porthole-single-node

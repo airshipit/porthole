@@ -1,0 +1,42 @@
+ARG FROM=ubuntu:16.04
+FROM ${FROM}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+ARG ETCDCTL_VERSION=3.3.12
+
+RUN set -xe && \
+    export DEBIAN_FRONTEND=noninteractive && \
+    sed -i '/nobody/d' /etc/passwd && \
+    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
+    apt-get update && \
+    apt-get install -y \
+      wget curl \
+      apt-transport-https \
+      ca-certificates \
+      gnupg && \
+    apt-get install -y \
+      bash \
+      moreutils \
+      python-oslo.rootwrap \
+      python3-oslo.rootwrap \
+      screen \
+      sudo \
+      rsyslog \
+      vim && \
+    TMP_DIR=$(mktemp --directory) && \
+    cd ${TMP_DIR} && \
+    curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz \
+    | tar xfz - && \
+    mv ${TMP_DIR}/etcd-v${ETCDCTL_VERSION}-linux-amd64/etcdctl /usr/local/bin/etcdctl && \
+    chmod +xr /usr/local/bin/etcdctl && \
+    apt-get clean -y && \
+    rm -rf \
+     /var/lib/apt/lists/* \
+     ${TMP_DIR}
+CMD ["/bin/bash"]
