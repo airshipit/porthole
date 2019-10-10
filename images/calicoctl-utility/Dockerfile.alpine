@@ -1,0 +1,34 @@
+ARG DOCKER_REGISTRY=quay.io
+ARG CALICOCTL_IMAGE_PREFIX=calico/ctl
+ARG CALICOCTL_VERSION=v3.4.4
+
+ARG CALICOCTL_IMAGE="${DOCKER_REGISTRY}/${CALICOCTL_IMAGE_PREFIX}:${CALICOCTL_VERSION}"
+
+FROM ${CALICOCTL_IMAGE}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && apk add dpkg --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    && apk add --update dpkg \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && touch /var/lib/dpkg/status \
+    && apk update \
+    && apk add --update \
+       python python-dev py-pip build-base \
+       sudo screen rsyslog \
+       wget curl socat \
+    && pip install oslo.rootwrap
+
+RUN mv /calicoctl /usr/local/bin/calicoctl \
+    && chmod 0754 /usr/local/bin/calicoctl \
+    && chmod 0754 /usr/bin/socat
+
+WORKDIR /tmp
+ENTRYPOINT ["/bin/sh", "-c"]
