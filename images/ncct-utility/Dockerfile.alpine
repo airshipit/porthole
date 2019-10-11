@@ -5,23 +5,23 @@ ARG NCCT_SHA256=cc192f2221fa8e7cd562223ef40e27ae92ab6f5a127b11e6a2ddb456f18aac97
 ARG NCCT_IMAGE="${DOCKER_REGISTRY}/${NCCT_IMAGE_PREFIX}@sha256:${NCCT_SHA256}"
 FROM ${NCCT_IMAGE}
 
-LABEL org.opencontainers.image.authors='Openstack-Helm Authors' \
-    org.opencontainers.image.url='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/ncct-utility' \
-    org.opencontainers.image.documentation='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/ncct-utility/README' \
-    org.opencontainers.image.source='https://opendev.org/airship/porthole/src/branch/master/Dockerfiles/ncct-utility' \
-    org.opencontainers.image.vendor='Openstack-Helm Authors' \
-    org.opencontainers.image.licenses='BSD-3-Clause'
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
 
-RUN set -xe \
-    && export DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
     && apk add dpkg --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
     && apk add --update dpkg \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && touch /var/lib/dpkg/status \
     && apk update \
     && apk add --update \
+       sudo socat \
        python python-dev py-pip build-base \
-       sudo vim screen \
-       wget curl socat \
     && pip install oslo.rootwrap
 
 RUN mv /app /usr/local/bin/ncct \
