@@ -20,8 +20,8 @@
         - airship-porthole-images-build-gate-ceph-utility
         - airship-porthole-images-build-gate-etcdctl-utility
         - airship-porthole-images-build-gate-mysqlclient-utility
+        - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-
     gate:
       jobs:
         - airship-porthole-linter
@@ -29,6 +29,7 @@
         - airship-porthole-images-build-gate-ceph-utility
         - airship-porthole-images-build-gate-etcdctl-utility
         - airship-porthole-images-build-gate-mysqlclient-utility
+        - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
 
     post:
@@ -37,6 +38,7 @@
         - airship-porthole-images-publish-ceph-utility
         - airship-porthole-images-publish-etcdctl-utility
         - airship-porthole-images-publish-mysqlclient-utility
+        - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
 
 - nodeset:

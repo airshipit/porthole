@@ -1,31 +1,38 @@
 ARG FROM=docker.io/ubuntu:xenial
 FROM ${FROM}
-MAINTAINER Prateek Reddy Dodda <pd2839@att.com>
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
 
 RUN set -xe \
-	&& echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
-        ## If there is no shebang at the beginning of the file, the OS will try to execute it as a “normal” binary.
-	&& echo 'exit 101' >> /usr/sbin/policy-rc.d \
-	&& chmod +x /usr/sbin/policy-rc.d \
-        ## To prevent services from being started automatically when you install packages with dpkg, apt, etc.,
-	&& sed -i '/nobody/d' /etc/passwd \
-	&& echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
-        ## To Restrict User to nobody for User login.
-	&& dpkg-divert --local --rename --add /sbin/initctl \
-	&& cp -a /usr/sbin/policy-rc.d /sbin/initctl \
-	&& sed -i 's/^exit.*/exit 0/' /sbin/initctl \
-        ## To use an updated version of some application instead of old version existing on your machine.
-	&& echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
-        ## Temporarily disable dpkg fsync to make building faster.
-	&& echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean \
-	&& echo 'APT::Update::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' >> /etc/apt/apt.conf.d/docker-clean \
-	&& echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' >> /etc/apt/apt.conf.d/docker-clean \
-	&& echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages \
-	&& echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes \
-	&& echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests \
-        # Docker configurations for base Image
-	&& apt-get update && apt-get install -y bash moreutils vim sudo screen rsyslog x11-apps python-oslo.rootwrap python-openstackclient python-glanceclient python-novaclient python-neutronclient python-cinderclient python-heat python3-oslo.rootwrap python3-openstackclient python3-glanceclient python3-novaclient python3-neutronclient python3-cinderclient \
-        ## Install bash utilities,rsyslog,openstack client which is required for Keystone and oslo rootwrap.
-        && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
+    && echo 'exit 101' >> /usr/sbin/policy-rc.d \
+    && chmod +x /usr/sbin/policy-rc.d \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && dpkg-divert --local --rename --add /sbin/initctl \
+    && cp -a /usr/sbin/policy-rc.d /sbin/initctl \
+    && sed -i 's/^exit.*/exit 0/' /sbin/initctl \
+    && apt-get update \
+    && apt-get install -y \
+         bash\
+         moreutils \
+         sudo \
+         rsyslog \
+         x11-apps \
+         python-oslo.rootwrap \
+         python-openstackclient \
+         python3-oslo.rootwrap \
+         python3-openstackclient \
+         python3-glanceclient \
+         python3-novaclient \
+         python3-neutronclient \
+         python3-cinderclient \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]

@@ -12,8 +12,8 @@ release_group: null
 images:
   pull_policy: IfNotPresent
   tags:
-    openstack_utility: 'docker.io/diwakarthyagaraj/openstackutility:v0.0.2'
-    image_repo_sync: docker.io/docker:17.07.0
+    openstack_utility: 'quay.io/airshipit/porthole-openstack-utility:latest-ubuntu_xenial'
+    image_repo_sync: docker.io/docker:18.09.02
   local_registry:
     active: false
     exclude:
