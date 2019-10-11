@@ -1,0 +1,41 @@
+# Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+- job:
+    name: airship-porthole-images-build-gate-compute-utility
+    parent: &parent airship-porthole-images
+    vars:
+      image_name: &image_name porthole-compute-utility
+      distro_suffix: &distro_suffix ubuntu_xenial
+    files:
+      - ^charts/compute-utility/.*$
+      - ^images/compute-utility/.*$
+      - ^Makefile$
+      - ^tools/.*$
+      - ^zuul.d/.*$
+
+- job:
+    name: airship-porthole-images-publish-compute-utility
+    parent: *parent
+    secrets:
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
+    vars:
+      image_name: *image_name
+      distro_suffix: *distro_suffix
+      publish: true
+      tags:
+        dynamic:
+          commit: true

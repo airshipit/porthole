@@ -1,19 +1,45 @@
 ARG FROM=docker.io/ubuntu:xenial
 FROM ${FROM}
 
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
 ARG KUBE_VERSION=1.12.2
 
 RUN set -xe \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
-    && apt-get update && apt-get dist-upgrade -y \
-    && apt-get install -y wget curl apt-transport-https ca-certificates gnupg\
-    && apt-get update && apt-get install -y bash python-oslo.rootwrap moreutils vim sudo screen radosgw rsyslog hexedit jq s3cmd rsync xz-utils iperf \
-    && apt-get remove --purge -y wget apt-transport-https && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && apt-get update \
+    && apt-get install -y apt-transport-https \
+       bash \
+       ca-certificates \
+       curl \
+       gnupg \
+       hexedit \
+       iperf \
+       jq \
+       moreutils \
+       python-oslo.rootwrap \
+       radosgw \
+       rsyslog \
+       s3cmd \
+       rsync \
+       sudo \
+       wget \
+       xz-utils \
+    && apt-get remove --purge -y wget apt-transport-https \
+    && apt-get autoremove -y \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && TMP_DIR=$(mktemp --directory) \
     && cd ${TMP_DIR} \
-    && curl -sSL https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz | tar -zxv --strip-components=1 \
+    && curl -sSLO https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
+    && tar --strip-components=1 -zxvf kubernetes-client-linux-amd64.tar.gz \
     && mv ${TMP_DIR}/client/bin/kubectl /usr/bin/kubectl \
     && chmod +x /usr/bin/kubectl \
     && rm -rf ${TMP_DIR}
+
 CMD ["/bin/bash"]
