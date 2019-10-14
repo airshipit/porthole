@@ -146,7 +146,6 @@ For testing purposes:
 
     NAME                                                          READY   STATUS      RESTARTS   AGE
     clcp-calicoctl-utility-6457864fc8-zpfxk                       1/1     Running     0          4h27m
-    clcp-ncct-utility-6588ff5566-8mqsb                            1/1     Running     0          4h27m
     clcp-tenant-ceph-utility-7b8f6d45f8-5q4ts                     1/1     Running     0          99m
     clcp-tenant-ceph-utility-config-ceph-ns-key-generator-hd9rb   0/1     Completed   0          99m
     clcp-ucp-ceph-utility-6f4bbd4569-vrm7c                        1/1     Running     0          4h11m
