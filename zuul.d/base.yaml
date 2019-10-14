@@ -18,6 +18,7 @@
         - airship-porthole-linter
         - airship-porthole-images-build-gate-calicoctl-utility
         - airship-porthole-images-build-gate-ceph-utility
+        - airship-porthole-images-build-gate-compute-utility
         - airship-porthole-images-build-gate-etcdctl-utility
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
@@ -27,6 +28,7 @@
         - airship-porthole-linter
         - airship-porthole-images-build-gate-calicoctl-utility
         - airship-porthole-images-build-gate-ceph-utility
+        - airship-porthole-images-build-gate-compute-utility
         - airship-porthole-images-build-gate-etcdctl-utility
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
@@ -36,6 +38,7 @@
       jobs:
         - airship-porthole-images-publish-calicoctl-utility
         - airship-porthole-images-publish-ceph-utility
+        - airship-porthole-images-publish-compute-utility
         - airship-porthole-images-publish-etcdctl-utility
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
