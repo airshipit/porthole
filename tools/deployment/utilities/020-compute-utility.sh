@@ -1,10 +1,7 @@
 #!/bin/bash
 set -xe
-
-#NOTE: Lint and package chart
-: ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
-
-cd charts
+CURRENT_DIR="$(pwd)"
+cd "${CURRENT_DIR}"/charts
 
 make compute-utility
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite

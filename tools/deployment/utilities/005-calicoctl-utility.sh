@@ -2,10 +2,7 @@
 set -xe
 
 kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
-#NOTE: Lint and package chart
-
 cd charts
-
 helm  upgrade --install calicoctl-utility ./calicoctl-utility --namespace=utility
 
 #NOTE: Validate Deployment info

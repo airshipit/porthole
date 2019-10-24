@@ -82,6 +82,19 @@ spec:
 {{ dict "envAll" $envAll "application" "postgresql" "container" "postgresql_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - /tmp/bootstrap.sh
+          env:
+            - name: PATRONI_SUPERUSER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgresql.admin }}
+                  key: 'POSTGRES_USER'
+            - name: PATRONI_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.postgresql.admin }}
+                  key: 'POSTGRES_PASSWORD'
+            - name: POSTGRESQL_HOST_PORT
+              value: {{ tuple "postgresql" "internal" "postgresql" $envAll | include "helm-toolkit.endpoints.host_and_port_endpoint_uri_lookup" }}
           volumeMounts:
             - name: postgresql-utility-bin
               mountPath: /tmp/bootstrap.sh
@@ -107,9 +120,6 @@ spec:
               mountPath: /etc/postgresql/postgresql.conf
               subPath: postgresql.conf
               readOnly: true
-            - name: postgresql-client-admin-password
-              mountPath: /opt/client-password
-              subPath: key
             - name: postgresql-utility-etc
               mountPath: /etc/postgresql/rootwrap.d/postgresql-rootwrap.filter
               subPath: postgresql-rootwrap-filter
@@ -133,11 +143,11 @@ spec:
             name: {{ printf "%s-%s" $envAll.Release.Name "etc" }}
             defaultMode: 0555
         - name: postgresql-etc
-          configMap:
-            name: {{ .Values.conf.postgresqlconf.etc }}
-            defaultMode: 0600
-        - name: postgresql-client-admin-password
           secret:
-            secretName: {{ .Values.secrets.password.admin | quote }}
-            defaultMode: 0600
+            secretName: {{ .Values.conf.postgresqlconf.etc }}
+            defaultMode: 0444
+        - name: postgresql-admin
+          secret:
+            secretName: {{ .Values.secrets.postgresql.admin | quote }}
+            defaultMode: 0444
 {{- end }}

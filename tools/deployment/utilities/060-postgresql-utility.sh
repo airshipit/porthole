@@ -1,12 +1,13 @@
 #!/bin/bash
+
 set -xe
 CURRENT_DIR="$(pwd)"
 cd "${CURRENT_DIR}"/charts
 
-make mysqlclient-utility
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 
-helm  upgrade --install mysqlclient-utility ./mysqlclient-utility  --namespace=utility
+helm upgrade --install postgresql-utility ./postgresql-utility --namespace=utility
+sleep 60
 
 #NOTE: Validate Deployment info
-kubectl get pods -n utility | grep mysqlclient-utility
+kubectl get pods --all-namespaces | grep postgresql-utility
