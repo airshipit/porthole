@@ -153,6 +153,7 @@ ifeq ($(USE_PROXY), true)
 		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
 		--label "org.opencontainers.image.title=$(IMAGE_NAME)" \
 		-f $(DOCKERFILE) \
+		$(EXTRA_BUILD_ARGS) \
 		$(_BASE_IMAGE_ARG) \
 		--build-arg http_proxy=$(PROXY) \
 		--build-arg https_proxy=$(PROXY) \
@@ -166,6 +167,7 @@ else
 		--label "org.opencontainers.image.created=$(shell date --rfc-3339=seconds --utc)" \
 		--label "org.opencontainers.image.title=$(IMAGE_NAME)" \
 		-f $(DOCKERFILE) \
+		$(EXTRA_BUILD_ARGS) \
 		$(_BASE_IMAGE_ARG) images/$(subst porthole-,,$(IMAGE_NAME))/
 endif
 ifeq ($(PUSH_IMAGE), true)
