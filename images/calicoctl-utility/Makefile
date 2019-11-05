@@ -31,7 +31,7 @@ images: build_$(IMAGE_NAME)
 .PHONY: build_$(IMAGE_NAME)
 build_$(IMAGE_NAME):
 ifeq ($(BUILD_TYPE), community)
-	docker build -f Dockerfile_calicoctl_only.$(OS_RELEASE) \
+	docker build -f Dockerfile.$(OS_RELEASE) \
 		--network host \
 		$(EXTRA_BUILD_ARGS) \
 		-t $(IMAGE) \
