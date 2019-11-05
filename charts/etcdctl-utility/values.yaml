@@ -37,7 +37,7 @@ images:
 
 labels:
   utility:
-    node_selector_key: util-etcdctl
+    node_selector_key: openstack-helm-node-class
     node_selector_value: enabled
   job:
     node_selector_key: openstack-helm-node-class
