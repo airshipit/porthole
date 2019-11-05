@@ -24,14 +24,18 @@ RUN set -xe \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
          bash \
+         locales \
          moreutils \
          sudo \
-         rsyslog \
-         python-oslo.rootwrap \
          python3-oslo.rootwrap \
          socat \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
+
+RUN  sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
 
 COPY --from=stage_calicoctl /calicoctl /usr/local/bin/calicoctl
 

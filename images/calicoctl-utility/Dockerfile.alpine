@@ -21,10 +21,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && touch /var/lib/dpkg/status \
     && apk update \
     && apk add --update \
-       python python-dev py-pip build-base \
-       sudo screen rsyslog \
+       python3 python3-dev py3-pip build-base \
+       sudo screen \
        wget curl socat \
-    && pip install oslo.rootwrap
+    && pip3 install oslo.rootwrap
+
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 RUN mv /calicoctl /usr/local/bin/calicoctl \
     && chmod 0754 /usr/local/bin/calicoctl \

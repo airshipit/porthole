@@ -36,4 +36,4 @@ function check_version() {
   fi
 }
 
-sudo calicoctl version | check_version
+utilscli calicoctl version | check_version

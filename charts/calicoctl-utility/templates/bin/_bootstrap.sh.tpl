@@ -15,5 +15,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-sudo /tmp/override-oslo-rootwrap-logging.sh
-exec sudo socat -d -v -s -t0 -T0 -u UNIX-RECV:/dev/log,reuseaddr stdout
+exec sudo socat -d -s -t0 -T0 -u UNIX-RECV:/dev/log,reuseaddr stdout
