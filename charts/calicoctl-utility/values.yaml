@@ -58,7 +58,7 @@ release_group: null
 labels:
   utility:
     node_selector_key: openstack-helm-node-class
-    node_selector_value: enabled
+    node_selector_value: primary
   job:
     node_selector_key: openstack-helm-node-class
     node_selector_value: primary
