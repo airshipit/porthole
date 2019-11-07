@@ -64,7 +64,7 @@ https://kubernetes-etcd.kube-system.svc.cluster.local:2379 is healthy:
 successfully committed proposal: took = 1.787714ms
 nobody@airship-etcdctl-utility-998b4f4d6-65x6d:/$ utilscli etcdctl alarm list
 nobody@airship-etcdctl-utility-998b4f4d6-65x6d:/$ utilscli etcdctl version
-etcdctl version: 3.3.12
+etcdctl version: 3.4.2
 API version: 3.3
 nobody@airship-etcdctl-utility-998b4f4d6-65x6d:/$
 ```
