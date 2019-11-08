@@ -82,6 +82,10 @@ dependencies:
         - endpoint: internal
           service: calico-etcd
 
+# which data store is used by calico
+# allowed values are: 'kubernetes' or 'etcdv3'
+datastore: kubernetes
+
 endpoints:
   cluster_domain_suffix: cluster.local
   local_image_registry:
@@ -132,38 +136,58 @@ conf:
       # Below are example command filters. access can be restricted by creating a user with less privileges
       # calicoctl_00: CommandFilter, calicoctl, root
       # Below are examples of RegExpFilter. This will restrict available calicoctl options even with admin user
-      calicoctl_help_00: RegExpFilter, calicoctl, root, calicoctl, -h
-      calicoctl_help_01: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, -h
-      calicoctl_get_01: RegExpFilter, calicoctl, root, calicoctl, get, .*
-      calicoctl_get_03: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*
-      calicoctl_get_04: RegExpFilter, calicoctl, root, calicoctl, get, .*, --export
-      calicoctl_get_05: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, --export
-      calicoctl_get_06: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename|-o|--output|-n|--namespace, .*
-      calicoctl_get_07: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename|-o|--output|-n|--namespace, .*
-      calicoctl_get_08: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
-      calicoctl_get_09: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
-      calicoctl_get_10: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*
-      calicoctl_get_11: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*
-      calicoctl_get_12: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --export
-      calicoctl_get_13: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --export
-      calicoctl_get_14: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
-      calicoctl_get_15: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
-      calicoctl_get_16: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
-      calicoctl_get_17: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
-      calicoctl_get_18: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
-      calicoctl_get_19: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
-      calicoctl_get_20: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
-      calicoctl_get_21: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
+      calicoctl_help_000: RegExpFilter, calicoctl, root, calicoctl, -h
+      calicoctl_help_010: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, -h
+      calicoctl_get_010: RegExpFilter, calicoctl, root, calicoctl, get, .*
+      calicoctl_get_020: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*
+      calicoctl_get_030: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*
+      calicoctl_get_040: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*
+      calicoctl_get_050: RegExpFilter, calicoctl, root, calicoctl, get, .*, --export
+      calicoctl_get_060: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, --export
+      calicoctl_get_070: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, --export
+      calicoctl_get_080: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, --export
+      calicoctl_get_090: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename|-o|--output|-n|--namespace, .*
+      calicoctl_get_100: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename|-o|--output|-n|--namespace, .*
+      calicoctl_get_110: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename|-o|--output|-n|--namespace, .*
+      calicoctl_get_120: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename|-o|--output|-n|--namespace, .*
+      calicoctl_get_130: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
+      calicoctl_get_140: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
+      calicoctl_get_150: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
+      calicoctl_get_160: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename|-o|--output|-n|--namespace, .*, --export
+      calicoctl_get_170: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*
+      calicoctl_get_180: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*
+      calicoctl_get_190: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*
+      calicoctl_get_200: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*
+      calicoctl_get_210: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --export
+      calicoctl_get_220: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*, --export
+      calicoctl_get_230: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --export
+      calicoctl_get_240: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*, --export
+      calicoctl_get_250: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
+      calicoctl_get_260: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
+      calicoctl_get_270: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
+      calicoctl_get_280: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*
+      calicoctl_get_290: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
+      calicoctl_get_300: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
+      calicoctl_get_310: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
+      calicoctl_get_320: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*, -n|--namespace, .*, --export
+      calicoctl_get_330: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
+      calicoctl_get_340: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
+      calicoctl_get_350: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
+      calicoctl_get_360: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*, --all-namespaces
+      calicoctl_get_370: RegExpFilter, calicoctl, root, calicoctl, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
+      calicoctl_get_380: RegExpFilter, calicoctl, root, calicoctl, get, .*, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
+      calicoctl_get_390: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
+      calicoctl_get_400: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, get, .*, .*, -f|--filename, .*, -o|--output .*, --all-namespaces, --export
 
-      calicoctl_convert_00: RegExpFilter, calicoctl, root, calicoctl, convert, -h
-      calicoctl_convert_01: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename|-o|--output, .*
-      calicoctl_convert_02: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename|-o|--output, .*
-      calicoctl_convert_03: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename|-o|--output, .*, --ignore-validation
-      calicoctl_convert_04: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename|-o|--output, .*, --ignore-validation
-      calicoctl_convert_05: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename, .*, -o|--output, .*
-      calicoctl_convert_06: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename, .*, -o|--output, .*
-      calicoctl_convert_07: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename, .*, -o|--output, .*, --ignore-validation
-      calicoctl_convert_08: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename, .*, -o|--output, .*, --ignore-validation
+      calicoctl_convert_000: RegExpFilter, calicoctl, root, calicoctl, convert, -h
+      calicoctl_convert_010: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename|-o|--output, .*
+      calicoctl_convert_020: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename|-o|--output, .*
+      calicoctl_convert_030: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename|-o|--output, .*, --ignore-validation
+      calicoctl_convert_040: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename|-o|--output, .*, --ignore-validation
+      calicoctl_convert_050: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename, .*, -o|--output, .*
+      calicoctl_convert_060: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename, .*, -o|--output, .*
+      calicoctl_convert_070: RegExpFilter, calicoctl, root, calicoctl, convert, -f|--filename, .*, -o|--output, .*, --ignore-validation
+      calicoctl_convert_080: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, convert, -f|--filename, .*, -o|--output, .*, --ignore-validation
 
       calicoctl_ipam_00: RegExpFilter, calicoctl, root, calicoctl, ipam, show, --ip=.*
       calicoctl_ipam_01: RegExpFilter, calicoctl, root, calicoctl, -l, (?i)panic|fatal|error|warn|info|debug, ipam, show, --ip=.*
@@ -207,4 +231,4 @@ manifests:
   configmap_etc_client: true
   deployment_calicoctl_utility: true
   job_image_repo_sync: false
-  secret_certificates: true
+  secret_certificates: false

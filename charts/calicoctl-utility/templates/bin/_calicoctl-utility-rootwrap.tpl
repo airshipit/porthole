@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 {{/*
 Copyright 2019 The Openstack-Helm Authors.
 
@@ -41,7 +41,7 @@ except IOError:
     exit()
 
 formatter = logging.Formatter('%(asctime)s ' + host_name + ' ' +
-    os.path.basename(exec_name) + ': ' + 'ActualUser=' + user_id + ': %(message)s')
+    os.path.basename(exec_name) + ': ' + 'ActualUser=' + user_id + ': %(message)s\n')
 handler.setFormatter(formatter)
 root = logging.getLogger()
 root.setLevel(log_level)

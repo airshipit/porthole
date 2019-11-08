@@ -1,10 +1,10 @@
 ARG FROM=docker.io/ubuntu:xenial
 ARG DOCKER_REGISTRY=quay.io
 ARG CALICOCTL_IMAGE_PREFIX=tigera/calicoctl
-ARG CALICOCTL_VERSION=v2.3.1
+ARG CALICOCTL_VERSION=v2.5.1
 ARG CALICOCTL_IMAGE="${DOCKER_REGISTRY}/${CALICOCTL_IMAGE_PREFIX}:${CALICOCTL_VERSION}"
 ARG CALICOQ_IMAGE_PREFIX=tigera/calicoq
-ARG CALICOQ_VERSION=v2.3.1
+ARG CALICOQ_VERSION=v2.5.1
 ARG CALICOQ_IMAGE="${DOCKER_REGISTRY}/${CALICOQ_IMAGE_PREFIX}:${CALICOQ_VERSION}"
 
 FROM ${CALICOCTL_IMAGE} as stage_calicoctl
@@ -30,14 +30,18 @@ RUN set -xe \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
          bash \
+         locales \
          moreutils \
          sudo \
-         rsyslog \
-         python-oslo.rootwrap \
          python3-oslo.rootwrap \
          socat \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
+
+RUN  sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
 
 COPY --from=stage_calicoctl /calicoctl /usr/local/bin/calicoctl
 COPY --from=stage_calicoq /calicoq /usr/local/bin/calicoq

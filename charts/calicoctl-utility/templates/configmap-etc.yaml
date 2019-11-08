@@ -33,11 +33,15 @@ data:
     kind: CalicoAPIConfig
     metadata:
     spec:
-      datastoreType: "etcdv3"
+      datastoreType: {{ .Values.datastore }}
+{{- if eq .Values.datastore "etcdv3" }}
       etcdEndpoints: {{ tuple "etcd" "internal" "client" . | include "helm-toolkit.endpoints.keystone_endpoint_uri_lookup" }}
+{{- if include "calico.etcd.tls" . }}
       etcdCertFile: {{ .Values.endpoints.etcd.auth.client.path.crt }}
       etcdCACertFile: {{ .Values.endpoints.etcd.auth.client.path.ca }}
       etcdKeyFile: {{ .Values.endpoints.etcd.auth.client.path.key }}
+{{- end }}
+{{- end }}
 
 ---
 apiVersion: v1
