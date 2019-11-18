@@ -24,7 +24,8 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-apparmor
+        - airship-porthole-apparmor:
+            voting: false
 
     gate:
       jobs:
@@ -115,4 +116,5 @@
          - ./tools/deployment/apparmor/000-install-packages.sh
          - ./tools/deployment/apparmor/001-setup-apparmor-profiles.sh
          - ./tools/deployment/apparmor/002-deploy-k8s.sh
+         - ./tools/deployment/apparmor/005-calicoctl-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh

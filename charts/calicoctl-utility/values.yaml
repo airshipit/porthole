@@ -38,6 +38,10 @@ pod:
         calicoctl_utility:
           allowPrivilegeEscalation: true
           readOnlyRootFilesystem: false
+  mandatory_access_control:
+    type: apparmor
+    calicoctl-utility:
+      calicoctl-utility: runtime/default
   resources:
     enabled: true
     jobs:
