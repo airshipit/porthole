@@ -17,21 +17,13 @@
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-calicoctl-utility
-      distro_suffix: &distro_suffix alpine
-    files: &files
+      distro_suffix: &distro_suffix ubuntu_xenial
+    files:
       - ^charts/calicoctl-utility/.*$
       - ^images/calicoctl-utility/.*$
       - ^Makefile$
       - ^tools/.*$
       - ^zuul.d/.*$
-
-- job:
-    name: airship-porthole-images-build-gate-calicoctl-utility-ubuntu_xenial
-    parent: *parent
-    vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_xenial
-    files: *files
 
 - job:
     name: airship-porthole-images-publish-calicoctl-utility
@@ -43,21 +35,6 @@
     vars:
       image_name: *image_name
       distro_suffix: *distro_suffix
-      publish: true
-      tags:
-        dynamic:
-          commit: true
-
-- job:
-    name: airship-porthole-images-publish-calicoctl-utility-ubuntu_xenial
-    parent: *parent
-    secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
-    vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_xenial
       publish: true
       tags:
         dynamic:

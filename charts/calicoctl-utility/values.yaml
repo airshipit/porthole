@@ -19,7 +19,7 @@
 
 images:
   tags:
-    calicoctl_utility: 'quay.io/airshipit/porthole-calicoctl-utility:latest-alpine'
+    calicoctl_utility: 'quay.io/airshipit/porthole-calicoctl-utility:latest-ubuntu_xenial'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent
   local_registry:
@@ -58,10 +58,10 @@ release_group: null
 labels:
   utility:
     node_selector_key: openstack-helm-node-class
-    node_selector_value: primary
+    node_selector_value: enabled
   job:
     node_selector_key: openstack-helm-node-class
-    node_selector_value: primary
+    node_selector_value: enabled
 
 dependencies:
   dynamic:
