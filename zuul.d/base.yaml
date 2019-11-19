@@ -117,4 +117,5 @@
          - ./tools/deployment/apparmor/001-setup-apparmor-profiles.sh
          - ./tools/deployment/apparmor/002-deploy-k8s.sh
          - ./tools/deployment/apparmor/005-calicoctl-utility.sh
+         - ./tools/deployment/apparmor/010-ceph-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh
