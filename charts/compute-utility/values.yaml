@@ -58,6 +58,10 @@ pod:
         default: preferredDuringSchedulingIgnoredDuringExecution
       topologyKey:
         default: kubernetes.io/hostname
+  mandatory_access_control:
+    type: apparmor
+    compute-utility:
+      compute-utility: runtime/default
   resources:
     enabled: false
     utility:
