@@ -65,6 +65,7 @@ spec:
       name: {{ printf "%s" $envAll.Release.Name }}
       annotations:
         {{ tuple . | include "helm-toolkit.snippets.release_uuid" }}
+{{ dict "envAll" $envAll "podName" "mysqlclient-utility" "containerNames" (list "mysqlclient-utility") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:
 {{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
@@ -75,7 +76,7 @@ spec:
       nodeSelector:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
       containers:
-        - name: {{ printf "%s" $envAll.Release.Name }}
+        - name: mysqlclient-utility
 {{ tuple $envAll "mysqlclient_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.mysql_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mysqlclient" "container" "mysqlclient_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}

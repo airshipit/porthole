@@ -121,4 +121,5 @@
          - ./tools/deployment/apparmor/005-calicoctl-utility.sh
          - ./tools/deployment/apparmor/010-ceph-utility.sh
          - ./tools/deployment/apparmor/030-etcdctl-utility.sh
+         - ./tools/deployment/apparmor/040-mysqlclient-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh
