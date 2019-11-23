@@ -37,7 +37,8 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-apparmor
+        - airship-porthole-apparmor:
+            voting: false
 
     post:
       jobs:
@@ -48,7 +49,8 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-        - airship-porthole-apparmor
+        - airship-porthole-apparmor:
+            voting: false
 - nodeset:
     name: airship-porthole-single-node
     nodes:
@@ -118,4 +120,5 @@
          - ./tools/deployment/apparmor/002-deploy-k8s.sh
          - ./tools/deployment/apparmor/005-calicoctl-utility.sh
          - ./tools/deployment/apparmor/010-ceph-utility.sh
+         - ./tools/deployment/apparmor/030-etcdctl-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh
