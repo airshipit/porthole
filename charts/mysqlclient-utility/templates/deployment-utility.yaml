@@ -68,8 +68,7 @@ spec:
       labels:
 {{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
-      securityContext:
-        runAsUser: 65534
+{{ dict "envAll" $envAll "application" "mysqlclient" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       serviceAccountName: {{ $serviceAccountName }}
       affinity:
 {{ tuple $envAll "mysqlclient" "utility" | include "helm-toolkit.snippets.kubernetes_pod_anti_affinity" | indent 8 }}
@@ -79,6 +78,7 @@ spec:
         - name: {{ printf "%s" $envAll.Release.Name }}
 {{ tuple $envAll "mysqlclient_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.mysql_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+{{ dict "envAll" $envAll "application" "mysqlclient" "container" "mysqlclient_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - /tmp/bootstrap.sh
           readinessProbe:
