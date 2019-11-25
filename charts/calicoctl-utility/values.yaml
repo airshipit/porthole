@@ -30,6 +30,14 @@ images:
       - calicoctl_utility
 
 pod:
+  security_context:
+    calicoctl_util:
+      pod:
+        runAsUser: 65534
+      container:
+        calicoctl_utility:
+          allowPrivilegeEscalation: true
+          readOnlyRootFilesystem: false
   resources:
     enabled: true
     jobs:
@@ -50,8 +58,6 @@ pod:
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
-  sec_context:
-    run_as_user: 65534
 
 release_group: null
 

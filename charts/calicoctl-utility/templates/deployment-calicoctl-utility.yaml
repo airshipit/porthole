@@ -111,9 +111,7 @@ spec:
         configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
 {{ tuple . | include "helm-toolkit.snippets.release_uuid"  | indent 8}}
     spec:
-      securityContext:
-        runAsUser: {{ $envAll.Values.pod.sec_context.run_as_user }}
-        allowPrivilegeEscalation: false
+{{ dict "envAll" $envAll "application" "calicoctl_util" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       serviceAccountName: {{ $serviceAccountName }}
       nodeSelector:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
@@ -121,6 +119,7 @@ spec:
         - name: {{ printf "%s" $envAll.Release.Name }}
 {{ tuple $envAll "calicoctl_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.calicoctl_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+{{ dict "envAll" $envAll "application" "calicoctl_util" "container" "calicoctl_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - "bootstrap.sh"
           readinessProbe:
