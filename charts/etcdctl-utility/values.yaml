@@ -44,6 +44,14 @@ labels:
     node_selector_value: primary
 
 pod:
+  security_context:
+    etcdctl_util:
+      pod:
+        runAsUser: 65534
+      container:
+        etcdctl_utility:
+          allowPrivilegeEscalation: true
+          readOnlyRootFilesystem: false
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1

@@ -73,8 +73,7 @@ spec:
         configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
         {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
     spec:
-      securityContext:
-        runAsUser: 65534
+{{ dict "envAll" $envAll "application" "etcdctl_util" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       serviceAccountName: {{ $serviceAccountName }}
       affinity:
 {{ tuple $envAll "etcdctl" "utility" | include "helm-toolkit.snippets.kubernetes_pod_anti_affinity" | indent 8 }}
@@ -84,6 +83,7 @@ spec:
         - name: {{ printf "%s" $envAll.Release.Name }}
 {{ tuple $envAll "etcdctl_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.etcdctl_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+{{ dict "envAll" $envAll "application" "etcdctl_util" "container" "etcdctl_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           env:
             - name: ETCDCTL_API
               value: "{{ .Values.conf.etcd.etcdctl_api }}"
