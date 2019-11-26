@@ -39,6 +39,14 @@ labels:
     node_selector_value: primary
 
 pod:
+  security_context:
+    ceph:
+      pod:
+        runAsUser: 65534
+      container:
+        ceph_utility:
+          allowPrivilegeEscalation: true
+          readOnlyRootFilesystem: false
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
