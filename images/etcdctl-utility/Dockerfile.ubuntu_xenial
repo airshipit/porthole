@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG ETCDCTL_VERSION=3.3.12
+ARG ETCDCTL_VERSION=3.4.2
 
 RUN set -xe && \
     export DEBIAN_FRONTEND=noninteractive && \
