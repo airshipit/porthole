@@ -122,3 +122,4 @@
          - ./tools/deployment/apparmor/010-ceph-utility.sh
          - ./tools/deployment/apparmor/030-etcdctl-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh
+         - ./tools/deployment/apparmor/060-postgresql-utility.sh
