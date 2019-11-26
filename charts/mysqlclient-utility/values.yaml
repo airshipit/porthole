@@ -24,7 +24,7 @@ release_group: null
 
 images:
   tags:
-    mysqlclient_utility: 'quay.io/airshipit/porthole-mysqlclient-utility:latest'
+    mysqlclient_utility: 'quay.io/airshipit/porthole-mysqlclient-utility:latest-ubuntu_bionic'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent
   local_registry:

@@ -1,4 +1,4 @@
-ARG FROM=ubuntu:16.04
+ARG FROM=docker.io/ubuntu:bionic
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -12,24 +12,21 @@ RUN set -xe && \
     sed -i '/nobody/d' /etc/passwd && \
     echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
     apt-get update && \
-    apt-get dist-upgrade -y && \
     apt-get install -y \
       bash \
       moreutils \
       mysql-client \
-      python-oslo.rootwrap \
+      python3 \
+      python3-pip \
       python3-oslo.rootwrap \
-      screen \
       sudo \
-      rsyslog \
-      vim && \
+      rsyslog && \
     sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf && \
     apt-get clean -y && \
     rm -rf \
       /tmp/* \
       /var/cache/debconf/* \
       /var/lib/apt/lists/* \
-      /var/log/* \
       /var/tmp/*
 
 CMD ["/bin/bash"]
