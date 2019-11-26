@@ -26,6 +26,14 @@ labels:
     node_selector_value: primary
 
 pod:
+  security_context:
+    openstack:
+      pod:
+        runAsUser: 65534
+      container:
+        openstack_utility:
+          allowPrivilegeEscalation: true
+          readOnlyRootFilesystem: false
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
