@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 - project:
     check:
@@ -23,6 +24,8 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
+        - airship-porthole-apparmor
+
     gate:
       jobs:
         - airship-porthole-linter
@@ -33,6 +36,7 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
+        - airship-porthole-apparmor
 
     post:
       jobs:
@@ -43,12 +47,12 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-
+        - airship-porthole-apparmor
 - nodeset:
     name: airship-porthole-single-node
     nodes:
       - name: primary
-        label: ubuntu-xenial
+        label: ubuntu-bionic
 
 - job:
     name: airship-porthole-images
@@ -99,3 +103,16 @@
           JXcwlGoK6kvXmYaG2c7yEiH2xNtTzVTai10fsalubQWR4FTmJA5LU9+HatHBa46XLy4gS
           vMHs2uJudmxhqLIhs5Er248FVjfxw7le5dPun3ir4J7Mjgypu5y8eLCMZAFIwpeqlJrVU
           uih8ByaTlSEh6FBzle7Hb330RjSztC4pX6xiNAmtkpxhF2rEEFS66B/ixwCphQ=
+
+- job:
+    name: airship-porthole-apparmor
+    description: Checks Pods for Apparmor profile
+    timeout: 7200
+    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-single-node
+    vars:
+      gate_scripts:
+         - ./tools/deployment/apparmor/000-install-packages.sh
+         - ./tools/deployment/apparmor/001-setup-apparmor-profiles.sh
+         - ./tools/deployment/apparmor/002-deploy-k8s.sh
+         - ./tools/deployment/apparmor/050-openstack-utility.sh

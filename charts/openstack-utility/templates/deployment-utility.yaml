@@ -67,6 +67,8 @@ spec:
         {{ tuple . | include "helm-toolkit.snippets.release_uuid" }}
       labels:
 {{ tuple $envAll "openstack" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+      annotations:
+{{ dict "envAll" $envAll "podName" "openstack-utility" "containerNames" (list "openstack-utility") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
     spec:
 {{ dict "envAll" $envAll "application" "openstack" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       serviceAccountName: {{ $serviceAccountName }}
@@ -75,7 +77,7 @@ spec:
       nodeSelector:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
       containers:
-        - name: {{ printf "%s" $envAll.Release.Name }}
+        - name: openstack-utility
 {{ tuple $envAll "openstack_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.openstack_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "openstack" "container" "openstack_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
