@@ -2,6 +2,9 @@
 
 ## Prerequisites: Deploy Airship in a Bottle (AIAB)
 
+Deploy the [Airship in a Bottle environment](https://opendev.org/airship/treasuremap/src/branch/master/tools/deployment/aiab)
+
+
 ## Installation
 
 1. Add the below to `/etc/sudoers`.
