@@ -1,13 +1,13 @@
-# Jump host installation
+# Jump Host Installation
 
-The install will Kubernetes client and the corresponding dependencies in order
-to able to connect to K8S cluster remotely.  It will also  create a generic
-kubectl configuration file with appropriate attributes required.
+This procedure installs the Kubernetes client and corresponding dependencies,
+enabling remote access to the Kubernetes cluster. The procedure also creates
+a generic `kubectl` configuration file having the appropriate attributes.
 
 This revision covers the implementation as described. [k8s-keystone-auth](
 https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-keystone-webhook-authenticator-and-authorizer.md#new-kubectl-clients-from-v1110-and-later)
 
-## 1. Pre-requisites
+## 1. Prerequisites
 
 * Ubuntu OS version 14.x or higher
 * Connectivity to the Internet
@@ -16,43 +16,13 @@ https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-ke
 
 ## 2. Installation
 
-### 2.1 Clone Porthole main project
+### 2.1 Clone Porthole Main Project
 
     $git clone https://review.opendev.org/airship/porthole
 
-     Cloning into 'porthole'...
-     remote: Counting objects: 362, done
-     remote: Finding sources: 100% (362/362)
-     remote: Total 362 (delta 185), reused 311 (delta 185)
-     Receiving objects: 100% (362/362), 98.30 KiB | 0 bytes/s, done.
-     Resolving deltas: 100% (185/185), done.
-     Checking connectivity... done.
+### 2.2 Run Setup
 
-### 2.2 Pull PatchSet (optional)
-
-    $cd porthole
-    $git pull https://review.opendev.org/airship/porthole refs/changes/92/674892/[latest change set]
-
-    remote: Counting objects: 10, done
-    remote: Finding sources: 100% (8/8)
-    remote: Total 8 (delta 2), reused 7 (delta 2)
-    Unpacking objects: 100% (8/8), done.
-    From https://review.opendev.org/airship/porthole
-    branch            refs/changes/92/674892/9 -> FETCH_HEAD
-    Merge made by the 'recursive' strategy.
-    jmphost/README.md           | 130 ++++++++++++++++++++++++++++++++++++++++
-    jmphost/funs_uc.sh          |  57 ++++++++++++++++++++++++++++++++++++++++
-    jmphost/setup-access.sh     | 132 ++++++++++++++++++++++++++++++++++++++++
-    zuul.d/jmphost-utility.yaml |  35 ++++++++++++++++++++++++++++++++++++++++
-
-    4 files changed, 354 insertions(+)
-    create mode 100644 jmphost/README.md
-    create mode 100755 jmphost/funs_uc.sh
-    create mode 100755 jmphost/setup-access.sh
-    create mode 100644 zuul.d/jmphost-utility.yaml
-
-### 2.3 Run Setup
-
+    $cd $porthole
     $sudo -s
     $cd jmphost
     $./setup-access.sh "site" "userid" "namespace"
@@ -131,16 +101,20 @@ https://github.com/kubernetes/cloud-provider-openstack/blob/master/docs/using-ke
        args:
        - "--keystone-url=https://<FQDN TO UCP KEYSTONE>/v3"
 
-## Validation
+## 3. Validation
 
-- Now log out and log back in as the user.
-- Update the configuration file with user corresponding credentials.
+To test, perform these steps.
 
-For testing purposes:
-- Replacing **"OS_USERNAME"** and **"OS_PASSWORD"** with UCP Keystone credentials
-- Set the **"OS_PROJECT_NAME"** value accordingly
+1. Log out and log back in as the user.
 
-### List pods
+2. Update the configuration file with the user's credentials.
+
+    * Replace *"OS_USERNAME"* and *"OS_PASSWORD"* with UCP Keystone
+credentials.
+
+    * Set the *"OS_PROJECT_NAME"* value accordingly.
+
+### 3.1 List Pods
 
     $kubectl get pods -n utility
 
@@ -152,7 +126,7 @@ For testing purposes:
     clcp-ucp-ceph-utility-config-ceph-ns-key-generator-pvfcl      0/1     Completed   0          4h12m
     clcp-ucp-ceph-utility-config-test                             0/1     Completed   0          4h12m
 
-### Execute into the pod
+### 3.2 Execute into the Pod
 
     $kubectl exec -it [pod-name] -n utility /bin/bash
 
@@ -160,5 +134,6 @@ For testing purposes:
 
     command terminated with exit code 126
 
-Because the user id entered in the configuration file is not a member in UCP keystone
-RBAC to execute into the pod, it's expecting to see "permission denied".
+The "permission denied" error is expected in this case because the user ID
+entered in the configuration file is not a member in the UCP Keystone
+RBAC to execute into the pod.
