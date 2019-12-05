@@ -17,7 +17,7 @@
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-openstack-utility
-      distro_suffix: &distro_suffix ubuntu_xenial
+      distro_suffix: &distro_suffix ubuntu_bionic
     files:
       - ^charts/openstack-utility/.*$
       - ^images/openstack-utility/.*$

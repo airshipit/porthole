@@ -12,7 +12,7 @@ release_group: null
 images:
   pull_policy: IfNotPresent
   tags:
-    openstack_utility: 'quay.io/airshipit/porthole-openstack-utility:latest-ubuntu_xenial'
+    openstack_utility: 'quay.io/airshipit/porthole-openstack-utility:latest-ubuntu_bionic'
     image_repo_sync: docker.io/docker:18.09.02
   local_registry:
     active: false
