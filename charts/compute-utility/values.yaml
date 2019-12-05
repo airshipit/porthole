@@ -27,7 +27,7 @@ release_uuid: null
 images:
   pull_policy: IfNotPresent
   tags:
-    compute_utility: 'quay.io/airshipit/porthole-compute-utility:latest-ubuntu_xenial'
+    compute_utility: 'quay.io/airshipit/porthole-compute-utility:latest-ubuntu_bionic'
     image_repo_sync: docker.io/docker:18.09.02
   local_registry:
     active: false
