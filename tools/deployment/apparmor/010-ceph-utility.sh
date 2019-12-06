@@ -1,0 +1,278 @@
+#!/bin/bash
+set -xe
+namespace="utility"
+CURRENT_DIR="$(pwd)"
+kubectl get pods --all-namespaces
+
+: ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
+cd ${OSH_INFRA_PATH}
+
+for CHART in ceph-mon ceph-client ceph-provisioners; do
+  make "${CHART}"
+done
+
+#NOTE: Deploy command
+: ${OSH_EXTRA_HELM_ARGS:=""}
+[ -s /tmp/ceph-fs-uuid.txt ] || uuidgen > /tmp/ceph-fs-uuid.txt
+CEPH_FS_ID="$(cat /tmp/ceph-fs-uuid.txt)"
+#NOTE(portdirect): to use RBD devices with Ubuntu kernels < 4.5 this
+# should be set to 'hammer'
+. /etc/os-release
+if [ "x${ID}" == "xubuntu" ] && \
+   [ "$(uname -r | awk -F "." '{ print $2 }')" -lt "5" ]; then
+  CRUSH_TUNABLES=hammer
+else
+  CRUSH_TUNABLES=null
+fi
+tee /tmp/ceph.yaml <<EOF
+endpoints:
+  ceph_mon:
+    namespace: ceph
+    port:
+      mon:
+        default: 6789
+  ceph_mgr:
+    namespace: ceph
+    port:
+      mgr:
+        default: 7000
+      metrics:
+        default: 9283
+network:
+  public: 172.17.0.1/16
+  cluster: 172.17.0.1/16
+  port:
+    mon: 6789
+    rgw: 8088
+    mgr: 7000
+deployment:
+  storage_secrets: true
+  ceph: true
+  rbd_provisioner: true
+  cephfs_provisioner: true
+  client_secrets: false
+  rgw_keystone_user_and_endpoints: false
+bootstrap:
+  enabled: true
+conf:
+  rgw_ks:
+    enabled: false
+  ceph:
+    global:
+      fsid: ${CEPH_FS_ID}
+      mon_addr: :6789
+      osd_pool_default_size: 1
+    osd:
+      osd_crush_chooseleaf_type: 0
+  pool:
+    crush:
+      tunables: ${CRUSH_TUNABLES}
+    target:
+      osd: 1
+      pg_per_osd: 100
+    default:
+      crush_rule: same_host
+    spec:
+      # RBD pool
+      - name: rbd
+        application: rbd
+        replication: 1
+        percent_total_data: 40
+      # CephFS pools
+      - name: cephfs_metadata
+        application: cephfs
+        replication: 1
+        percent_total_data: 5
+      - name: cephfs_data
+        application: cephfs
+        replication: 1
+        percent_total_data: 10
+      # RadosGW pools
+      - name: .rgw.root
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.control
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.data.root
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.gc
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.log
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.intent-log
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.meta
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.usage
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.users.keys
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.users.email
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.users.swift
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.users.uid
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.buckets.extra
+        application: rgw
+        replication: 1
+        percent_total_data: 0.1
+      - name: default.rgw.buckets.index
+        application: rgw
+        replication: 1
+        percent_total_data: 3
+      - name: default.rgw.buckets.data
+        application: rgw
+        replication: 1
+        percent_total_data: 34.8
+  storage:
+    osd:
+      - data:
+          type: directory
+          location: /var/lib/openstack-helm/ceph/osd/osd-one
+        journal:
+          type: directory
+          location: /var/lib/openstack-helm/ceph/osd/journal-one
+pod:
+  replicas:
+    mds: 1
+    mgr: 1
+    rgw: 1
+jobs:
+  ceph_defragosds:
+    # Execute every 15 minutes for gates
+    cron: "*/15 * * * *"
+    history:
+      # Number of successful job to keep
+      successJob: 1
+      # Number of failed job to keep
+      failJob: 1
+    concurrency:
+      # Skip new job if previous job still active
+      execPolicy: Forbid
+    startingDeadlineSecs: 60
+manifests:
+  cronjob_defragosds: true
+  job_bootstrap: false
+EOF
+
+tee /tmp/ceph-osd.yaml <<EOF
+pod:
+  mandatory_access_control:
+    type: apparmor
+    ceph-osd-default:
+      ceph-osd-default: localhost/docker-default
+EOF
+
+for CHART in ceph-mon ceph-client ceph-provisioners; do
+  helm upgrade --install ${CHART} ./${CHART} \
+    --namespace=ceph \
+    --values=/tmp/ceph.yaml \
+    ${OSH_INFRA_EXTRA_HELM_ARGS} \
+    ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY}
+done
+  helm upgrade --install ceph-osd ./ceph-osd \
+    --namespace=ceph \
+    --values=/tmp/ceph.yaml \
+    --values=/tmp/ceph-osd.yaml
+
+  #NOTE: Wait for deploy
+  ./tools/deployment/common/wait-for-pods.sh ceph
+
+  #NOTE: Validate deploy
+  MON_POD=$(kubectl get pods \
+    --namespace=ceph \
+    --selector="application=ceph" \
+    --selector="component=mon" \
+    --no-headers | awk '{ print $1; exit }')
+  kubectl exec -n ceph ${MON_POD} -- ceph -s
+
+#make -C ${OSH_INFRA_PATH} ceph-provisioners
+
+#NOTE: Deploy command
+: ${OSH_EXTRA_HELM_ARGS:=""}
+tee /tmp/ceph-utility-config.yaml <<EOF
+endpoints:
+  identity:
+    namespace: openstack
+  object_store:
+    namespace: ceph
+  ceph_mon:
+    namespace: ceph
+network:
+  public: 172.17.0.1/16
+  cluster: 172.17.0.1/16
+deployment:
+  storage_secrets: false
+  ceph: false
+  rbd_provisioner: false
+  cephfs_provisioner: false
+  client_secrets: true
+  rgw_keystone_user_and_endpoints: false
+bootstrap:
+  enabled: false
+conf:
+  rgw_ks:
+    enabled: true
+EOF
+
+
+helm upgrade --install ceph-utility-config ${OSH_INFRA_PATH}/ceph-provisioners \
+  --namespace=utility \
+  --values=/tmp/ceph-utility-config.yaml \
+  ${OSH_EXTRA_HELM_ARGS} \
+  ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
+
+cd  ${CURRENT_DIR}
+
+mkdir charts/ceph-utility/charts
+cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/ceph-utility/charts
+cd "${CURRENT_DIR}"/charts
+sleep 120
+
+kubectl get pods --all-namespaces
+
+kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+
+helm upgrade --install ceph-utility ./ceph-utility --namespace=$namespace
+
+sleep 180
+kubectl get pods --namespace=$namespace
+
+ceph_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep ceph |  grep 1/1  | awk '{print $1}')
+expected_profile="docker-default (enforce)"
+profile=`kubectl -n $namespace exec $ceph_pod -- cat /proc/1/attr/current`
+echo "Profile running: $profile"
+  if test "$profile" != "$expected_profile"
+  then
+    if test "$proc_name" == "pause"
+    then
+      echo "Root process (pause) can run docker-default, it's ok."
+    else
+      echo "$profile is the WRONG PROFILE!!"
+      return 1
+    fi
+  fi
