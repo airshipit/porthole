@@ -1,17 +1,17 @@
 # PostgreSQL Utility Container
 
-## Prerequisites: Deploy Airship in a Bottle(AIAB)
+## Prerequisites: Deploy Airship in a Bottle (AIAB)
 
 ## Installation
 
-1. Add the below to /etc/sudoers
+1. Add the below to `/etc/sudoers`.
 
 ```
 root    ALL=(ALL) NOPASSWD: ALL
 ubuntu  ALL=(ALL) NOPASSWD: ALL
 ```
 
-2. Install the latest versions of Git, CA Certs & bundle & Make if necessary
+2. Install the latest versions of Git, CA Certs, and Make if necessary.
 
 ```
 set -xe
@@ -27,20 +27,20 @@ curl \
 uuid-runtime
 ```
 
-3. Deploy Porthole
+3. Deploy Porthole.
 
 ```
 git clone https://opendev.org/airship/porthole
 ```
 
-4. Modify the test case test-postgresqlutility-running.yaml
+4. Modify the test case `test-postgresqlutility-running.yaml`.
 
 ## Testing
 
-Get in to the utility pod using kubectl exec.
-To perform any operation on the ucp PostgreSQL cluster use the below example.
+Get in to the utility pod using `kubectl exec`.
+To perform any operation on the ucp PostgreSQL cluster, use the below example.
 
-example:
+Example:
 
 ```
 utilscli psql -h hostname -U username -d database
@@ -56,7 +56,7 @@ Type "help" for help.
 postgresdb=# \d
                  List of relations
 Schema |       Name       |   Type   |     Owner
---------+------------------+----------+---------------
+-------+------------------+----------+---------------
 public | company          | table    | postgresadmin
 public | role             | table    | postgresadmin
 public | role_role_id_seq | sequence | postgresadmin
