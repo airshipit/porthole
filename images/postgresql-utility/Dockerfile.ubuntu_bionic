@@ -1,4 +1,4 @@
-ARG FROM=ubuntu:16.04
+ARG FROM=ubuntu:18.04
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -19,13 +19,12 @@ RUN set -xe && \
     moreutils \
     postgresql-client \
     postgresql-common \
-    python-oslo.rootwrap \
+    python3-pip \
     python3-oslo.rootwrap \
     rsyslog \
     screen \
     sudo && \
     apt-get clean -y && \
-    rm -rf /var/cache/debconf/* /var/lib/apt/lists/* \
-    /var/log/* /tmp/* /var/tmp/*
+    rm -rf /var/cache/debconf/* /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]
