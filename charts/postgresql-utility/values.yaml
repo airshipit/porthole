@@ -56,6 +56,10 @@ pod:
         default: preferredDuringSchedulingIgnoredDuringExecution
       topologyKey:
         default: kubernetes.io/hostname
+  mandatory_access_control:
+    type: apparmor
+    postgresql-utility:
+      postgresql-utility: runtime/default
   resources:
     enabled: false
     utility:
@@ -165,7 +169,6 @@ endpoints:
     port:
       registry:
         node: 5000
-
 monitoring:
   prometheus:
     enabled: true
