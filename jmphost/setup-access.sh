@@ -5,7 +5,7 @@
 # settings to remotely connect to K8S cluster through Keystone authentication mechanism.
 
 
-if [[ ${#} -lt 2 ]] ; then
+if [[ ${#} -ne 3 ]] ; then
   echo "Abort - Usage $0 <SITE NAME> <USER_ID> <NAMESPACE>"
   exit 1
 fi
@@ -27,11 +27,18 @@ function _addSourceList() {
 
 # Install dependencies once
 function _installDep () {
-
    # kubectl
    if [[ $1 == 'kubectl' ]] ; then
       echo "Installing [${1}] dependency required..."
-      apt-get install -y kubectl
+      read -p "Enter kubectl version in the form of vX.X.X or enter '1' to install latest:" KUBECTL_VERSION
+
+      if [ "$KUBECTL_VERSION" != "1" ]; then
+         curl -SL https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
+               -o /usr/bin/kubectl
+         chmod +x /usr/bin/kubectl
+      else
+         apt-get install -y kubectl
+      fi
    fi
 }
 
