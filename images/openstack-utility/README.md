@@ -1,24 +1,30 @@
-# Openstack-utility Container
+# OpenStack-utility Container
 
-Utility container for Openstack shall enable Operations to trigger the command set for
-Compute, Network, Identity, Image, Block Storage, Queueing service APIs together from
-within a single shell with a uniform command structure. The access to Openstack shall
-be controlled through Openstack RBAC role assigned to the user. User will have to set
-the Openstack environment (openrc) in utility container to access the Openstack CLIs.
-The generic environment file will be placed in Utility container with common setting except
-username, password and project_ID. User needs to pass such parameters through command options.
+The utility container for OpenStack shall enable Operations to access the
+command set for Compute, Network, Identity, Image, Block Storage, and
+Queueing service APIs together from within a single shell with a uniform
+command structure. The access to OpenStack shall be controlled through an
+OpenStack RBAC role assigned to the user. The user will have to set
+the OpenStack environment (openrc) in the utility container to access the
+OpenStack CLIs. The generic environment file will be placed in the utility
+container with common settings except username, password, and project_ID.
+The user needs to specify these parameters using command options.
 
 ## Usage
 
-1. Get in to the utility pod using kubectl exec.
-   To perform any operation use the below example.
-   Please be ready with password for accessing below cli commands.
+Get into the utility pod using `kubectl exec`.
+Perform an operation as in the following example.
+Please be ready with your password for accessing the CLI commands.
 
-   - kubectl exec -it <POD_NAME> -n utility /bin/bash
+```
+   kubectl exec -it <POD_NAME> -n utility /bin/bash
+```
 
-example:
+Example:
 
+```bash
    utilscli openstack server list --os-username <USER_NAME> --os-domain-name <DOMAIN_NAME> \
             --os-project-name <PROJECT_NAME
    utilscli openstack user list --os-username <USER_NAME> --os-domain-name <DOMAIN_NAME> \
             --os-project-name <PROJECT_NAME
+```

@@ -1,42 +1,55 @@
 # Ceph-utility Container
 
-This CEPH utility container will help the Operation user to check the state/stats
-of Ceph resources in the K8s Cluster. This utility container will help to perform
-restricted admin level activities without exposing credentials/Keyring to user in
-utility container.
+The Ceph utility container enables Operations to check the state/stats
+of Ceph resources in the Kubernetes cluster. This utility container enables
+Operations to perform restricted administrative activities without exposing
+the credentials or keyring.
 
 ## Generic Docker Makefile
 
-
-This is a generic make and dockerfile for ceph utility container.
-This can be used to create docker images using different ceph releases and ubuntu releases
+This is a generic make and dockerfile for the Ceph utility container.
+This can be used to create docker images using different Ceph releases and
+Ubuntu releases
 
 ## Usage
 
-make CEPH_RELEASE=<release_name> UBUNTU_RELEASE=<release_name>
+```bash
+   make CEPH_RELEASE=<release_name> UBUNTU_RELEASE=<release_name>
+```
 
-example:
+Example:
 
-1. Create docker image for ceph luminous release on ubuntu xenial (16.04)
+1. Create a docker image for the Ceph Luminous release on Ubuntu Xenial (16.04).
 
-   make CEPH_RELEASE=luminous UBUNTU_RELEASE=xenial
+```bash
+       make CEPH_RELEASE=luminous UBUNTU_RELEASE=xenial
+```
 
-2. Create docker image for ceph mimic release on ubuntu xenial (16.04)
+2. Create a docker image for the Ceph Mimic release on Ubuntu Xenial (16.04).
 
-   make CEPH_RELEASE=mimic UBUNTU_RELEASE=xenial
+```bash
+       make CEPH_RELEASE=mimic UBUNTU_RELEASE=xenial
+```
 
-3. Create docker image for ceph luminous release on ubuntu bionic (18.04)
+3. Create a docker image for the Ceph Luminous release on Ubuntu Bionic (18.04).
 
-   make CEPH_RELEASE=luminous UBUNTU_RELEASE=bionic
+```bash
+       make CEPH_RELEASE=luminous UBUNTU_RELEASE=bionic
+```
 
-4. Create docker image for ceph mimic release on ubuntu bionic (18.04)
+4. Create a docker image for the Ceph Mimic release on Ubuntu Bionic (18.04).
 
-   make CEPH_RELEASE=mimic UBUNTU_RELEASE=bionic
+```bash
+       make CEPH_RELEASE=mimic UBUNTU_RELEASE=bionic
+```
 
-5. Get in to the utility pod using kubectl exec.
-   To perform any operation on the ceph cluster use the below example.
+5. Get into the utility pod using `kubectl exec`.
+   Perform an operation on the Ceph cluster as in the following example.
 
-example:
+Example:
+
+```
    utilscli ceph osd tree
    utilscli rbd ls
    utilscli rados lspools
+```

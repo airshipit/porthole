@@ -1,30 +1,38 @@
 # Compute-utility Container
 
-This container shall allow access to services running on the each compute node.
-Support personnel should be able to get the appropriate data from this utility container
-by specifying the node and respective service command within the local cluster.
+This container enables Operations personnel to access services running on
+the compute nodes. Operations personnel can get the appropriate data from this
+utility container by specifying the node and respective service command within
+the local cluster.
 
 ## Usage
 
-1. Get in to the utility pod using kubectl exec. To perform any operation use the below example.
+1. Get into the utility pod using `kubectl exec`. Perform an operation as in
+the following example.
 
-   - kubectl exec -it <POD_NAME> -n utility /bin/bash
+```
+      kubectl exec -it <POD_NAME> -n utility /bin/bash
+```
 
-2. Run the utilscli with commands formatted:
+2. Use the following syntax to run commands.
 
-   - utilscli <client-name> <server-hostname> <command> <options>
+```
+      utilscli <client-name> <server-hostname> <command> <options>
+```
 
-example:
+Example:
 
-   - utilscli libvirt-client mtn16r001c002 virsh list
+```
+      utilscli libvirt-client node42 virsh list
+```
 
+Accepted client names are:
 
-Accepted client-names are:
- libvirt-client
- ovs-client
- ipmi-client
- perccli-client
- numa-client
- sos-client
+* libvirt-client
+* ovs-client
+* ipmi-client
+* perccli-client
+* numa-client
+* sos-client
 
 Commands for each client vary with the client.

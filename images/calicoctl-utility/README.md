@@ -1,42 +1,53 @@
 # Calicoctl-utility Container
 
-<<<<<<< HEAD
-This container shall allow access to calico pod running on every node.
-Support personnel should be able to get the appropriate data from this utility container
-by specifying the node and respective service command within the local cluster.
+This container shall allow access to the Calico pod running on every node.
+Operations personnel should be able to get the appropriate data from this
+utility container by specifying the node and respective service command
+within the local cluster.
 
 ## Generic Docker Makefile
 
-This is a generic make and dockerfile for calicoctl utility container, which
-can be used to create docker images using different calico releases.
+This is a generic make and dockerfile for the calicoctl utility container,
+which can be used to create docker images using different calico releases.
 
-## Usage
+### Make Syntax
 
-make IMAGE_TAG=<calicoctl_version>
+```bash
+   make IMAGE_TAG=<calicoctl_version>
+```
 
 Example:
 
-1. Create docker image for calicoctl release v3.4.0
+Create a docker image for calicoctl release v3.4.0.
 
+```bash
    make IMAGE_TAG=v3.4.0
-=======
-Utility container for Calicoctl shall enable Operations to trigger the command set for
-Network APIs together from within a single shell with a uniform command structure. The
-access to network-Calico shall be controlled through RBAC role assigned to the user.
+```
 
-## Usage
+## Using the Utility Container
 
- Get in to the utility pod using kubectl exec.
- To perform any operation use the below example.
+The utility container for calicoctl shall enable Operations to access the
+command set for network APIs together from within a single shell with a
+uniform command structure. The access to network-Calico shall be controlled
+through an RBAC role assigned to the user.
 
-  - kubectl exec -it <POD_NAME> -n utility /bin/bash
+### Usage
+
+Get into the utility pod using `kubectl exec`.
+Execute an operation as in the following example.
+
+```
+   kubectl exec -it <POD_NAME> -n utility /bin/bash
+```
 
 Example:
 
-1. utilscli calicoctl get nodes
+```bash
+   utilscli calicoctl get nodes
    NAME
    bionic
 
-2. utilscli calicoctl version
+   utilscli calicoctl version
    Client Version:    v3.4.4
    Git commit:        e3ecd927
+```
