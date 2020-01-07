@@ -7,6 +7,7 @@ set -xe
 cd charts
 
 make mysqlclient-utility
+kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 
 helm  upgrade --install mysqlclient-utility ./mysqlclient-utility  --namespace=utility
 

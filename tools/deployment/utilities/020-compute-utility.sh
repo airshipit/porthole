@@ -7,7 +7,7 @@ set -xe
 cd charts
 
 make compute-utility
-
+kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 helm  upgrade --install compute-utility ./compute-utility --namespace=utility
 
 #NOTE: Validate Deployment info

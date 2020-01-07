@@ -7,6 +7,7 @@ set -xe
 cd charts
 
 make etcdctl-utility
+kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 
 helm  upgrade --install etcdctl-utility ./etcdctl-utility --namespace=utility
 
