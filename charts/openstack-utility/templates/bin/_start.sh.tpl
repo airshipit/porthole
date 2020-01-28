@@ -23,7 +23,7 @@ root logger by oslo-rootwrap module, imported in _openstack-utility-rootwrap.tpl
 These lines will get rid of duplicate logs, generated because of the formatter
 attached by oslo-rootwrap.
 */}}
-sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
-sed -i "/handler.setFormatter/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
-sed -i "/os.path.basename/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
-sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py

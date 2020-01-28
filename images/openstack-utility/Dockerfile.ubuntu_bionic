@@ -16,15 +16,17 @@ RUN set -xe && \
     apt-get update && \
     apt-get install -y \
       bash \
+      sudo \
       rsyslog \
       python3 \
-      python3-pip \
-      python3-oslo.rootwrap \
-      python3-openstackclient \
-      python3-glanceclient \
-      python3-novaclient \
-      python3-neutronclient \
-      python3-cinderclient && \
+      python3-pip &&\
+    pip3 install \
+      oslo.rootwrap==5.8.0 \
+      python-openstackclient==3.18.1 \
+      python-glanceclient==2.16.0 \
+      python-novaclient==13.0.2 \
+      python-neutronclient==6.12.0 \
+      python-cinderclient==4.2.1 && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
