@@ -16,22 +16,16 @@
 
 set -xe
 namespace="utility"
-CURRENT_DIR="$(pwd)"
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-mkdir charts/mysqlclient-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/mysqlclient-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 120
-
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+helm dependency update charts/mysqlclient-utility
+cd charts
 helm upgrade --install mysqlclient-utility ./mysqlclient-utility --namespace=$namespace
 sleep 180
 kubectl get pods --namespace=$namespace
 
-com_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep mysqlclient | awk '{print $1}')
+mysql_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep mysqlclient | awk '{print $1}')
 expected_profile="docker-default (enforce)"
-profile=`kubectl -n $namespace exec $com_pod -- cat /proc/1/attr/current`
+profile=`kubectl -n $namespace exec $mysql_pod -- cat /proc/1/attr/current`
 echo "Profile running: $profile"
   if test "$profile" != "$expected_profile"
   then

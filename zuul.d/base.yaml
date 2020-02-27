@@ -81,6 +81,26 @@
     timeout: 300
     nodeset: airship-porthole-single-node
 
+- job:
+    name: airship-porthole-apparmor
+    description: Checks Pods for Apparmor profile
+    timeout: 7200
+    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-single-node
+    vars:
+      gate_scripts:
+         - ./tools/deployment/apparmor/000-install-packages.sh
+         - ./tools/deployment/apparmor/001-setup-apparmor-profiles.sh
+         - ./tools/deployment/apparmor/002-deploy-k8s.sh
+         - ./tools/deployment/apparmor/005-calicoctl-utility.sh
+         - ./tools/deployment/apparmor/010-ceph-utility.sh
+         - ./tools/deployment/apparmor/030-etcdctl-utility.sh
+         - ./tools/deployment/apparmor/040-mysqlclient-utility.sh
+         - ./tools/deployment/apparmor/050-openstack-utility.sh
+         - ./tools/deployment/apparmor/060-postgresql-utility.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
 - secret:
     name: quay_credentials
     data:
@@ -106,21 +126,3 @@
           JXcwlGoK6kvXmYaG2c7yEiH2xNtTzVTai10fsalubQWR4FTmJA5LU9+HatHBa46XLy4gS
           vMHs2uJudmxhqLIhs5Er248FVjfxw7le5dPun3ir4J7Mjgypu5y8eLCMZAFIwpeqlJrVU
           uih8ByaTlSEh6FBzle7Hb330RjSztC4pX6xiNAmtkpxhF2rEEFS66B/ixwCphQ=
-
-- job:
-    name: airship-porthole-apparmor
-    description: Checks Pods for Apparmor profile
-    timeout: 7200
-    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-    nodeset: airship-porthole-single-node
-    vars:
-      gate_scripts:
-         - ./tools/deployment/apparmor/000-install-packages.sh
-         - ./tools/deployment/apparmor/001-setup-apparmor-profiles.sh
-         - ./tools/deployment/apparmor/002-deploy-k8s.sh
-         - ./tools/deployment/apparmor/005-calicoctl-utility.sh
-         - ./tools/deployment/apparmor/010-ceph-utility.sh
-         - ./tools/deployment/apparmor/030-etcdctl-utility.sh
-         - ./tools/deployment/apparmor/040-mysqlclient-utility.sh
-         - ./tools/deployment/apparmor/050-openstack-utility.sh
-         - ./tools/deployment/apparmor/060-postgresql-utility.sh

@@ -1,11 +1,9 @@
 #!/bin/bash
 set -xe
-CURRENT_DIR="$(pwd)"
-cd "${CURRENT_DIR}"/charts
-
-make etcdctl-utility
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 
+helm dependency update charts/calicoctl-utility
+cd charts
 helm  upgrade --install etcdctl-utility ./etcdctl-utility --namespace=utility
 
 #NOTE: Validate Deployment info

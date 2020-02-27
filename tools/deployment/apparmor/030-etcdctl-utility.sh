@@ -16,15 +16,9 @@
 
 set -xe
 namespace="utility"
-CURRENT_DIR="$(pwd)"
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-mkdir charts/etcdctl-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/etcdctl-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 60
-
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+helm dependency update charts/etcdctl-utility
+cd charts
 helm upgrade --install etcdctl-utility ./etcdctl-utility --namespace=$namespace
 sleep 180
 kubectl get pods --namespace=$namespace

@@ -16,17 +16,12 @@
 
 set -xe
 namespace="utility"
-CURRENT_DIR="$(pwd)"
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-mkdir charts/compute-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/compute-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 120
-
 kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
+helm dependency update charts/compute-utility
+cd charts
 helm upgrade --install compute-utility ./compute-utility --namespace=$namespace
 sleep 180
+
 kubectl get pods --namespace=$namespace
 
 com_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep compute | awk '{print $1}')

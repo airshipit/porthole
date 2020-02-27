@@ -1,9 +1,10 @@
 #!/bin/bash
 set -xe
-CURRENT_DIR="$(pwd)"
-cd "${CURRENT_DIR}"/charts
 
-make compute-utility
+kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+
+helm dependency update charts/compute-utility
+cd charts
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 helm  upgrade --install compute-utility ./compute-utility --namespace=utility
 

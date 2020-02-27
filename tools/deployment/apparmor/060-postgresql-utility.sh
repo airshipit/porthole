@@ -16,15 +16,10 @@
 
 set -xe
 namespace="utility"
-CURRENT_DIR="$(pwd)"
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-mkdir charts/postgresql-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/postgresql-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 60
-
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+
+helm dependency update charts/postgresql-utility
+cd charts
 helm upgrade --install postgresql-utility ./postgresql-utility --namespace=$namespace
 sleep 180
 kubectl get pods --namespace=$namespace

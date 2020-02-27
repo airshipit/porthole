@@ -1,7 +1,8 @@
 #!/bin/bash
 set -xe
-
 kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
+
+helm dependency update charts/calicoctl-utility
 cd charts
 helm  upgrade --install calicoctl-utility ./calicoctl-utility --namespace=utility
 

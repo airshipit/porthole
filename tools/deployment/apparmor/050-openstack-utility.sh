@@ -18,17 +18,8 @@ set -xe
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 namespace="utility"
 
-cd /tmp
-git clone https://git.openstack.org/openstack/openstack-helm-infra.git || true
-cd openstack-helm-infra
-git reset --hard 200b5e902b3a176fbfbe669b6a10a254c9b50f5d
-make helm-toolkit
-
-cd /home/zuul/src/opendev.org/airship/porthole/charts/openstack-utility/
-mkdir charts
-cp -r /tmp/openstack-helm-infra/helm-toolkit-0.1.0.tgz /home/zuul/src/opendev.org/airship/porthole/charts/openstack-utility/charts
-cd /home/zuul/src/opendev.org/airship/porthole/charts
-
+helm dependency update charts/openstack-utility
+cd charts
 kubectl get pods --all-namespaces
 sleep 120
 

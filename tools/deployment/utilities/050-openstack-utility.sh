@@ -1,13 +1,9 @@
 #!/bin/bash
 set -xe
 
-#NOTE: Lint and package chart
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-cd charts
-
-make openstack-utility
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+helm dependency update charts/calicoctl-utility
+cd charts
 helm  upgrade --install openstack-utility ./openstack-utility --namespace=utility
 
 #NOTE: Validate Deployment info

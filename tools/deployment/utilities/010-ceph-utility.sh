@@ -3,7 +3,6 @@ set -xe
 
 #NOTE: Lint and package chart
 : ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
-#: ${PORTHOLE_PATH}:=""
 make -C ${OSH_INFRA_PATH} ceph-provisioners
 
 #NOTE: Deploy command
@@ -40,9 +39,8 @@ helm upgrade --install ceph-utility-config ${OSH_INFRA_PATH}/ceph-provisioners \
 
 #NOTE: Wait for deploy
 ./${OSH_INFRA_PATH}/tools/deployment/common/wait-for-pods.sh utility
-
+helm dependency update charts/ceph-utility
 cd charts
-make ceph-utility
 helm upgrade --install ceph-utility ./ceph-utility \
   --namespace=utility
 

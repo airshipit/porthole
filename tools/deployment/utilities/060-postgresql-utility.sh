@@ -1,11 +1,9 @@
 #!/bin/bash
 
 set -xe
-CURRENT_DIR="$(pwd)"
-cd "${CURRENT_DIR}"/charts
-
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
-
+helm dependency update charts/postgresql-utility
+cd charts
 helm upgrade --install postgresql-utility ./postgresql-utility --namespace=utility
 sleep 60
 

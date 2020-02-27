@@ -1,9 +1,6 @@
 #!/bin/bash
 set -xe
 namespace="utility"
-CURRENT_DIR="$(pwd)"
-kubectl get pods --all-namespaces
-
 : ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
 cd ${OSH_INFRA_PATH}
 
@@ -210,7 +207,6 @@ done
     --no-headers | awk '{ print $1; exit }')
   kubectl exec -n ceph ${MON_POD} -- ceph -s
 
-#make -C ${OSH_INFRA_PATH} ceph-provisioners
 
 #NOTE: Deploy command
 : ${OSH_EXTRA_HELM_ARGS:=""}
@@ -246,16 +242,11 @@ helm upgrade --install ceph-utility-config ${OSH_INFRA_PATH}/ceph-provisioners \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
-cd  ${CURRENT_DIR}
-
-mkdir charts/ceph-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/ceph-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 120
-
-kubectl get pods --all-namespaces
-
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+pwd
+cd ../porthole
+helm dependency update charts/ceph-utility
+cd charts
 
 helm upgrade --install ceph-utility ./ceph-utility --namespace=$namespace
 

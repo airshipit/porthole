@@ -15,19 +15,13 @@
 #    under the License.
 
 set -xe
-namespace="utility"
-CURRENT_DIR="$(pwd)"
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
-
-mkdir charts/calicoctl-utility/charts
-cp -r ${OSH_INFRA_PATH}/helm-toolkit-0.1.0.tgz  ${CURRENT_DIR}/charts/calicoctl-utility/charts
-cd "${CURRENT_DIR}"/charts
-sleep 120
-
+namespace=utility
 kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
+helm dependency update charts/calicoctl-utility
+cd charts
+
 helm upgrade --install calicoctl-utility ./calicoctl-utility --namespace=$namespace
 sleep 180
-kubectl get pods --namespace=$namespace
 
 cal_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep calico | awk '{print $1}')
 expected_profile="docker-default (enforce)"
