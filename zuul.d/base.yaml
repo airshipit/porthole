@@ -86,6 +86,7 @@
     description: Checks Pods for Apparmor profile
     timeout: 7200
     run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    post-run: tools/gate/playbooks/airship-porthole-collect-logs.yaml
     nodeset: airship-porthole-single-node
     vars:
       gate_scripts:
