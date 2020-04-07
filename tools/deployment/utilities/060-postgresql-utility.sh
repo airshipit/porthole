@@ -8,4 +8,4 @@ helm upgrade --install postgresql-utility ./postgresql-utility --namespace=utili
 sleep 60
 
 #NOTE: Validate Deployment info
-kubectl get pods --all-namespaces | grep postgresql-utility
+kubectl get pods -n utility | grep postgresql-utility

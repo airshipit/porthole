@@ -36,29 +36,33 @@ The recommended minimum system requirements for a full deployment are:
 1. To Deploy Utility containers, Please run required scripts
 
         cd porthole
+2. Deploy `Calico-utility`.
+         ./tools/deployment/utilities/005-calicoctl-utility.sh
 
-2. Deploy `Ceph-utility`.
+3. Deploy `Ceph-utility`.
 
         ./tools/deployment/utilities/010-ceph-utility.sh
 
-3. Deploy `Compute-utility`.
+4. Deploy `Compute-utility`.
 
         ./tools/deployment/utilities/020-compute-utility.sh
 
-4. Deploy `Etcdctl-utility`.
+5. Deploy `Etcdctl-utility`.
 
         ./tools/deployment/utilities/030-etcdctl-utility.sh
 
-5. Deploy `Mysqlclient-utility`.
+6. Deploy `Mysqlclient-utility`.
 
         ./tools/deployment/utilities/040-Mysqlclient-utility.sh
 
-6. Deploy `Openstack-utility`.
+7. Deploy `Openstack-utility`.
 
         ./tools/deployment/utilities/050-openstack-utility.sh
 
+8. Deploy `Postgresql-utility'.
+        ./tools/deployment/utilities/060-postgresql-utility.sh
+
 ## NOTE
 
-The PostgreSQL utility container is deployed as a part of Airship-in-a-Bottle (AIAB).
-To deploy and test `postgresql-utility`, see the
-[PostgreSQL README](https://opendev.org/airship/porthole/src/branch/master/images/postgresql-utility/README.md).
+The PostgreSQL utility container needed Postgresql DB  Pods for Testing. Please follow below Link.
+`[PostgreSQL README](https://opendev.org/airship/porthole/src/branch/master/images/postgresql-utility/README.md).`

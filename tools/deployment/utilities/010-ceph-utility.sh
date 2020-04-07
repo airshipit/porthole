@@ -2,7 +2,7 @@
 set -xe
 
 #NOTE: Lint and package chart
-: ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
+: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
 make -C ${OSH_INFRA_PATH} ceph-provisioners
 
 #NOTE: Deploy command
@@ -48,3 +48,4 @@ helm upgrade --install ceph-utility ./ceph-utility \
 kubectl get -n utility jobs
 kubectl get -n utility secrets
 kubectl get -n utility configmaps
+kubectl get -n utility pods | grep ceph-utility

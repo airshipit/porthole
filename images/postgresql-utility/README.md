@@ -1,44 +1,32 @@
 # PostgreSQL Utility Container
 
-## Prerequisites: Deploy Airship in a Bottle (AIAB)
-
-Deploy the [Airship in a Bottle environment](https://opendev.org/airship/treasuremap/src/branch/master/tools/deployment/aiab)
-
+Since this needs postgresql Pods, Deploy postgres pods with Ceph (For Secrets) in osh-infra namespace
 
 ## Installation
 
-1. Add the below to `/etc/sudoers`.
+Install Postgresql Pods in OSH with below steps:
 
-```
-root    ALL=(ALL) NOPASSWD: ALL
-ubuntu  ALL=(ALL) NOPASSWD: ALL
-```
-
-2. Install the latest versions of Git, CA Certs, and Make if necessary.
+Run this below command from porthole
 
 ```
 set -xe
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 
-sudo apt-get update
-sudo apt-get install --no-install-recommends -y \
-ca-certificates \
-git \
-make \
-jq \
-nmap \
-curl \
-uuid-runtime
-```
-
-3. Deploy Porthole.
+cd "${OSH_INFRA_PATH}"
+bash -c "./tools/deployment/osh-infra-logging/020-ceph.sh"
+bash -c "./tools/deployment/osh-infra-logging/025-ceph-ns-activate.sh"
+bash -c "./tools/deployment/osh-infra-monitoring/130-postgresql.sh"
 
 ```
-git clone https://opendev.org/airship/porthole
-```
-
-4. Modify the test case `test-postgresqlutility-running.yaml`.
 
 ## Testing
+
+Get Hostname/Service for postgresql pods
+
+```
+kubectl get services -n osh-infra | grep postgresql
+
+```
 
 Get in to the utility pod using `kubectl exec`.
 To perform any operation on the ucp PostgreSQL cluster, use the below example.
@@ -50,21 +38,23 @@ utilscli psql -h hostname -U username -d database
 psql -h hostaddress -U username -p port --password password
 
 root@ubuntu:~# kubectl exec -it postgresql-655989696f-79246 -n utility /bin/bash
-nobody@postgresql-655989696f-79246:/$ utilscli psql -h <hostaddress> -U postgresadmin -p <portnumber> --password <password>
-Password for user postgresadmin:
-WARNING: psql major version 9.5, server major version 10.
-        Some psql features might not work.
+nobody@postgresql-utility-7bc947c85d-gvwpz:/$ utilscli psql -h 10.106.253.127 -p 5432 -U postgres
+Password for user postgres:
+psql (10.12 (Ubuntu 10.12-0ubuntu0.18.04.1), server 9.5.19)
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
 Type "help" for help.
 
-postgresdb=# \d
-                 List of relations
-Schema |       Name       |   Type   |     Owner
--------+------------------+----------+---------------
-public | company          | table    | postgresadmin
-public | role             | table    | postgresadmin
-public | role_role_id_seq | sequence | postgresadmin
-public | test             | table    | postgresadmin
-(4 rows)
+
+postgres=# \l
+ maasdb    | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =Tc/postgres         +
+           |          |          |             |             | postgres=CTc/postgres+
+           |          |          |             |             | maas=CTc/postgres
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |
+ template0 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 | =c/postgres          +
+           |          |          |             |             | postgres=CTc/postgres
+
 
 postgresdb=#
 ```

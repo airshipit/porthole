@@ -9,4 +9,4 @@ helm  upgrade --install calicoctl-utility ./calicoctl-utility --namespace=utilit
 #NOTE: Validate Deployment info
 kubectl get -n utility secrets
 kubectl get -n utility configmaps
-kubectl get pods -n utility
+kubectl get pods -n utility | grep calicoctl-utility
