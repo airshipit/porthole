@@ -25,6 +25,8 @@
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
         - airship-porthole-deploy
+        - airship-porthole-unit-tests
+        - airship-porthole-feature-tests
 
     gate:
       jobs:
@@ -39,6 +41,8 @@
         - airship-porthole-deploy
         - airship-porthole-apparmor:
             voting: false
+        - airship-porthole-unit-tests
+        - airship-porthole-feature-tests
 
     experimental:
       jobs:
@@ -127,6 +131,56 @@
          - ./tools/deployment/apparmor/040-mysqlclient-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh
          - ./tools/deployment/apparmor/060-postgresql-utility.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
+    name: airship-porthole-unit-tests
+    description: |
+      Executes unit tests
+    dependencies:
+      - airship-porthole-deploy
+    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-single-node
+    timeout: 7200
+    post-run: tools/gate/playbooks/make-unit-tests.yaml
+    vars:
+      gate_scripts:
+         - ./tools/deployment/utilities/000-install-packages.sh
+         - ./tools/deployment/utilities/001-setup-apparmor-profiles.sh
+         - ./tools/deployment/utilities/002-deploy-k8s.sh
+         - ./tools/deployment/utilities/005-calicoctl-utility.sh
+         - ./tools/deployment/utilities/010-ceph-utility.sh
+         - ./tools/deployment/utilities/020-compute-utility.sh
+         - ./tools/deployment/utilities/030-etcdctl-utility.sh
+         - ./tools/deployment/utilities/040-mysqlclient-utility.sh
+         - ./tools/deployment/utilities/050-openstack-utility.sh
+         - ./tools/deployment/utilities/060-postgresql-utility.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
+    name: airship-porthole-feature-tests
+    description: |
+      Executes feature tests
+    dependencies:
+      - airship-porthole-deploy
+    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-single-node
+    timeout: 7200
+    post-run: tools/gate/playbooks/make-feature-tests.yaml
+    vars:
+      gate_scripts:
+         - ./tools/deployment/utilities/000-install-packages.sh
+         - ./tools/deployment/utilities/001-setup-apparmor-profiles.sh
+         - ./tools/deployment/utilities/002-deploy-k8s.sh
+         - ./tools/deployment/utilities/005-calicoctl-utility.sh
+         - ./tools/deployment/utilities/010-ceph-utility.sh
+         - ./tools/deployment/utilities/020-compute-utility.sh
+         - ./tools/deployment/utilities/030-etcdctl-utility.sh
+         - ./tools/deployment/utilities/040-mysqlclient-utility.sh
+         - ./tools/deployment/utilities/050-openstack-utility.sh
+         - ./tools/deployment/utilities/060-postgresql-utility.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
 
