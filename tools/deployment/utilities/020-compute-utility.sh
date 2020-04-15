@@ -5,7 +5,6 @@ kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 
 helm dependency update charts/compute-utility
 cd charts
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 helm  upgrade --install compute-utility ./compute-utility --namespace=utility
 
 #NOTE: Validate Deployment info

@@ -2,7 +2,7 @@
 set -xe
 
 #NOTE: Lint and package chart
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
+: ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
 make -C ${OSH_INFRA_PATH} ceph-provisioners
 
 #NOTE: Deploy command
@@ -31,6 +31,7 @@ conf:
   rgw_ks:
     enabled: true
 EOF
+# Deploy Ceph Dependency Pods
 helm upgrade --install ceph-utility-config ${OSH_INFRA_PATH}/ceph-provisioners \
   --namespace=utility \
   --values=/tmp/ceph-utility-config.yaml \

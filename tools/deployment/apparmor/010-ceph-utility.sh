@@ -1,8 +1,10 @@
 #!/bin/bash
 set -xe
 namespace="utility"
+CURRENT_DIR="$(pwd)"
+
 : ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
-cd ${OSH_INFRA_PATH}
+cd "${OSH_INFRA_PATH}"
 
 for CHART in ceph-mon ceph-client ceph-provisioners; do
   make "${CHART}"
@@ -176,14 +178,6 @@ manifests:
   job_bootstrap: false
 EOF
 
-tee /tmp/ceph-osd.yaml <<EOF
-pod:
-  mandatory_access_control:
-    type: apparmor
-    ceph-osd-default:
-      ceph-osd-default: localhost/docker-default
-EOF
-
 for CHART in ceph-mon ceph-client ceph-provisioners; do
   helm upgrade --install ${CHART} ./${CHART} \
     --namespace=ceph \
@@ -193,8 +187,7 @@ for CHART in ceph-mon ceph-client ceph-provisioners; do
 done
   helm upgrade --install ceph-osd ./ceph-osd \
     --namespace=ceph \
-    --values=/tmp/ceph.yaml \
-    --values=/tmp/ceph-osd.yaml
+    --values=/tmp/ceph.yaml
 
   #NOTE: Wait for deploy
   ./tools/deployment/common/wait-for-pods.sh ceph
@@ -236,22 +229,23 @@ conf:
 EOF
 
 
-helm upgrade --install ceph-utility-config ${OSH_INFRA_PATH}/ceph-provisioners \
+helm upgrade --install ceph-utility-config ./ceph-provisioners \
   --namespace=utility \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
+#Deploy Ceph-Utility
+
 kubectl label nodes --all openstack-helm-node-class=primary --overwrite
-pwd
-cd ../porthole
+cd ${CURRENT_DIR}
 helm dependency update charts/ceph-utility
-cd charts
 
-helm upgrade --install ceph-utility ./ceph-utility --namespace=$namespace
-
+helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
 sleep 180
 kubectl get pods --namespace=$namespace
+
+#Validate Apparmor
 
 ceph_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep ceph |  grep 1/1  | awk '{print $1}')
 expected_profile="docker-default (enforce)"
