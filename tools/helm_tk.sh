@@ -58,7 +58,7 @@ if ${HELM} repo list | grep -q "^stable" ; then
     ${HELM} repo remove stable
 fi
 
-${HELM} repo add local http://127.0.0.1:8879/charts
+${HELM} repo add local http://localhost:8879/charts
 
 
 #OSH Makefile is bugged, so ensure helm is in the path
