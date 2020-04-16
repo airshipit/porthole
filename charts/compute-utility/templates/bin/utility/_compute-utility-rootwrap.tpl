@@ -29,8 +29,7 @@ facility = {{ .Values.conf.computerootwrapconf.DEFAULT.syslog_log_facility | quo
 if "AUSER" in os.environ:
     user_id = os.environ["AUSER"]
 elif {{ .Values.conf.utility.always_log_user | quote }} == 'true':
-    os.environ["AUSER"] = "development site" #getpass.getuser()
-    user_id = os.environ["AUSER"]
+    user_id = 'development site'
 else:
     print("No username set in AUSER environment variable, for security reasons access restricted from connecting to container.")
     exit()
