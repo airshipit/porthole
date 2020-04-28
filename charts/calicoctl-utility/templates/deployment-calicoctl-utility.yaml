@@ -95,24 +95,24 @@ apiVersion: apps/v1
 metadata:
   name: {{ printf "%s" $envAll.Release.Name }}
   labels:
-{{ tuple $envAll "utility" "calicoctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
+{{ tuple $envAll "calico" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 4 }}
 spec:
   replicas: {{ .Values.pod.replicas.utility }}
   selector:
     matchLabels:
-{{ tuple $envAll "utility" "calicoctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
+{{ tuple $envAll "calico" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 6 }}
   template:
     metadata:
       name: {{ printf "%s" $envAll.Release.Name }}
       labels:
-{{ tuple $envAll "utility" "calicoctl-util" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
+{{ tuple $envAll "calico" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
       annotations:
         configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
         configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
 {{ dict "envAll" $envAll "podName" "calicoctl-utility" "containerNames" (list "calicoctl-utility") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
 {{ tuple . | include "helm-toolkit.snippets.release_uuid"  | indent 8}}
     spec:
-{{ dict "envAll" $envAll "application" "calicoctl_util" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
+{{ dict "envAll" $envAll "application" "calico" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       serviceAccountName: {{ $serviceAccountName }}
       nodeSelector:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
@@ -120,7 +120,7 @@ spec:
         - name: calicoctl-utility
 {{ tuple $envAll "calicoctl_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.calicoctl_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
-{{ dict "envAll" $envAll "application" "calicoctl_util" "container" "calicoctl_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
+{{ dict "envAll" $envAll "application" "calico" "container" "calicoctl_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - "bootstrap.sh"
           readinessProbe:

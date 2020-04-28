@@ -17,10 +17,6 @@
 # Declare variables to be passed into your templates.
 # name: value
 
-
-deployment:
-  etcdctl: true
-
 release_group: null
 
 images:
@@ -45,7 +41,7 @@ labels:
 
 pod:
   security_context:
-    etcdctl_util:
+    etcd:
       pod:
         runAsUser: 65534
       container:
@@ -130,7 +126,6 @@ conf:
     endpoints: kubernetes-etcd.kube-system.svc.cluster.local
     etcdctl_api: "3"
   utility:
-    location_corridor: c1
     # Set to true for development sites,
     # Set to false otherwise
     always_log_user: true
