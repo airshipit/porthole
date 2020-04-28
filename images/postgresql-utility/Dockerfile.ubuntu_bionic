@@ -21,6 +21,8 @@ RUN set -xe && \
     postgresql-common \
     python3-pip \
     python3-oslo.rootwrap \
+    python3-openstackclient \
+    python3-swiftclient \
     rsyslog \
     screen \
     sudo && \
