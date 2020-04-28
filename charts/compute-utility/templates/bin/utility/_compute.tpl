@@ -37,6 +37,10 @@ prefix="/tmp/"
 suffix="-client"
 COMP1=${COMPONENT#"$prefix"}
 COMP=${COMP1%"$suffix"}
+# ovs needs to be narrowed down a bit
+if [ "$COMP" == "ovs"]; then
+   COMP = "neutron-ovs-agent"
+fi
 
 # find the pod for the component and hostname
 POD=$(kubectl get pod -n openstack -o wide | grep -i $COMP | grep $HOSTNAME | awk '{print $1}')
