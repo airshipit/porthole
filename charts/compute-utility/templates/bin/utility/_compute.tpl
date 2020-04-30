@@ -38,7 +38,7 @@ suffix="-client"
 COMP1=${COMPONENT#"$prefix"}
 COMP=${COMP1%"$suffix"}
 # ovs needs to be narrowed down a bit
-if [ "$COMP" == "ovs"]; then
+if [ "$COMP" == "ovs" ]; then
    COMP = "neutron-ovs-agent"
 fi
 
