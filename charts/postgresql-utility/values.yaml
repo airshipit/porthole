@@ -17,9 +17,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-deployment:
-  postgresql: true
-
 release_group: null
 
 images:

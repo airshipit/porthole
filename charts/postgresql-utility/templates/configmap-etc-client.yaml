@@ -1,4 +1,4 @@
-{{- if or (.Values.deployment.postgresql) (.Values.deployment.client_secrets) }}
+{{- if .Values.manifests.configmap_etc_client }}
 {{- $envAll := . }}
 
 ---

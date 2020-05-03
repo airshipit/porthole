@@ -4,9 +4,6 @@
 # name: value
 
 
-deployment:
-  openstack: true
-
 release_group: null
 
 images:

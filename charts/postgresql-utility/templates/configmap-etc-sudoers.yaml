@@ -1,4 +1,4 @@
-{{- if and .Values.manifests.configmap_etc_sudoers .Values.deployment.postgresql }}
+{{- if .Values.manifests.configmap_etc_sudoers }}
 {{- $envAll := . }}
 ---
 apiVersion: v1

@@ -1,4 +1,4 @@
-{{- if and .Values.manifests.configmap_bin .Values.deployment.postgresql }}
+{{- if .Values.manifests.configmap_bin }}
 {{- $envAll := . }}
 ---
 apiVersion: v1
