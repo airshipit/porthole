@@ -9,6 +9,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 RUN set -xe && \
+    export DEBIAN_FRONTEND=noninteractive && \
     sed -i '/nobody/d' /etc/passwd && \
     echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
     apt-get update && \
@@ -19,6 +20,8 @@ RUN set -xe && \
       python3 \
       python3-pip \
       python3-oslo.rootwrap \
+      python3-openstackclient \
+      python3-swiftclient \
       sudo \
       rsyslog && \
     sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf && \
