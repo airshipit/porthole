@@ -83,6 +83,13 @@ pod:
         limits:
           memory: "1024Mi"
           cpu: "2000m"
+      etcd_ondemand:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "1024Mi"
+          cpu: "2000m"
     test:
       etcdctl:
         requests:
@@ -92,11 +99,21 @@ pod:
           memory: "1024Mi"
           cpu: "2000m"
 conf:
+  backup:
+    host_backup_path: /var/backups
+  etcd_backup_restore:
+    enabled_namespaces: ""
+    secrets:
+      kube_system:
+        rgw_secret: kubernetes-etcd-backup-user
+        conf_secret: etcd-backup-restore
   etcdctlfilter:
     Filters:
       # etcdctl-rootwrap command filters for etcdctl utility container
       # This file should be owned by (and only-writeable by) the root user
+      dbutils: CommandFilter, dbutils, nobody
       etcdctl: CommandFilter, etcdctl, root
+      kubectl: CommandFilter, kubectl, root
   etcdctlrootwrapconf:
     DEFAULT:
       # Configuration for etcdctl-rootwrap
