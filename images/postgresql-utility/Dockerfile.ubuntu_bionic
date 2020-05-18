@@ -1,4 +1,4 @@
-ARG FROM=ubuntu:18.04
+ARG FROM=docker.io/ubuntu:bionic
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -17,16 +17,23 @@ RUN set -xe && \
     apt-transport-https ca-certificates gnupg \
     bash \
     moreutils \
-    postgresql-client \
-    postgresql-common \
-    python3-pip \
-    python3-oslo.rootwrap \
-    python3-openstackclient \
-    python3-swiftclient \
     rsyslog \
     screen \
-    sudo && \
+    sudo \
+    postgresql-client \
+    postgresql-common \
+    python3.6 \
+    python3-pip && \
+    pip3 install \
+      oslo.rootwrap==5.8.0 \
+      openstackclient \
+      python-swiftclient && \
     apt-get clean -y && \
     rm -rf /var/cache/debconf/* /var/lib/apt/lists/*
+
+RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]
