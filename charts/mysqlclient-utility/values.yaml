@@ -42,6 +42,17 @@ pod:
         mysqlclient_utility:
           allowPrivilegeEscalation: true
           readOnlyRootFilesystem: false
+    mariadb_ondemand:
+      pod:
+        runAsUser: 65534
+      container:
+        ondemand_perms:
+          runAsUser: 0
+          readOnlyRootFilesystem: true
+        mariadb_ondemand:
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
@@ -79,9 +90,20 @@ pod:
         limits:
           memory: "1024Mi"
           cpu: "2000m"
-
+      mariadb_ondemand:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "1024Mi"
+          cpu: "2000m"
 
 conf:
+  mariadb_backup_restore:
+    enabled_namespaces: ""
+    secrets:
+      rgw_secret: mariadb-backup-user
+      conf_secret: mariadb-backup-restore
   features:
     utility: true
   mysqlclientconf:
@@ -91,7 +113,8 @@ conf:
       # mysqlclient-rootwrap command filters for mysqlclient utility container
       # This file should be owned by (and only-writeable by) the root user
       mysql: CommandFilter, mysql, root
-      #kubectl: CommandFilter, kubectl, root
+      kubectl: CommandFilter, kubectl, root
+      dbutils: CommandFilter, dbutils, nobody
   mysqlclientrootwrapconf:
     DEFAULT:
       # Configuration for mysqlclient-rootwrap

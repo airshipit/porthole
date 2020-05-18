@@ -8,6 +8,8 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
+ARG KUBE_VERSION=1.17.3
+
 RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
     && sed -i '/nobody/d' /etc/passwd \
@@ -29,7 +31,12 @@ RUN set -xe \
          python-swiftclient \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
     && apt-get clean -y \
+    && TMP_DIR=$(mktemp --directory) && cd ${TMP_DIR} \
+    && curl -sSL https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz | tar -zxv --strip-components=1 \
+    && mv ${TMP_DIR}/client/bin/kubectl /usr/bin/kubectl \
+    && chmod +x /usr/bin/kubectl \
     && rm -rf \
+      ${TMP_DIR} \
       /tmp/* \
       /var/cache/debconf/* \
       /var/lib/apt/lists/* \

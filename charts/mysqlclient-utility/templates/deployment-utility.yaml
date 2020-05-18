@@ -33,6 +33,33 @@ rules:
       - watch
       - exec
       - create
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "batch"
+    resources:
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -93,6 +120,11 @@ spec:
               - utilscli
             initialDelaySeconds: 5
             periodSeconds: 15
+          env:
+            - name: BACKUP_RESTORE_NAMESPACE_LIST
+              value: {{ .Values.conf.mariadb_backup_restore.enabled_namespaces | quote }}
+            - name: BACKUP_RESTORE_SCOPE
+              value: "mariadb"
           volumeMounts:
             - name: mysqlclient-utility-bin-utilscli
               mountPath: /tmp/bootstrap.sh
@@ -109,6 +141,18 @@ spec:
             - name: mysqlclient-utility-bin
               mountPath: /usr/local/bin/mysqlclient-utility-rootwrap
               subPath: mysqlclient-utility-rootwrap
+              readOnly: true
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /usr/local/bin/dbutils
+              subPath: dbutils
+              readOnly: true
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /tmp/mysqlutils.sh
+              subPath: mysqlutils.sh
+              readOnly: true
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /tmp/mariadb-ondemand-job.sh
+              subPath: mariadb-ondemand-job.sh
               readOnly: true
             - name: mysqlclient-utility-sudoers
               mountPath: /etc/sudoers.d/utilscli-sudo

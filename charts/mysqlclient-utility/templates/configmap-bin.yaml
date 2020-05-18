@@ -40,6 +40,15 @@ data:
   utilscli: |
 {{ tuple "bin/utility/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
+  mariadb-ondemand-job.sh: |
+{{ tuple "bin/utility/_mariadb_ondemand_job.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  dbutils: |
+{{ tuple "bin/utility/_dbutils.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  mysqlutils.sh: |
+{{ tuple "bin/utility/_mysqlutils.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
   bootstrap.sh: |
 {{ tuple "bin/_bootstrap.sh.tpl" . | include "helm-toolkit.utils.template" | indent 4 }}
 
