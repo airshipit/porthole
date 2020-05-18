@@ -25,4 +25,13 @@ data:
   utilscli: |
 {{ tuple "bin/utility/_utilscli.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
+  dbutils: |
+{{ tuple "bin/utility/_dbutils.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  pgutils.sh: |
+{{ tuple "bin/utility/_pgutils.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
+  pg-ondemand-job.sh: |
+{{ tuple "bin/utility/_pg_ondemand_job.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+
 {{- end }}
