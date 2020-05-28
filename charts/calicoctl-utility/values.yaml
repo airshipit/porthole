@@ -65,10 +65,10 @@ release_group: null
 
 labels:
   utility:
-    node_selector_key: openstack-helm-node-class
+    node_selector_key: openstack-control-plane
     node_selector_value: enabled
   job:
-    node_selector_key: openstack-helm-node-class
+    node_selector_key: openstack-control-plane
     node_selector_value: enabled
 
 dependencies:
