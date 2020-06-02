@@ -37,7 +37,7 @@ COMP1=${COMPONENT#"$prefix"}
 COMP=${COMP1%"$suffix"}
 # ovs needs to be narrowed down a bit
 if [ "$COMP" == "ovs" ]; then
-   COMP = "neutron-ovs-agent"
+   COMP="neutron-ovs-agent"
 fi
 
 # find the pod for the component and hostname
