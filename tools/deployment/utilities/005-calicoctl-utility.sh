@@ -6,7 +6,7 @@ helm  upgrade --install calicoctl-utility ./charts/calicoctl-utility --namespace
 
 
 # Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+: "${OSH_INFRA_PATH:="../../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
 ./tools/deployment/common/wait-for-pods.sh $namespace
 

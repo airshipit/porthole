@@ -24,8 +24,7 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-apparmor:
-            voting: false
+        - airship-porthole-deploy
 
     gate:
       jobs:
@@ -37,8 +36,14 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
+        - airship-porthole-deploy
         - airship-porthole-apparmor:
             voting: false
+
+    experimental:
+      jobs:
+        - airship-porthole-linter
+        - airship-porthole-apparmor
 
     post:
       jobs:
@@ -82,6 +87,28 @@
     nodeset: airship-porthole-single-node
 
 - job:
+    name: airship-porthole-deploy
+    description: Deploys All Utility Containers
+    timeout: 7200
+    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    post-run: tools/gate/playbooks/airship-porthole-collect-logs.yaml
+    nodeset: airship-porthole-single-node
+    vars:
+      gate_scripts:
+         - ./tools/deployment/utilities/000-install-packages.sh
+         - ./tools/deployment/utilities/001-setup-apparmor-profiles.sh
+         - ./tools/deployment/utilities/002-deploy-k8s.sh
+         - ./tools/deployment/utilities/005-calicoctl-utility.sh
+         - ./tools/deployment/utilities/010-ceph-utility.sh
+         - ./tools/deployment/utilities/020-compute-utility.sh
+         - ./tools/deployment/utilities/030-etcdctl-utility.sh
+         - ./tools/deployment/utilities/040-mysqlclient-utility.sh
+         - ./tools/deployment/utilities/050-openstack-utility.sh
+         - ./tools/deployment/utilities/060-postgresql-utility.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
     name: airship-porthole-apparmor
     description: Checks Pods for Apparmor profile
     timeout: 7200
@@ -95,6 +122,7 @@
          - ./tools/deployment/apparmor/002-deploy-k8s.sh
          - ./tools/deployment/apparmor/005-calicoctl-utility.sh
          - ./tools/deployment/apparmor/010-ceph-utility.sh
+         - ./tools/deployment/apparmor/020-compute-utility.sh
          - ./tools/deployment/apparmor/030-etcdctl-utility.sh
          - ./tools/deployment/apparmor/040-mysqlclient-utility.sh
          - ./tools/deployment/apparmor/050-openstack-utility.sh

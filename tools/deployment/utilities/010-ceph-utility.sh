@@ -228,7 +228,7 @@ conf:
 EOF
 
 helm upgrade --install ceph-utility-config ./ceph-provisioners \
-  --namespace=utility \
+  --namespace=$namespace \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
@@ -239,6 +239,5 @@ helm dependency update charts/ceph-utility
 helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
 
 # Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
 ./tools/deployment/common/wait-for-pods.sh $namespace
