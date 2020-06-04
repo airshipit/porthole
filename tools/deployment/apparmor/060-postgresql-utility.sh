@@ -10,17 +10,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
 set -xe
 namespace="utility"
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
-
 helm dependency update charts/postgresql-utility
-cd charts
-helm upgrade --install postgresql-utility ./postgresql-utility --namespace=$namespace
-sleep 180
-kubectl get pods --namespace=$namespace
+helm upgrade --install postgresql-utility ./charts/postgresql-utility --namespace=$namespace
 
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
+
+#Validate Apparmor
 pos_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep postgresql | awk '{print $1}')
 expected_profile="docker-default (enforce)"
 profile=`kubectl -n $namespace exec $pos_pod -- cat /proc/1/attr/current`

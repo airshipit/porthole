@@ -12,27 +12,23 @@
 #    under the License.
 
 set -xe
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 namespace="utility"
-
 helm dependency update charts/openstack-utility
-cd charts
-kubectl get pods --all-namespaces
-sleep 120
+helm upgrade --install openstack-utility ./charts/openstack-utility --namespace=$namespace
 
-helm upgrade --install openstack-utility ./openstack-utility --namespace=$namespace \
-# NOTE: Validate Deployment and User.
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
 
-sleep 180
-kubectl get pods --namespace=$namespace | grep openstack-utility
-ouc_pod=$(kubectl get pods --namespace=$namespace --selector="application=openstack" --no-headers | awk '{ print $1; exit }')
-unsorted_process_file="/tmp/unsorted_proc_list"
-sorted_process_file="/tmp/proc_list"
+#Validate Apparmor
+ouc_pod=$(kubectl get pods --namespace=$namespace -o wide | grep openstack | awk '{print $1}')
 expected_profile="docker-default (enforce)"
-kubectl describe pod $ouc_pod -n utility
 
 #Below can be used for multiple Processes.Grab the processes (numbered directories) from the /proc directory,
 # and then sort them. Highest proc number indicates most recent process.
+#unsorted_process_file="/tmp/unsorted_proc_list"
+#sorted_process_file="/tmp/proc_list"
 #kubectl -n $namespace exec $ouc_pod -- ls -1 /proc | grep -e "^[0-9]*$" > $unsorted_process_file
 #sort --numeric-sort $unsorted_process_file > $sorted_process_file
 

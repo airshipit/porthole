@@ -1,13 +1,15 @@
 #!/bin/bash
 set -xe
-
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
+namespace=utility
 helm dependency update charts/openstack-utility
-cd charts
-helm  upgrade --install openstack-utility ./openstack-utility --namespace=utility
+helm  upgrade --install openstack-utility ./charts/openstack-utility --namespace=$namespace
+
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
 
 #NOTE: Validate Deployment info
-kubectl get pods -n utility | grep openstack-utility
 helm status openstack-utility
 export OS_CLOUD=openstack_helm
 sleep 30 #NOTE(portdirect): Wait for ingress controller to update rules and restart Nginx

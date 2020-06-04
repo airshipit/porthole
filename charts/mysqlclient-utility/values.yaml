@@ -30,8 +30,8 @@ images:
 
 labels:
   utility:
-    node_selector_key: openstack-helm-node-class
-    node_selector_value: primary
+    node_selector_key: openstack-control-plane
+    node_selector_value: enabled
 
 pod:
   security_context:
@@ -165,4 +165,3 @@ manifests:
   configmap_etc_client: true
   configmap_etc_sudoers: true
   deployment_utility: true
-

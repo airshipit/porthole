@@ -13,13 +13,15 @@
 
 set -xe
 namespace="utility"
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 helm dependency update charts/mysqlclient-utility
-cd charts
-helm upgrade --install mysqlclient-utility ./mysqlclient-utility --namespace=$namespace
-sleep 180
-kubectl get pods --namespace=$namespace
+helm upgrade --install mysqlclient-utility ./charts/mysqlclient-utility --namespace=$namespace
 
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
+
+#Validate Apparmor
 mysql_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep mysqlclient | awk '{print $1}')
 expected_profile="docker-default (enforce)"
 profile=`kubectl -n $namespace exec $mysql_pod -- cat /proc/1/attr/current`

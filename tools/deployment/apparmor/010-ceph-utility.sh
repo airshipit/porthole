@@ -200,7 +200,6 @@ done
     --no-headers | awk '{ print $1; exit }')
   kubectl exec -n ceph ${MON_POD} -- ceph -s
 
-
 #NOTE: Deploy command
 : ${OSH_EXTRA_HELM_ARGS:=""}
 tee /tmp/ceph-utility-config.yaml <<EOF
@@ -228,7 +227,6 @@ conf:
     enabled: true
 EOF
 
-
 helm upgrade --install ceph-utility-config ./ceph-provisioners \
   --namespace=utility \
   --values=/tmp/ceph-utility-config.yaml \
@@ -236,17 +234,16 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
 #Deploy Ceph-Utility
-
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
 cd ${CURRENT_DIR}
 helm dependency update charts/ceph-utility
-
 helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
-sleep 180
-kubectl get pods --namespace=$namespace
+
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
 
 #Validate Apparmor
-
 ceph_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep ceph |  grep 1/1  | awk '{print $1}')
 expected_profile="docker-default (enforce)"
 profile=`kubectl -n $namespace exec $ceph_pod -- cat /proc/1/attr/current`

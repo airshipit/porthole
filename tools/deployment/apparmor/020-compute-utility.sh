@@ -14,14 +14,15 @@
 
 set -xe
 namespace="utility"
-kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
 helm dependency update charts/compute-utility
-cd charts
-helm upgrade --install compute-utility ./compute-utility --namespace=$namespace
-sleep 180
+helm upgrade --install compute-utility ./charts/compute-utility --namespace=$namespace
 
-kubectl get pods --namespace=$namespace
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
 
+#Validate Apparmor
 com_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep compute | awk '{print $1}')
 expected_profile="docker-default (enforce)"
 profile=`kubectl -n $namespace exec $com_pod -- cat /proc/1/attr/current`

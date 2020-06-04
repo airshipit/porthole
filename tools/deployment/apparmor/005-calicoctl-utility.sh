@@ -13,13 +13,15 @@
 
 set -xe
 namespace=utility
-kubectl label nodes --all openstack-helm-node-class=enabled --overwrite
 helm dependency update charts/calicoctl-utility
-cd charts
+helm upgrade --install calicoctl-utility ./charts/calicoctl-utility --namespace=$namespace
 
-helm upgrade --install calicoctl-utility ./calicoctl-utility --namespace=$namespace
-sleep 180
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
 
+#Validate Apparmor
 cal_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep calico | awk '{print $1}')
 expected_profile="docker-default (enforce)"
 profile=`kubectl -n $namespace exec $cal_pod -- cat /proc/1/attr/current`

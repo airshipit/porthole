@@ -1,12 +1,10 @@
 #!/bin/bash
 set -xe
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
-
+namespace=utility
 helm dependency update charts/etcdctl-utility
-cd charts
-helm  upgrade --install etcdctl-utility ./etcdctl-utility --namespace=utility
+helm  upgrade --install etcdctl-utility ./charts/etcdctl-utility --namespace=$namespace
 
-#NOTE: Validate Deployment info
-kubectl get -n utility secrets
-kubectl get -n utility configmaps
-kubectl get pods -n utility | grep etcdctl-utility
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace

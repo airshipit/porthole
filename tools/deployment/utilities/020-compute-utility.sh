@@ -1,13 +1,10 @@
 #!/bin/bash
 set -xe
-
-kubectl label nodes --all openstack-helm-node-class=primary --overwrite
-
+namespace=utility
 helm dependency update charts/compute-utility
-cd charts
-helm  upgrade --install compute-utility ./compute-utility --namespace=utility
+helm  upgrade --install compute-utility ./charts/compute-utility --namespace=$namespace
 
-#NOTE: Validate Deployment info
-kubectl get -n utility jobs
-kubectl get -n utility configmaps
-kubectl get -n utility pods | grep compute-utility
+# Wait for Deployment
+: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+cd "${OSH_INFRA_PATH}"
+./tools/deployment/common/wait-for-pods.sh $namespace
