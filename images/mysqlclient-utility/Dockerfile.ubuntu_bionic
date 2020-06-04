@@ -23,6 +23,7 @@ RUN set -xe && \
       python3-openstackclient \
       python3-swiftclient \
       curl \
+      pwgen \
       sudo \
       rsyslog && \
     sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf && \
