@@ -10,32 +10,41 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 ARG ETCDCTL_VERSION=3.4.2
 
-RUN set -xe && \
-    export DEBIAN_FRONTEND=noninteractive && \
-    sed -i '/nobody/d' /etc/passwd && \
-    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
-    apt-get update && \
-    apt-get install -y \
-      wget curl \
-      apt-transport-https \
-      ca-certificates \
-      gnupg && \
-    apt-get install -y \
-      bash \
-      moreutils \
-      python3 \
-      python3-pip \
-      python3-oslo.rootwrap \
-      sudo \
-      rsyslog && \
-    TMP_DIR=$(mktemp --directory) && \
-    cd ${TMP_DIR} && \
-    curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz \
-    | tar xfz - && \
-    mv ${TMP_DIR}/etcd-v${ETCDCTL_VERSION}-linux-amd64/etcdctl /usr/local/bin/etcdctl && \
-    chmod +xr /usr/local/bin/etcdctl && \
-    apt-get clean -y && \
-    rm -rf \
-     /var/lib/apt/lists/* \
-     ${TMP_DIR}
+ENV GOOGLE_URL=https://storage.googleapis.com/etcd
+ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
+ENV DOWNLOAD_URL=${GITHUB_URL}
+
+RUN set -xe \
+    && export DEBIAN_FRONTEND=noninteractive  \
+    && sed -i '/nobody/d' /etc/passwd  \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update \
+    && apt-get install -y \
+       wget curl \
+       locales \
+       apt-transport-https \
+       ca-certificates \
+       gnupg \
+       bash \
+       moreutils \
+       sudo \
+       rsyslog \
+       python3.6 \
+       python3-pip \
+    && pip3 install \
+         oslo.rootwrap==5.8.0 \
+    && TMP_DIR=$(mktemp --directory) && cd ${TMP_DIR} \
+    && curl -sSLO "${DOWNLOAD_URL}/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
+    && tar -xvf ${TMP_DIR}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz --strip-components=1 \
+        -C /usr/local/bin etcd-v${ETCDCTL_VERSION}-linux-amd64/etcdctl \
+    && apt-get clean -y \
+    && rm -rf \
+       /var/lib/apt/lists/* \
+       {TMP_DIR}
+
+RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+
 CMD ["/bin/bash"]
