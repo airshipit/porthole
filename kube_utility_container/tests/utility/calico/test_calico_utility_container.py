@@ -64,3 +64,21 @@ class TestCalicoUtilityContainer(TestBase):
             latest_pod_logs = (pod_logs.split(date_2))[1:]
         self.assertNotEqual(
             0, len(latest_pod_logs), "Not able to get the latest logs")
+
+    def test_verify_apparmor(self):
+        """To verify calico-utility Apparmor"""
+        failures = []
+        expected = "runtime/default"
+        calico_utility_pod = \
+            self.client._get_utility_container(self.deployment_name)
+        for container in calico_utility_pod.spec.containers:
+            annotations_common = \
+                'container.apparmor.security.beta.kubernetes.io/'
+            annotations_key = annotations_common + container.name
+            if expected != calico_utility_pod.metadata.annotations[
+                    annotations_key]:
+                failures.append(
+                    f"container {container.name} belongs to pod "
+                    f"{calico_utility_pod.metadata.name} "
+                    f"is not having expected apparmor profile set")
+        self.assertEqual(0, len(failures), failures)
