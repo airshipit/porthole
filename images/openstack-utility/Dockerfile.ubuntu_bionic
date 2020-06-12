@@ -10,24 +10,29 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN set -xe && \
-    sed -i '/nobody/d' /etc/passwd && \
-    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
-    apt-get update && \
-    apt-get install -y \
-      bash \
-      sudo \
-      rsyslog \
-      python3 \
-      python3-pip &&\
-    pip3 install \
-      oslo.rootwrap==5.8.0 \
-      python-openstackclient==3.18.1 \
-      python-glanceclient==2.16.0 \
-      python-novaclient==13.0.2 \
-      python-neutronclient==6.12.0 \
-      python-cinderclient==4.2.1 && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN set -xe \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update \
+    && apt-get install -y \
+       bash \
+       sudo \
+       rsyslog \
+       python3.6 \
+       python3-pip \
+    && pip3 install \
+         oslo.rootwrap==5.8.0 \
+         python-openstackclient==3.18.1 \
+         python-glanceclient==2.16.0 \
+         python-novaclient==13.0.2 \
+         python-neutronclient==6.12.0 \
+         python-cinderclient==4.2.1 \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]
