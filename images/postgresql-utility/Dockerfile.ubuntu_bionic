@@ -10,12 +10,12 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 ARG KUBE_VERSION=1.17.3
 
-RUN set -xe && \
-    export DEBIAN_FRONTEND=noninteractive && \
-    sed -i '/nobody/d' /etc/passwd && \
-    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
-    apt-get update && \
-    apt-get install -y wget curl \
+RUN set -xe  \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && sed -i '/nobody/d' /etc/passwd  \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update \
+    && apt-get install -y wget curl \
         apt-transport-https ca-certificates gnupg \
         bash \
         moreutils \
@@ -25,23 +25,22 @@ RUN set -xe && \
         postgresql-client \
         postgresql-common \
         python3.6 \
-        python3-pip && \
-    pip3 install \
+        python3-pip  \
+    && pip3 install \
         oslo.rootwrap==5.8.0 \
         python-openstackclient==3.18.1 \
-        python-swiftclient && \
-    apt-get clean -y && \
-    TMP_DIR=$(mktemp --directory) && \
-    cd ${TMP_DIR} && \
-    curl -sSL https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz | tar -zxv --strip-components=1 && \
-    mv ${TMP_DIR}/client/bin/kubectl /usr/bin/kubectl && \
-    chmod +x /usr/bin/kubectl && \
-    rm -rf ${TMP_DIR} && \
-    rm -rf /var/cache/debconf/* /var/lib/apt/lists/*
+        python-swiftclient \
+    && apt-get clean -y \
+    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
+    && rm -rf \
+       /var/cache/debconf/* \
+       /var/lib/apt/lists/*
 
-RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]

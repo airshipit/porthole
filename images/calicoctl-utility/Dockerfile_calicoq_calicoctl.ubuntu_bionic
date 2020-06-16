@@ -41,10 +41,11 @@ RUN set -xe \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 COPY --from=stage_calicoctl /calicoctl /usr/local/bin/calicoctl
 COPY --from=stage_calicoq /calicoq /usr/local/bin/calicoq
