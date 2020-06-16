@@ -23,21 +23,22 @@ RUN set -xe \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-         bash \
-         locales \
-         moreutils \
-         sudo \
-         python3 \
-         python3-pip \
-         python3-oslo.rootwrap \
-         socat \
+       bash \
+       locales \
+       moreutils \
+       sudo \
+       socat \
+       python3.6 \
+       python3-pip \
+    && pip3 install \
+         oslo.rootwrap==5.8.0 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN  sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/lib/python3/dist-packages/oslo_rootwrap/wrapper.py
+RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
 
 COPY --from=stage_calicoctl /calicoctl /usr/local/bin/calicoctl
 
