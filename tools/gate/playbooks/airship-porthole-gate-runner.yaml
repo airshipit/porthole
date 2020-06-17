@@ -12,6 +12,19 @@
 
 - hosts: primary
   tasks:
+    - name: install python
+      apt:
+        name: "{{ item }}"
+        allow_unauthenticated: True
+      with_items:
+        - python3-pip
+        - python3-setuptools
+      become: true
+    - name: ensure tox is present
+      pip:
+        name: tox
+        executable: pip3
+      become: true
     - name: Run gate scripts
       include_role:
         name: osh-run-script
