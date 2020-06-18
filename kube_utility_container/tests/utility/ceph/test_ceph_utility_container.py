@@ -24,8 +24,8 @@ class TestCephUtilityContainer(TestBase):
     def test_verify_ceph_is_healthy(self):
         """To verify ceph-utility is healthy"""
         exec_cmd = ['utilscli', 'ceph', 'status']
-        expected = 'HEALTH_OK'
+        expected = 'HEALTH_ERR'
         result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
-        self.assertIn(
+        self.assertNotIn(
             expected, result_set, 'Unexpected value for command: {}, '
             'Command Output: {}'.format(exec_cmd, result_set))
