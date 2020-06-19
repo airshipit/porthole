@@ -1,1 +1,0 @@
-../apparmor/002-deploy-k8s.sh
