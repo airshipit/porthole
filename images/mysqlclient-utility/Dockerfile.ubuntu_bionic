@@ -8,30 +8,36 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-RUN set -xe && \
-    export DEBIAN_FRONTEND=noninteractive && \
-    sed -i '/nobody/d' /etc/passwd && \
-    echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd && \
-    apt-get update && \
-    apt-get install -y \
-      bash \
-      moreutils \
-      mysql-client \
-      python3 \
-      python3-pip \
-      python3-oslo.rootwrap \
-      python3-openstackclient \
-      python3-swiftclient \
-      curl \
-      pwgen \
-      sudo \
-      rsyslog && \
-    sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf && \
-    apt-get clean -y && \
-    rm -rf \
+RUN set -xe \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update  \
+    && apt-get install -y \
+       bash \
+       sudo \
+       rsyslog \
+       pwgen \
+       curl \
+       moreutils \
+       mysql-client \
+       python3.6 \
+       python3-pip \
+    && pip3 install \
+         oslo.rootwrap==5.8.0 \
+         python-openstackclient==3.18.1 \
+         python-swiftclient \
+    && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
+    && apt-get clean -y \
+    && rm -rf \
       /tmp/* \
       /var/cache/debconf/* \
       /var/lib/apt/lists/* \
       /var/tmp/*
+
+RUN sed -i "/rootwrap_logger.setLevel/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" /usr/local/lib/python3.6/dist-packages/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]
