@@ -17,7 +17,7 @@ IMAGE_NAME      ?= calico-utility
 IMAGE_PREFIX    ?= airship/porthole
 IMAGE_TAG       ?= latest
 BUILD_TYPE      ?= community
-OS_RELEASE      ?= alpine
+OS_RELEASE      ?= ubuntu_bionic
 
 IMAGE := $(DOCKER_REGISTRY)/$(IMAGE_PREFIX)/$(IMAGE_NAME):$(IMAGE_TAG)
 
