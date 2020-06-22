@@ -28,10 +28,37 @@ rules:
       - namespaces
       - persistentvolumeclaims
       - persistentvolumes
+      - pods
+      - secrets
     verbs:
       - get
       - list
       - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - create
+  - apiGroups:
+      - "batch"
+    resources:
+      - cronjobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -93,6 +120,10 @@ spec:
                   key: 'POSTGRES_PASSWORD'
             - name: POSTGRESQL_HOST_PORT
               value: {{ tuple "postgresql" "internal" "postgresql" $envAll | include "helm-toolkit.endpoints.host_and_port_endpoint_uri_lookup" }}
+            - name: BACKUP_RESTORE_SCOPE
+              value: "postgresql"
+            - name: BACKUP_RESTORE_NAMESPACE_LIST
+              value: {{ .Values.conf.postgresql_backup_restore.enabled_namespaces | quote }}
           volumeMounts:
             - name: postgresql-utility-bin
               mountPath: /tmp/bootstrap.sh
@@ -110,6 +141,18 @@ spec:
               mountPath: /usr/local/bin/postgresql-utility-rootwrap
               subPath: postgresql-utility-rootwrap
               readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /usr/local/bin/dbutils
+              subPath: dbutils
+              readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /tmp/pgutils.sh
+              subPath: pgutils.sh
+              readOnly: true
+            - name: postgresql-utility-bin
+              mountPath: /tmp/pg-ondemand-job.sh
+              subPath: pg-ondemand-job.sh
+              readOnly: true
             - name: postgresql-utility-sudoers
               mountPath: /etc/sudoers.d/utilscli-sudo
               subPath: utilscli-sudo
@@ -126,7 +169,6 @@ spec:
               mountPath: /etc/postgresql/rootwrap.conf
               subPath: rootwrap.conf
               readOnly: true
-
       volumes:
         - name: postgresql-utility-sudoers
           configMap:

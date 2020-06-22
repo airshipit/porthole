@@ -42,6 +42,17 @@ pod:
         postgresql_utility:
           allowPrivilegeEscalation: true
           readOnlyRootFilesystem: false
+    postgresql_ondemand:
+      pod:
+        runAsUser: 65534
+      container:
+        backup_perms:
+          runAsUser: 0
+          readOnlyRootFilesystem: true
+        postgresql_ondemand:
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
@@ -79,12 +90,24 @@ pod:
         limits:
           memory: "1024Mi"
           cpu: "2000m"
+      postgresql_ondemand:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "1024Mi"
+          cpu: "2000m"
 
 secrets:
   postgresql:
     admin: postgresql-admin
 
 conf:
+  postgresql_backup_restore:
+    enabled_namespaces: "openstack"
+    secrets:
+      rgw_secret: postgresql-backup-user
+      conf_secret: postgresql-backup-restore
   features:
     utility: true
   postgresqlconf:
@@ -96,6 +119,7 @@ conf:
       # Below are example command filters. access to postgresql cluster can be restricted by creating a user with less privilages
       psql: CommandFilter, psql, root
       kubectl: CommandFilter, kubectl, root
+      dbutils: CommandFilter, dbutils, nobody
   postgresqlrootwrap:
     DEFAULT:
       # Configuration for postgresql-rootwrap
