@@ -101,6 +101,7 @@ pod:
 conf:
   mariadb_backup_restore:
     enabled_namespaces: ""
+    test_database_name: "test_database"
     secrets:
       rgw_secret: mariadb-backup-user
       conf_secret: mariadb-backup-restore
@@ -188,3 +189,4 @@ manifests:
   configmap_etc_client: true
   configmap_etc_sudoers: true
   deployment_utility: true
+  create_test_database: false

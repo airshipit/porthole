@@ -123,6 +123,10 @@ spec:
           env:
             - name: BACKUP_RESTORE_NAMESPACE_LIST
               value: {{ .Values.conf.mariadb_backup_restore.enabled_namespaces | quote }}
+            {{- if .Values.manifests.create_test_database }}
+            - name: TEST_DB_NAME
+              value: {{ .Values.conf.mariadb_backup_restore.test_database_name | quote }}
+            {{- end }}
             - name: BACKUP_RESTORE_SCOPE
               value: "mariadb"
           volumeMounts:
@@ -154,6 +158,12 @@ spec:
               mountPath: /tmp/mariadb-ondemand-job.sh
               subPath: mariadb-ondemand-job.sh
               readOnly: true
+            {{- if .Values.manifests.create_test_database }}
+            - name: mysqlclient-utility-bin-utilscli
+              mountPath: /tmp/create_test_database.sh
+              subPath: create_test_database.sh
+              readOnly: true
+            {{- end }}
             - name: mysqlclient-utility-sudoers
               mountPath: /etc/sudoers.d/utilscli-sudo
               subPath: utilscli-sudo

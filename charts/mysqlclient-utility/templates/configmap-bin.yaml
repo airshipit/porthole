@@ -49,6 +49,11 @@ data:
   mysqlutils.sh: |
 {{ tuple "bin/utility/_mysqlutils.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
+{{- if .Values.manifests.create_test_database }}
+  create_test_database.sh: |
+{{ tuple "bin/utility/_create_test_database.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+{{- end }}
+
   bootstrap.sh: |
 {{ tuple "bin/_bootstrap.sh.tpl" . | include "helm-toolkit.utils.template" | indent 4 }}
 
