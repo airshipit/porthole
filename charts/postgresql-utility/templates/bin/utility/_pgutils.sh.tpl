@@ -88,36 +88,16 @@ function sql_prompt() {
   ${DB_CMD}
 }
 
-
-# Params: <namespace> <database>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
-function create_database() {
-
-  CREATE_ARGS=("$@")
-
-  NAMESPACE=${CREATE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${CREATE_ARGS[2]}
-  DB_CMD=$(database_cmd $NAMESPACE)
-
-  ${DB_CMD} -c "CREATE DATABASE ${DATABASE};"
-}
-
-# Params: <namespace> <database> <tablename>
+# Params: <namespace> <tablename>
 #   Column names and types will be hardcoded for now
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database
 function create_table() {
 
   CREATE_ARGS=("$@")
 
   NAMESPACE=${CREATE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${CREATE_ARGS[2]}
-  TABLENAME=${CREATE_ARGS[3]}
+  DATABASE=${TEST_DB_NAME}
+  TABLENAME=${CREATE_ARGS[2]}
 
   CREATE_CMD="CREATE TABLE ${TABLENAME} ( name character varying (255), age integer NOT NULL )"
 
@@ -129,19 +109,16 @@ function create_table() {
 EOF
 }
 
-# Params: <namespace> <database> <table>
+# Params: <namespace> <table>
 #   The row values are hardcoded for now.
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database
 function create_row() {
 
   CREATE_ARGS=("$@")
 
   NAMESPACE=${CREATE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${CREATE_ARGS[2]}
-  TABLENAME=${CREATE_ARGS[3]}
+  DATABASE=${TEST_DB_NAME}
+  TABLENAME=${CREATE_ARGS[2]}
 
   DB_CMD=$(database_cmd $NAMESPACE)
 
@@ -156,21 +133,18 @@ function create_row() {
 EOF
 }
 
-# Params: <namespace> <database> <table> <colname> <value>
+# Params: <namespace> <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database
 function delete_row() {
 
   DELETE_ARGS=("$@")
 
   NAMESPACE=${DELETE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${DELETE_ARGS[2]}
-  TABLENAME=${DELETE_ARGS[3]}
-  COLNAME=${DELETE_ARGS[4]}
-  VALUE=${DELETE_ARGS[5]}
+  DATABASE=${TEST_DB_NAME}
+  TABLENAME=${DELETE_ARGS[2]}
+  COLNAME=${DELETE_ARGS[3]}
+  VALUE=${DELETE_ARGS[4]}
 
   DELETE_CMD="DELETE FROM ${TABLENAME} WHERE ${COLNAME} = '${VALUE}'"
 
@@ -182,18 +156,15 @@ function delete_row() {
 EOF
 }
 
-# Params: <namespace> <database> <tablename>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
+# Params: <namespace> <tablename>
+#   NOTE: Database is always a pre-provisioned database
 function delete_table() {
 
   DELETE_ARGS=("$@")
 
   NAMESPACE=${DELETE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${DELETE_ARGS[2]}
-  TABLENAME=${DELETE_ARGS[3]}
+  DATABASE=${TEST_DB_NAME}
+  TABLENAME=${DELETE_ARGS[2]}
 
   DB_CMD=$(database_cmd $NAMESPACE)
 
@@ -201,21 +172,4 @@ function delete_table() {
     \connect ${DATABASE};
     DROP TABLE IF EXISTS ${TABLENAME};
 EOF
-}
-
-# Params: <namespace> <database>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
-function delete_database() {
-
-  DELETE_ARGS=("$@")
-
-  NAMESPACE=${DELETE_ARGS[1]}
-  DATABASE="test_"
-  DATABASE+=${DELETE_ARGS[2]}
-
-  DB_CMD=$(database_cmd $NAMESPACE)
-
-  ${DB_CMD} -c "DROP DATABASE IF EXISTS ${DATABASE};"
 }

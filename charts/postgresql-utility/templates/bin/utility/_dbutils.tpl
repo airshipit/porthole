@@ -422,36 +422,14 @@ function do_show_schema() {
   fi
 }
 
-# Params: [namespace] <database>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
-function do_create_database() {
-
-  CREATE_ARGS=("$@")
-
-  check_args CREATE_ARGS 1 2
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-
-  CREATE_ARGS=("${CREATE_ARGS[@]:0:1}" "$NAMESPACE" "${CREATE_ARGS[@]:1}")
-  create_database "${CREATE_ARGS[@]}"
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-}
-
-# Params: [namespace] <database> <tablename>
+# Params: [namespace] <tablename>
 #   Column names and types will be hardcoded for now
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database.
 function do_create_table() {
 
   CREATE_ARGS=("$@")
 
-  check_args CREATE_ARGS 2 3
+  check_args CREATE_ARGS 1 2
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -463,16 +441,17 @@ function do_create_table() {
   fi
 }
 
-# Params: [namespace] <database> <table>
+# Params: [namespace] <table>
 #   The row values are hardcoded for now.
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database.
 function do_create_row() {
 
   CREATE_ARGS=("$@")
 
-  # There could be any number of arguments, so no check_args call here
+  check_args CREATE_ARGS 1 2
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
 
   setup_namespace "${CREATE_ARGS[1]}"
   if [[ $? -ne 0 ]]; then
@@ -486,16 +465,14 @@ function do_create_row() {
   fi
 }
 
-# Params: [namespace] <database> <table> <colname> <value>
+# Params: [namespace] <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
+#   NOTE: Database is always a pre-provisioned database.
 function do_delete_row() {
 
   DELETE_ARGS=("$@")
 
-  check_args DELETE_ARGS 5 6
+  check_args DELETE_ARGS 3 4
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -508,32 +485,9 @@ function do_delete_row() {
   fi
 }
 
-# Params: [namespace] <database> <tablename>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
+# Params: [namespace] <tablename>
+#   NOTE: Database is always a pre-provisioned database.
 function do_delete_table() {
-
-  DELETE_ARGS=("$@")
-
-  check_args DELETE_ARGS 2 3
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-
-  DELETE_ARGS=("${DELETE_ARGS[@]:0:1}" "$NAMESPACE" "${DELETE_ARGS[@]:1}")
-
-  delete_table "${DELETE_ARGS[@]}"
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-}
-
-# Params: [namespace] <database>
-#   NOTE: "test_" is automatically prepended before the provided database
-#         name, in order to prevent accidental modification/deletion of
-#         an application database.
-function do_delete_database() {
 
   DELETE_ARGS=("$@")
 
@@ -544,7 +498,7 @@ function do_delete_database() {
 
   DELETE_ARGS=("${DELETE_ARGS[@]:0:1}" "$NAMESPACE" "${DELETE_ARGS[@]:1}")
 
-  delete_database "${DELETE_ARGS[@]}"
+  delete_table "${DELETE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -757,12 +711,10 @@ function execute_selection() {
     "show_tables"|"st")           do_show_tables "${ARGS[@]}";;
     "show_rows"|"sr")             do_show_rows "${ARGS[@]}";;
     "show_schema"|"ss")           do_show_schema "${ARGS[@]}";;
-    "create_test_database"|"ctd") do_create_database "${ARGS[@]}";;
     "create_test_table"|"ctt")    do_create_table "${ARGS[@]}";;
     "create_test_row"|"ctr")      do_create_row "${ARGS[@]}";;
     "delete_test_row"|"dtr")      do_delete_row "${ARGS[@]}";;
     "delete_test_table"|"dtt")    do_delete_table "${ARGS[@]}";;
-    "delete_test_database"|"dtd") do_delete_database "${ARGS[@]}";;
     "restore"|"r")                do_restore "${ARGS[@]}";;
     "sql_prompt"|"sql")           do_sql_prompt "${ARGS[@]}";;
     "command_history"|"ch")       do_command_history;;
