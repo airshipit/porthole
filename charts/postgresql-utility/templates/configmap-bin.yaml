@@ -31,6 +31,11 @@ data:
   pgutils.sh: |
 {{ tuple "bin/utility/_pgutils.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 
+{{- if .Values.manifests.create_test_database }}
+  create_test_database.sh: |
+{{ tuple "bin/utility/_create_test_database.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
+{{- end }}
+
   pg-ondemand-job.sh: |
 {{ tuple "bin/utility/_pg_ondemand_job.sh.tpl" . | include  "helm-toolkit.utils.template" | indent 4 }}
 

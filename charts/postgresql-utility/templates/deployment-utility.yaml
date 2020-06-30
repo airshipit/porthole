@@ -124,6 +124,10 @@ spec:
               value: "postgresql"
             - name: BACKUP_RESTORE_NAMESPACE_LIST
               value: {{ .Values.conf.postgresql_backup_restore.enabled_namespaces | quote }}
+            {{- if .Values.manifests.create_test_database }}
+            - name: TEST_DB_NAME
+              value: {{ .Values.conf.postgresql_backup_restore.test_database_name | quote }}
+            {{- end }}
           volumeMounts:
             - name: postgresql-utility-bin
               mountPath: /tmp/bootstrap.sh
@@ -153,6 +157,12 @@ spec:
               mountPath: /tmp/pg-ondemand-job.sh
               subPath: pg-ondemand-job.sh
               readOnly: true
+            {{- if .Values.manifests.create_test_database }}
+            - name: postgresql-utility-bin
+              mountPath: /tmp/create_test_database.sh
+              subPath: create_test_database.sh
+              readOnly: true
+            {{- end }}
             - name: postgresql-utility-sudoers
               mountPath: /etc/sudoers.d/utilscli-sudo
               subPath: utilscli-sudo

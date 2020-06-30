@@ -14,4 +14,9 @@ limitations under the License.
 */}}
 set -ex
 sudo ./tmp/start.sh
+
+if [ -f /tmp/create_test_database.sh ]; then
+  ./tmp/create_test_database.sh
+fi
+
 tail -f /var/log/syslog

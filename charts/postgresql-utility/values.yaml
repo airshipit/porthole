@@ -105,6 +105,7 @@ secrets:
 conf:
   postgresql_backup_restore:
     enabled_namespaces: "openstack"
+    test_database_name: "test_database"
     secrets:
       rgw_secret: postgresql-backup-user
       conf_secret: postgresql-backup-restore
@@ -213,3 +214,4 @@ manifests:
   secret_etc: true
   secret_admin: true
   deployment_utility: true
+  create_test_database: false
