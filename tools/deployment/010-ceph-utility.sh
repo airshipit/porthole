@@ -1,221 +1,16 @@
 #!/bin/bash
-set -xe
-namespace="utility"
 CURRENT_DIR="$(pwd)"
-# Create loop back devices for ceph osds.
-sudo df -lh
-sudo lsblk
-sudo mkdir -p /var/lib/openstack-helm/ceph
-sudo truncate -s 10G /var/lib/openstack-helm/ceph/ceph-osd-data-loopbackfile.img
-sudo truncate -s 8G /var/lib/openstack-helm/ceph/ceph-osd-db-wal-loopbackfile.img
-sudo losetup /dev/loop0 /var/lib/openstack-helm/ceph/ceph-osd-data-loopbackfile.img
-sudo losetup /dev/loop1 /var/lib/openstack-helm/ceph/ceph-osd-db-wal-loopbackfile.img
-# lets check the devices
-sudo df -lh
-sudo lsblk
+ : "${OSH_PATH:="../openstack-helm"}"
+ : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 
-: ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
+cd "${OSH_PATH}"
+bash -c "./tools/deployment/component/ceph/ceph.sh"
+
+namespace="utility"
+: ${OSH_EXTRA_HELM_ARGS:=""}
+
 cd "${OSH_INFRA_PATH}"
-
-for CHART in ceph-mon ceph-client ceph-provisioners; do
-  make "${CHART}"
-done
-
-#NOTE: Deploy command
-: ${OSH_EXTRA_HELM_ARGS:=""}
-[ -s /tmp/ceph-fs-uuid.txt ] || uuidgen > /tmp/ceph-fs-uuid.txt
-CEPH_FS_ID="$(cat /tmp/ceph-fs-uuid.txt)"
-#NOTE(portdirect): to use RBD devices with Ubuntu kernels < 4.5 this
-# should be set to 'hammer'
-. /etc/os-release
-if [ "x${ID}" == "xubuntu" ] && \
-   [ "$(uname -r | awk -F "." '{ print $2 }')" -lt "5" ]; then
-  CRUSH_TUNABLES=hammer
-else
-  CRUSH_TUNABLES=null
-fi
-tee /tmp/ceph.yaml <<EOF
-endpoints:
-  ceph_mon:
-    namespace: ceph
-    port:
-      mon:
-        default: 6789
-  ceph_mgr:
-    namespace: ceph
-    port:
-      mgr:
-        default: 7000
-      metrics:
-        default: 9283
-network:
-  public: 172.17.0.1/16
-  cluster: 172.17.0.1/16
-  port:
-    mon: 6789
-    rgw: 8088
-    mgr: 7000
-deployment:
-  storage_secrets: true
-  ceph: true
-  rbd_provisioner: true
-  cephfs_provisioner: true
-  client_secrets: false
-  rgw_keystone_user_and_endpoints: false
-bootstrap:
-  enabled: true
-conf:
-  rgw_ks:
-    enabled: false
-  ceph:
-    global:
-      fsid: ${CEPH_FS_ID}
-      mon_addr: :6789
-      osd_pool_default_size: 1
-    osd:
-      osd_crush_chooseleaf_type: 0
-  pool:
-    crush:
-      tunables: ${CRUSH_TUNABLES}
-    target:
-      osd: 1
-      pg_per_osd: 100
-    default:
-      crush_rule: same_host
-    spec:
-      # RBD pool
-      - name: rbd
-        application: rbd
-        replication: 1
-        percent_total_data: 40
-      # CephFS pools
-      - name: cephfs_metadata
-        application: cephfs
-        replication: 1
-        percent_total_data: 5
-      - name: cephfs_data
-        application: cephfs
-        replication: 1
-        percent_total_data: 10
-      # RadosGW pools
-      - name: .rgw.root
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.control
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.data.root
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.gc
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.log
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.intent-log
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.meta
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.usage
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.users.keys
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.users.email
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.users.swift
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.users.uid
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.buckets.extra
-        application: rgw
-        replication: 1
-        percent_total_data: 0.1
-      - name: default.rgw.buckets.index
-        application: rgw
-        replication: 1
-        percent_total_data: 3
-      - name: default.rgw.buckets.data
-        application: rgw
-        replication: 1
-        percent_total_data: 34.8
-  storage:
-    osd:
-      - data:
-          type: bluestore
-          location: /dev/loop0
-        block_db:
-          location: /dev/loop1
-          size: "5GB"
-        block_wal:
-          location: /dev/loop1
-          size: "2GB"
-pod:
-  replicas:
-    mds: 1
-    mgr: 1
-    rgw: 1
-jobs:
-  ceph_defragosds:
-    # Execute every 15 minutes for gates
-    cron: "*/15 * * * *"
-    history:
-      # Number of successful job to keep
-      successJob: 1
-      # Number of failed job to keep
-      failJob: 1
-    concurrency:
-      # Skip new job if previous job still active
-      execPolicy: Forbid
-    startingDeadlineSecs: 60
-manifests:
-  cronjob_defragosds: true
-  job_bootstrap: false
-EOF
-
-for CHART in ceph-mon ceph-client ceph-provisioners; do
-  helm upgrade --install ${CHART} ./${CHART} \
-    --namespace=ceph \
-    --values=/tmp/ceph.yaml \
-    ${OSH_INFRA_EXTRA_HELM_ARGS} \
-    ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY}
-done
-  helm upgrade --install ceph-osd ./ceph-osd \
-    --namespace=ceph \
-    --values=/tmp/ceph.yaml
-
-  #NOTE: Wait for deploy
-  ./tools/deployment/common/wait-for-pods.sh ceph
-
-  #NOTE: Validate deploy
-  MON_POD=$(kubectl get pods \
-    --namespace=ceph \
-    --selector="application=ceph" \
-    --selector="component=mon" \
-    --no-headers | awk '{ print $1; exit }')
-  kubectl exec -n ceph ${MON_POD} -- ceph -s
-
-#NOTE: Deploy command
-: ${OSH_EXTRA_HELM_ARGS:=""}
+#Deploy Ceph-provisioners
 tee /tmp/ceph-utility-config.yaml <<EOF
 endpoints:
   identity:
@@ -242,12 +37,12 @@ conf:
 EOF
 
 helm upgrade --install ceph-utility-config ./ceph-provisioners \
-  --namespace=utility \
+  --namespace=$namespace \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
-#Deploy Ceph-Utility
+# Deploy Ceph-Utility
 cd ${CURRENT_DIR}
 helm dependency update charts/ceph-utility
 helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
