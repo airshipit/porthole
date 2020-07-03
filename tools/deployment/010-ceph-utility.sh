@@ -2,6 +2,17 @@
 set -xe
 namespace="utility"
 CURRENT_DIR="$(pwd)"
+# Create loop back devices for ceph osds.
+sudo df -lh
+sudo lsblk
+sudo mkdir -p /var/lib/openstack-helm/ceph
+sudo truncate -s 10G /var/lib/openstack-helm/ceph/ceph-osd-data-loopbackfile.img
+sudo truncate -s 8G /var/lib/openstack-helm/ceph/ceph-osd-db-wal-loopbackfile.img
+sudo losetup /dev/loop0 /var/lib/openstack-helm/ceph/ceph-osd-data-loopbackfile.img
+sudo losetup /dev/loop1 /var/lib/openstack-helm/ceph/ceph-osd-db-wal-loopbackfile.img
+# lets check the devices
+sudo df -lh
+sudo lsblk
 
 : ${OSH_INFRA_PATH:="../../openstack-helm-infra"}
 cd "${OSH_INFRA_PATH}"
@@ -150,11 +161,14 @@ conf:
   storage:
     osd:
       - data:
-          type: directory
-          location: /var/lib/openstack-helm/ceph/osd/osd-one
-        journal:
-          type: directory
-          location: /var/lib/openstack-helm/ceph/osd/journal-one
+          type: bluestore
+          location: /dev/loop0
+        block_db:
+          location: /dev/loop1
+          size: "5GB"
+        block_wal:
+          location: /dev/loop1
+          size: "2GB"
 pod:
   replicas:
     mds: 1
