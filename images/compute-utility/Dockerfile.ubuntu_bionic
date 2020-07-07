@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.12.2
+ARG KUBE_VERSION=1.17.3
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -42,9 +42,9 @@ RUN set -xe \
     && TMP_DIR=$(mktemp --directory) \
     && cd ${TMP_DIR} \
     && curl -sSLO https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-    && tar --strip-components=1 -zxvf kubernetes-client-linux-amd64.tar.gz \
-    && mv ${TMP_DIR}/client/bin/kubectl /usr/bin/kubectl \
-    && chmod +x /usr/bin/kubectl \
+    && tar -xvf ${TMP_DIR}/kubernetes-client-linux-amd64.tar.gz --strip-components=1 \
+       -C /usr/bin kubernetes/client/bin/kubectl \
+    && mv /usr/bin/client/bin/kubectl /usr/bin/kubectl \
     && rm -rf \
          ${TMP_DIR} \
          /var/lib/apt/lists/*
