@@ -28,7 +28,7 @@ RUN set -xe && \
         python3-pip && \
     pip3 install \
         oslo.rootwrap==5.8.0 \
-        openstackclient \
+        python-openstackclient==3.18.1 \
         python-swiftclient && \
     apt-get clean -y && \
     TMP_DIR=$(mktemp --directory) && \
