@@ -7,31 +7,14 @@
 # The user can execute this script by calling:
 #   dbutils
 #
-#     No arguments required. However the script will require the
+#     No arguments required. However the script will expect the
 #     following variables to be exported:
 #
-#       export ONDEMAND_JOB       The name of the ondemand job to be spawned when performing a database operation
 #       export NODE               The name of the node which etcd operations will run on.
 
 trap do_trap SIGINT SIGTERM
 
 ARGS=("$@")
-
-function setup() {
-
-  if [[ -z "$ONDEMAND_JOB" ]]; then
-    echo "ERROR: environment variable ONDEMAND_JOB not set"
-    exit 1
-  fi
-
-  if [[ -z "$NODE" ]]; then
-    echo "ERROR: NODE is not set"
-    exit 1
-  fi
-
-  # NAMESPACE should always be set to kube-system
-  export NAMESPACE="kube-system"
-}
 
 function check_args() {
 
@@ -67,6 +50,20 @@ function check_args() {
     export LOC_STRING="local"
     export LOCATION=""
     NAMESPACE_POS=1
+  fi
+
+  # Check if a valid NODE was entered as the last parameter
+  NODE_EXISTS=$(kubectl get nodes | grep -w "${ARGS_ARRAY[-1]}" | awk '{print $1}')
+
+  # If a valid NODE was entered above then set NODE
+  if [[ ! -z "$NODE_EXISTS" ]]; then
+    export NODE="$NODE_EXISTS"
+
+  # If NODE is not set then error
+  elif [[ -z "$NODE" ]]; then
+    echo "ERROR: NODE could not be determined. Either export NODE prior to"
+    echo "running this script or enter it as a parameter."
+    return 1
   fi
 
   return 0
@@ -133,11 +130,12 @@ function remove_job() {
   fi
 }
 
+# Params: [node]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
 
-  check_args BACKUP_ARGS 0 0
+  check_args BACKUP_ARGS 0 1
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -149,12 +147,12 @@ function do_backup() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_etcd.sh
 }
 
-# Params: [-r]
+# Params: [-r] [node]
 function do_list_archives() {
 
   LIST_ARGS=("$@")
 
-  check_args LIST_ARGS 0 1
+  check_args LIST_ARGS 0 2
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -166,7 +164,7 @@ function do_list_archives() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_etcd.sh list_archives "$LOCATION"
 }
 
-# Params: [-r] <archive> <anchor>
+# Params: [-r] <archive> <anchor> [node]
 function do_restore() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -185,7 +183,7 @@ function do_restore() {
   RESTORE_ARGS=("${RESTORE_ARGS[@]:0:$ARCHIVE_POS}" "$NAMESPACE" "${RESTORE_ARGS[@]:$ARCHIVE_POS}")
 
   # NAMESPACE is always set to kube-system and is inserted into RESTORE_ARGS; increases max arguments by 1
-  check_args RESTORE_ARGS 2 4
+  check_args RESTORE_ARGS 2 5
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -227,14 +225,14 @@ function do_trap() {
 
 function help() {
   echo "Usage:"
-  echo "       utilscli dbutils backup (b)"
+  echo "       utilscli dbutils backup (b) [node]"
   echo "           Performs a manual backup of etcd."
   echo ""
-  echo "       utilscli dbutils list_archives (la) [-r]"
+  echo "       utilscli dbutils list_archives (la) [-r] [node]"
   echo "           Retrieves the list of archives, either locally (no 'remote'"
   echo "           flag) or from the remote RGW (using 'remote' flag)."
   echo ""
-  echo "       utilscli dbutils restore (r) [-r] <archive> <anchor>"
+  echo "       utilscli dbutils restore (r) [-r] <archive> <anchor> [node]"
   echo "           Restores the specified etcd archive from an archive located"
   echo "           on either the remote RGW ('remote' flag specified) or from"
   echo "           the local filesystem (no 'remote' flag)"
@@ -253,9 +251,9 @@ function help() {
 
 function menu() {
   echo "Please select from the available options:"
-  echo "Execution methods:          backup (b)"
-  echo "                            list_archives (la) [-r]"
-  echo "                            restore (r) [-r] <archive> <anchor>"
+  echo "Execution methods:          backup (b) [node]"
+  echo "                            list_archives (la) [-r] [node]"
+  echo "                            restore (r) [-r] <archive> <anchor> [node]"
   echo "                            cleanup (c)"
   echo "Other:                      command_history (ch)"
   echo "                            repeat_cmd (<)"
@@ -278,7 +276,11 @@ function execute_selection() {
 
 function main() {
 
-  setup
+  # NAMESPACE should always be set to kube-system
+  export NAMESPACE="kube-system"
+  export ONDEMAND_JOB="etcd-ondemand"
+  # Save a backup of NODE if needed later
+  export NODE_BACKUP="$NODE"
 
   # If no arguments are passed, enter interactive mode
   if [[ "${#ARGS[@]}" -eq 0 ]]; then
@@ -300,6 +302,9 @@ function main() {
         (( CURRENT_COMMAND = ${#HISTORY[@]} ))
 
         execute_selection "${ARGS[@]}"
+
+        # Restore the original NODE since it may have been overwritten
+        export NODE="$NODE_BACKUP"
 
         echo ""
         if [[ ${ARGS[0]} != "quit" && ${ARGS[0]} != "q" ]]; then
