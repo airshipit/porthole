@@ -114,6 +114,7 @@ spec:
       serviceAccountName: {{ $serviceAccountName }}
       nodeSelector:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
+      shareProcessNamespace: true
       containers:
         - name: calicoctl-utility
 {{ tuple $envAll "calicoctl_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
