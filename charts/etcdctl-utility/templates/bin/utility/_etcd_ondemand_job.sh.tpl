@@ -8,10 +8,11 @@ if [[ $ETCD_POD_NAMESPACE == "" ]]; then
   exit 1
 fi
 
-export ETCD_RGW_SECRET={{ $envAll.Values.conf.etcd_backup_restore.secrets.kube_system.rgw_secret }}
 export ETCD_CONF_SECRET={{ $envAll.Values.conf.etcd_backup_restore.secrets.kube_system.conf_secret }}
 export ETCD_IMAGE_NAME=$(kubectl get cronjob -n ${ETCD_POD_NAMESPACE} kubernetes-etcd-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep etcdctl-utility)
 export ETCD_BACKUP_BASE_PATH=$(kubectl get secret -o yaml -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} | grep BACKUP_BASE_PATH | awk '{print $2}' | base64 -d)
+ETCD_REMOTE_BACKUP_ENABLED=$(kubectl get secret -o yaml -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} | grep REMOTE_BACKUP_ENABLED | awk '{print $2}' | base64 -d)
+export ETCD_REMOTE_BACKUP_ENABLED=$(echo $ETCD_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
 if [[ $NODE == "" ]];then
   echo "Cannot find node to run ondemand job from."
@@ -23,7 +24,9 @@ if [[ $ETCD_IMAGE_NAME == "" ]]; then
   exit 1
 fi
 
-cat <<EOF | kubectl create -n $ETCD_POD_NAMESPACE -f -
+export TMP_FILE=$(mktemp -p /tmp)
+
+cat > $TMP_FILE << EOF
 ---
 apiVersion: batch/v1
 kind: Job
@@ -89,6 +92,11 @@ spec:
                   name: ${ETCD_CONF_SECRET}
             - name: OS_IDENTITY_API_VERSION
               value: "3"
+EOF
+
+if $ETCD_REMOTE_BACKUP_ENABLED; then
+  export ETCD_RGW_SECRET={{ $envAll.Values.conf.etcd_backup_restore.secrets.kube_system.rgw_secret }}
+  cat >> $TMP_FILE << EOF
             - name: OS_AUTH_URL
               valueFrom:
                 secretKeyRef:
@@ -124,6 +132,10 @@ spec:
                 secretKeyRef:
                   name: ${ETCD_RGW_SECRET}
                   key: OS_PASSWORD
+EOF
+fi
+
+cat >> $TMP_FILE << EOF
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
@@ -175,3 +187,6 @@ spec:
           hostPath:
             path: /var/lib/etcd
 EOF
+
+kubectl create -n $ETCD_POD_NAMESPACE -f $TMP_FILE
+rm -rf $TMP_FILE

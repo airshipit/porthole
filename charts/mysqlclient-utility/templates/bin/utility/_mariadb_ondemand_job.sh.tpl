@@ -8,17 +8,20 @@ if [[ $MARIADB_POD_NAMESPACE == "" ]]; then
   exit 1
 fi
 
-export MARIADB_RGW_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.rgw_secret }}
 export MARIADB_CONF_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.conf_secret }}
 export MARIADB_IMAGE_NAME=$(kubectl get cronjob -n ${MARIADB_POD_NAMESPACE} mariadb-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep mysqlclient-utility)
 export MARIADB_BACKUP_BASE_PATH=$(kubectl get secret -o yaml -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} | grep BACKUP_BASE_PATH | awk '{print $2}' | base64 -d)
+MARIADB_REMOTE_BACKUP_ENABLED=$(kubectl get secret -o yaml -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} | grep REMOTE_BACKUP_ENABLED | awk '{print $2}' | base64 -d)
+export MARIADB_REMOTE_BACKUP_ENABLED=$(echo $MARIADB_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
 if [[ $MARIADB_IMAGE_NAME == "" ]]; then
   echo "Cannot find the utility image for populating MARIADB_IMAGE_NAME variable."
   exit 1
 fi
 
-cat <<EOF | kubectl create -n $MARIADB_POD_NAMESPACE -f -
+export TMP_FILE=$(mktemp -p /tmp)
+
+cat > $TMP_FILE << EOF
 ---
 apiVersion: batch/v1
 kind: Job
@@ -101,6 +104,11 @@ spec:
                   name: ${MARIADB_CONF_SECRET}
             - name: OS_IDENTITY_API_VERSION
               value: "3"
+EOF
+
+if $MARIADB_REMOTE_BACKUP_ENABLED; then
+  export MARIADB_RGW_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.rgw_secret }}
+  cat >> $TMP_FILE << EOF
             - name: OS_AUTH_URL
               valueFrom:
                 secretKeyRef:
@@ -136,6 +144,10 @@ spec:
                 secretKeyRef:
                   name: ${MARIADB_RGW_SECRET}
                   key: OS_PASSWORD
+EOF
+fi
+
+cat >> $TMP_FILE << EOF
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
@@ -176,3 +188,6 @@ spec:
           persistentVolumeClaim:
             claimName: mariadb-backup-data
 EOF
+
+kubectl create -n $MARIADB_POD_NAMESPACE -f $TMP_FILE
+rm -rf $TMP_FILE
