@@ -186,6 +186,17 @@ class UtilityContainerClient(object):
                 'namespace'.format(
                     deployment_name, deployment_selectors, self.NAMESPACE))
 
+    def _get_pod_logs(self, deployment_name):
+        """Method to get logs for a specific utility pod
+
+        :param deployment_name: if specified the deployment name of the utility pod
+            where the utilscli command is to be executed
+        :return: pod logs for specific pod
+        """
+        pod = self._get_utility_container(deployment_name)
+        return self._corev1api_api_client.read_namespaced_pod_log(
+            pod.metadata.name, self.NAMESPACE)
+
     def _get_exec_cmd_output(self, utility_container, ex_cmd, default=1):
         """Exec into a specific utility container, then execute the utilscli
             command and return the output of the command

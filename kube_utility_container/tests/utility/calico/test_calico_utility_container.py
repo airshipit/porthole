@@ -30,3 +30,37 @@ class TestCalicoUtilityContainer(TestBase):
         self.assertIn(
             expected, result_set, 'Unexpected value for command: {}, '
             'Command Output: {}'.format(exec_cmd, result_set))
+
+    def test_verify_readonly_rootfs(self):
+        """To verify calico-utility readonly rootfs configuration"""
+        failures = []
+        expected = "False"
+        calico_utility_pod = \
+            self.client._get_utility_container(self.deployment_name)
+        for container in calico_utility_pod.spec.containers:
+            if expected != \
+                    str(container.security_context.read_only_root_filesystem):
+                failures.append(
+                    f"container {container.name} is not having expected"
+                    f" value {expected} set for read_only_root_filesystem"
+                    f" in pod {calico_utility_pod.metadata.name}")
+        self.assertEqual(0, len(failures), failures)
+
+    def test_verify_calico_utility_pod_logs(self):
+        """To verify calico-utility pod logs"""
+        date_1 = (self.client.exec_cmd(
+            self.deployment_name,
+            ['date', '+%Y-%m-%d %H'])).replace('\n','')
+        date_2 = (self.client.exec_cmd(
+            self.deployment_name,
+            ['date', '+%b %d %H'])).replace('\n','')
+        exec_cmd = ['utilscli', 'calicoctl', 'version']
+        self.client.exec_cmd(self.deployment_name, exec_cmd)
+        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
+            replace('\n','')
+        if date_1 in pod_logs:
+            latest_pod_logs = (pod_logs.split(date_1))[1:]
+        else:
+            latest_pod_logs = (pod_logs.split(date_2))[1:]
+        self.assertNotEqual(
+            0, len(latest_pod_logs), "Not able to get the latest logs")
