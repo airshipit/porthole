@@ -34,12 +34,19 @@ bootstrap:
 conf:
   rgw_ks:
     enabled: true
+pod:
+  mandatory_access_control:
+    type: apparmor
+    ceph-utility-config-ceph-ns-key-generator :
+      ceph-storage-keys-generator: runtime/default
+      init: runtime/default
 EOF
 
 helm upgrade --install ceph-utility-config ./ceph-provisioners \
   --namespace=$namespace \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
+  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(./tools/deployment/common/get-values-overrides.sh  ceph-provisioners)} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
 # Deploy Ceph-Utility
