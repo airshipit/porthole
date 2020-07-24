@@ -59,15 +59,24 @@ function check_args() {
     return 1
   fi
 
+  NAMESPACE_POS=1
+
   # Check if the first parameter is the remote flag.
-  if [[ "${ARGS_ARRAY[1]}" == "-r" ]]; then
+  if [[ "${ARGS_ARRAY[1]}" =~ ^-rp|^-pr|^-r ]]; then
     export LOC_STRING="remote RGW"
     export LOCATION="remote"
     NAMESPACE_POS=2
   else
     export LOC_STRING="local"
     export LOCATION=""
-    NAMESPACE_POS=1
+  fi
+
+  # Check if persistent on-demand pod is enabled
+  if [[ "${ARGS_ARRAY[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    export KEEP_POD="true"
+    NAMESPACE_POS=2
+  else
+    export KEEP_POD="false"
   fi
 
   setup_namespace "${ARGS_ARRAY[$NAMESPACE_POS]}"
@@ -80,6 +89,20 @@ function check_args() {
 
 # Ensure that the ondemand pod is running
 function ensure_ondemand_pod_exists() {
+
+  # Determine the status of the on demand pod if it exists
+  POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
+  if [[ ! -z "$POD_LISTING" ]]; then
+    ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
+    STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
+    if [[ "$STATUS" == "Terminating" ]]; then
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=30s
+      unset ONDEMAND_POD
+    elif [[ "$STATUS" != "Running" ]]; then
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=30s
+    fi
+  fi
+
   POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
   if [[ ! -z "$POD_LISTING" ]]; then
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
@@ -183,7 +206,44 @@ function remove_job() {
   fi
 }
 
-# Params: [-r] [namespace]
+function lock() {
+  exec 100>/tmp/dbutils.lock || exit 1
+  flock 100 || exit 1
+  export MY_LOCK="true"
+  echo "Acquired lock."
+}
+
+# Params: wait (how long in seconds to wait on the lock to be released.
+function check_lock() {
+
+  if [[ ! -e /tmp/dbutils.lock ]]; then
+    return 0
+  fi
+
+  echo "Waiting up to $1 seconds to acquire lock."
+
+  WAIT=$(($(date +'%s')+$1))
+
+  while [[ "$WAIT" -ge "$(date +'%s')" ]]; do
+    if [[ ! -e /tmp/dbutils.lock ]]; then
+      return 0
+    fi
+  done
+
+  echo "ERROR: Lock did not release after $1 seconds."
+  echo "  Another process may have locked /tmp/dbutils.lock"
+  echo "  If you are sure no other process is running, rm /tmp/dbutils.lock"
+  echo "  and run dbutils again."
+
+  exit 1
+}
+
+function unlock() {
+  rm /tmp/dbutils.lock > /dev/null 2>&1
+  export MY_LOCK="false"
+}
+
+# Params: [-p] [namespace]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
@@ -196,11 +256,17 @@ function do_backup() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
+  check_lock 60
+
+  lock
+
   # Execute the command in the on-demand pod
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_postgresql.sh
+
+  unlock
 }
 
-# Params: [-r] [namespace]
+# Params: [-rp] [namespace]
 function do_list_archives() {
 
   LIST_ARGS=("$@")
@@ -217,7 +283,7 @@ function do_list_archives() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_archives "$LOCATION"
 }
 
-# Params: [-r] <archive>
+# Params: [-rp] <archive>
 function do_list_databases() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -249,7 +315,7 @@ function do_list_databases() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_databases "$ARCHIVE" "$LOCATION"
 }
 
-# Params: [-r] <archive> <database>
+# Params: [-rp] <archive> <database>
 function do_list_tables() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -283,7 +349,7 @@ function do_list_tables() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_tables "$ARCHIVE" "$DATABASE" "$LOCATION"
 }
 
-# Params: [-r] <archive> <database> <table>
+# Params: [-rp] <archive> <database> <table>
 function do_list_rows() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -318,7 +384,7 @@ function do_list_rows() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_rows "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
-# Params: [-r] <archive> <database> <table>
+# Params: [-rp] <archive> <database> <table>
 function do_list_schema() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -504,7 +570,7 @@ function do_delete_table() {
   fi
 }
 
-# Params: [-r] <archive> <db_name>
+# Params: [-rp] <archive> <db_name>
 function do_restore() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -534,8 +600,14 @@ function do_restore() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
+  check_lock 60
+
+  lock
+
   # Execute the command in the on-demand pod
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
+
+  unlock
 }
 
 # Params: <namespace>
@@ -560,7 +632,7 @@ function do_sql_prompt() {
 
 function do_cleanup() {
 
-  if [[ ! -z "$USED_NAMESPACES" ]]; then
+  if [[ "$KEEP_POD" == "false" && ! -z "$USED_NAMESPACES" ]]; then
 
     IFS=', ' read -re -a USED_NAMESPACE_ARRAY <<< "$USED_NAMESPACES"
 
@@ -577,7 +649,11 @@ function do_cleanup() {
 
     echo "Cleanup complete."
   else
-    echo "Nothing to cleanup."
+    if [[ "$KEEP_POD" == "true" ]]; then
+      echo "Persistent Pod -p enabled, no cleanup performed on $ONDEMAND_POD"
+    else
+      echo "Nothing to cleanup."
+    fi
   fi
 }
 
@@ -594,46 +670,44 @@ function do_command_history() {
 
 function do_trap() {
 
+  if [[ "$MY_LOCK" == "true" ]]; then
+    unlock
+  fi
+
   do_cleanup
   exit
 }
 
 function help() {
   echo "Usage:"
-  echo "       utilscli dbutils backup (b) [namespace]"
+  echo "       -r Remote flag. When used will use the remote RGW location."
+  echo "            Not using this flag will use the local filesystem."
+  echo ""
+  echo "       -p Persistent On-Demand Pod. The On-Demand Pod will not be"
+  echo "            removed when the command finishes if applicable."
+  echo ""
+  echo "       utilscli dbutils backup (b) [-p] [namespace]"
   echo "           Performs a manual backup of all databases within Postgresql"
   echo "           for the given namespace."
   echo ""
-  echo "       utilscli dbutils list_archives (la) [-r] [namespace]"
-  echo "           Retrieves the list of archives, either locally (no 'remote'"
-  echo "           flag) or from the remote RGW (using 'remote' flag)."
+  echo "       utilscli dbutils list_archives (la) [-rp] [namespace]"
+  echo "           Retrieves the list of archives."
   echo ""
-  echo "       utilscli dbutils list_databases (ld) [-r] <archive>"
+  echo "       utilscli dbutils list_databases (ld) [-rp] <archive>"
   echo "           Retrieves the list of databases contained within the given"
-  echo "           archive tarball. The 'remote' flag is used to retrieve the"
-  echo "           archive from the remote RGW; otherwise the database list"
-  echo "           will be retrieved from the archive on the local filesystem."
+  echo "           archive tarball."
   echo ""
-  echo "       utilscli dbutils list_tables (lt) [-r] <archive> <database>"
+  echo "       utilscli dbutils list_tables (lt) [-rp] <archive> <database>"
   echo "           Retrieves the list of tables contained within the given"
-  echo "           database from the given archive tarball. The 'remote' flag"
-  echo "           is used to retrieve the archive from the remote RGW;"
-  echo "           otherwise the table list will be retrieved from the archive"
-  echo "           on the local filesystem."
+  echo "           database from the given archive tarball."
   echo ""
-  echo "       utilscli dbutils list_rows (lr) [-r] <archive> <database> <table>"
+  echo "       utilscli dbutils list_rows (lr) [-rp] <archive> <database> <table>"
   echo "           Retrieves the list of rows in the given table contained"
   echo "           within the given database from the given archive tarball."
-  echo "           The 'remote' flag is used to retrieve the archive from the"
-  echo "           remote RGW; otherwise the table rows will be retrieved from"
-  echo "           the archive on the local filesystem."
   echo ""
-  echo "       utilscli dbutils list_schema (ls) [-r] <archive> <database> <table>"
+  echo "       utilscli dbutils list_schema (ls) [-rp] <archive> <database> <table>"
   echo "           Retrieves the table schema information for the given table"
   echo "           of the given database from the given archive tarball."
-  echo "           The 'remote' flag is used to retrieve the archive from the"
-  echo "           remote RGW; otherwise the table rows will be retrieved from"
-  echo "           the archive on the local filesystem."
   echo ""
   echo "       utilscli dbutils show_databases (sd) [namespace]"
   echo "           Retrieves the list of databases in the currently active"
@@ -652,12 +726,10 @@ function help() {
   echo "           of the given database from the currently active Postgresql"
   echo "           database system."
   echo ""
-  echo "       utilscli dbutils restore (r) [-r] <archive> <db_name>"
+  echo "       utilscli dbutils restore (r) [-rp] <archive> <db_name>"
   echo "           where <db_name> can be either a database name or 'all', which"
   echo "               means all databases are to be restored"
-  echo "           Restores the specified database(s) from an archive located"
-  echo "           on either the remote RGW ('remote' flag specified) or from"
-  echo "           the local filesystem (no 'remote' flag)"
+  echo "           Restores the specified database(s)."
   echo ""
   echo "       utilscli dbutils sql_prompt (sql) [namespace]"
   echo "           For manual table/row restoration, this command allows access"
@@ -678,15 +750,15 @@ function help() {
 
 function menu() {
   echo "Please select from the available options:"
-  echo "Execution methods:          backup (b) [namespace]"
-  echo "                            restore (r) [-r] <archive> <db_name | all>"
+  echo "Execution methods:          backup (b) [-p] [namespace]"
+  echo "                            restore (r) [-rp] <archive> <db_name | all>"
   echo "                            sql_prompt (sql) [namespace]"
   echo "                            cleanup (c)"
-  echo "Show Archived details:      list_archives (la) [-r] [namespace]"
-  echo "                            list_databases (ld) [-r] <archive>"
-  echo "                            list_tables (lt) [-r] <archive> <database>"
-  echo "                            list_rows (lr) [-r] <archive> <database> <table>"
-  echo "                            list_schema (ls) [-r] <archive> <database> <table>"
+  echo "Show Archived details:      list_archives (la) [-rp] [namespace]"
+  echo "                            list_databases (ld) [-rp] <archive>"
+  echo "                            list_tables (lt) [-rp] <archive> <database>"
+  echo "                            list_rows (lr) [-rp] <archive> <database> <table>"
+  echo "                            list_schema (ls) [-rp] <archive> <database> <table>"
   echo "Show Live Database details: show_databases (sd) [namespace]"
   echo "                            show_tables (st) [namespace] <database>"
   echo "                            show_rows (sr) [namespace] <database> <table>"
@@ -760,6 +832,7 @@ function main() {
   else
     execute_selection "${ARGS[@]}"
     do_cleanup
+    echo "Task Complete"
   fi
 }
 

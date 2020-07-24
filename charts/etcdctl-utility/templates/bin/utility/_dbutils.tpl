@@ -42,14 +42,19 @@ function check_args() {
   fi
 
   # Check if the first parameter is the remote flag.
-  if [[ "${ARGS_ARRAY[1]}" == "-r" ]]; then
+  if [[ "${ARGS_ARRAY[1]}" =~ ^-rp|^-pr|^-r ]]; then
     export LOC_STRING="remote RGW"
     export LOCATION="remote"
-    NAMESPACE_POS=2
   else
     export LOC_STRING="local"
     export LOCATION=""
-    NAMESPACE_POS=1
+  fi
+
+  # Check if persistent on-demand pod is enabled
+  if [[ "${ARGS_ARRAY[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    export KEEP_POD="true"
+  else
+    export KEEP_POD="false"
   fi
 
   # Check if a valid NODE was entered as the last parameter
@@ -71,6 +76,20 @@ function check_args() {
 
 # Ensure that the ondemand pod is running
 function ensure_ondemand_pod_exists() {
+
+  # Determine the status of the on demand pod if it exists
+  POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
+  if [[ ! -z "$POD_LISTING" ]]; then
+    ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
+    STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
+    if [[ "$STATUS" == "Terminating" ]]; then
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=30s
+      unset ONDEMAND_POD
+    elif [[ "$STATUS" != "Running" ]]; then
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=30s
+    fi
+  fi
+
   POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
   if [[ ! -z "$POD_LISTING" ]]; then
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
@@ -130,12 +149,12 @@ function remove_job() {
   fi
 }
 
-# Params: [node]
+# Params: [-p] [node]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
 
-  check_args BACKUP_ARGS 0 1
+  check_args BACKUP_ARGS 0 2
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -147,7 +166,7 @@ function do_backup() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_etcd.sh
 }
 
-# Params: [-r] [node]
+# Params: [-rp] [node]
 function do_list_archives() {
 
   LIST_ARGS=("$@")
@@ -164,7 +183,7 @@ function do_list_archives() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_etcd.sh list_archives "$LOCATION"
 }
 
-# Params: [-r] <archive> <anchor> [node]
+# Params: [-rp] <archive> <anchor> [node]
 function do_restore() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -199,11 +218,15 @@ function do_restore() {
 
 function do_cleanup() {
 
-  remove_job "$ONDEMAND_JOB"
+  if [[ "$KEEP_POD" == "false" ]]; then
+    remove_job "$ONDEMAND_JOB"
 
-  unset ONDEMAND_POD
+    unset ONDEMAND_POD
 
-  echo "Cleanup complete."
+    echo "Cleanup complete."
+  else
+    echo "Persistent Pod -p enabled, no cleanup performed on $ONDEMAND_POD"
+  fi
 }
 
 function do_command_history() {
@@ -225,17 +248,20 @@ function do_trap() {
 
 function help() {
   echo "Usage:"
-  echo "       utilscli dbutils backup (b) [node]"
+  echo "       -r Remote flag. When used will use the remote RGW location."
+  echo "            Not using this flag will use the local filesystem."
+  echo ""
+  echo "       -p Persistent On-Demand Pod. The On-Demand Pod will not be"
+  echo "            removed when the command finishes if applicable."
+  echo ""
+  echo "       utilscli dbutils backup (b) [-p] [node]"
   echo "           Performs a manual backup of etcd."
   echo ""
-  echo "       utilscli dbutils list_archives (la) [-r] [node]"
-  echo "           Retrieves the list of archives, either locally (no 'remote'"
-  echo "           flag) or from the remote RGW (using 'remote' flag)."
+  echo "       utilscli dbutils list_archives (la) [-rp] [node]"
+  echo "           Retrieves the list of archives."
   echo ""
-  echo "       utilscli dbutils restore (r) [-r] <archive> <anchor> [node]"
-  echo "           Restores the specified etcd archive from an archive located"
-  echo "           on either the remote RGW ('remote' flag specified) or from"
-  echo "           the local filesystem (no 'remote' flag)"
+  echo "       utilscli dbutils restore (r) [-rp] <archive> <anchor> [node]"
+  echo "           Restores the specified etcd archive from an archive."
   echo ""
   echo "       utilscli dbutils cleanup (c)"
   echo "           Cleans up (kills) any jobs/pods which are left running"
@@ -251,9 +277,9 @@ function help() {
 
 function menu() {
   echo "Please select from the available options:"
-  echo "Execution methods:          backup (b) [node]"
-  echo "                            list_archives (la) [-r] [node]"
-  echo "                            restore (r) [-r] <archive> <anchor> [node]"
+  echo "Execution methods:          backup (b) [-p] [node]"
+  echo "                            list_archives (la) [-rp] [node]"
+  echo "                            restore (r) [-rp] <archive> <anchor> [node]"
   echo "                            cleanup (c)"
   echo "Other:                      command_history (ch)"
   echo "                            repeat_cmd (<)"
@@ -317,6 +343,7 @@ function main() {
   else
     execute_selection "${ARGS[@]}"
     do_cleanup
+    echo "Task Complete"
   fi
 }
 
