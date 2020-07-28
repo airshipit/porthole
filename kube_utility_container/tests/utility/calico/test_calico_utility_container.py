@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
+from unittest.mock import patch
+
+from kube_utility_container.services.exceptions import \
+    KubePodNotFoundException
+from kube_utility_container.services.utility_container_client import \
+    UtilityContainerClient
 
 from kube_utility_container.tests.utility.base import TestBase
 
@@ -82,3 +87,14 @@ class TestCalicoUtilityContainer(TestBase):
                     f"{calico_utility_pod.metadata.name} "
                     f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
+
+    @patch(
+        'kube_utility_container.services.utility_container_client.'
+        'UtilityContainerClient._get_utility_container',
+        side_effect=KubePodNotFoundException('utility'))
+    def test_exec_cmd_no_calicoctl_utility_pods_returned(self, mock_list_pods):
+        mock_list_pods.return_value = []
+        utility_container_client = UtilityContainerClient()
+        exec_cmd = ['utilscli', 'calicoctl', 'version']
+        with self.assertRaises(KubePodNotFoundException):
+            utility_container_client.exec_cmd(self.deployment_name, exec_cmd)
