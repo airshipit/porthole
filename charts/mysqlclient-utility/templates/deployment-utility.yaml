@@ -89,6 +89,8 @@ spec:
     metadata:
       name: {{ printf "%s" $envAll.Release.Name }}
       annotations:
+        configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
+        configmap-etc-hash: {{ tuple "configmap-etc-client.yaml" . | include "helm-toolkit.utils.hash" }}
         {{ tuple . | include "helm-toolkit.snippets.release_uuid" }}
 {{ dict "envAll" $envAll "podName" "mysqlclient-utility" "containerNames" (list "mysqlclient-utility") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:

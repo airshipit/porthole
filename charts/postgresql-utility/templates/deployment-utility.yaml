@@ -92,6 +92,8 @@ spec:
       labels:
 {{ tuple $envAll "postgresql" "utility" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
       annotations:
+        configmap-bin-hash: {{ tuple "configmap-bin.yaml" . | include "helm-toolkit.utils.hash" }}
+        configmap-etc-hash: {{ tuple "configmap-etc.yaml" . | include "helm-toolkit.utils.hash" }}
 {{ dict "envAll" $envAll "podName" "postgresql-utility" "containerNames" (list "postgresql-utility") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
     spec:
 {{ dict "envAll" $envAll "application" "postgresql" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
