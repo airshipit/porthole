@@ -34,6 +34,9 @@ metadata:
 spec:
   template:
     metadata:
+      annotations:
+        {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+{{ dict "envAll" $envAll "podName" "postgresql-ondemand" "containerNames" (list  "backup-perms" "postgresql-ondemand") | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:
 {{ tuple $envAll "postgresql-ondemand" "ondemand" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
