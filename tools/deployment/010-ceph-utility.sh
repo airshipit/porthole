@@ -58,19 +58,3 @@ helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
 ./tools/deployment/common/wait-for-pods.sh $namespace
-
-#Validate Apparmor
-ceph_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep ceph |  grep 1/1  | awk '{print $1}')
-expected_profile="docker-default (enforce)"
-profile=`kubectl -n $namespace exec $ceph_pod -- cat /proc/1/attr/current`
-echo "Profile running: $profile"
-  if test "$profile" != "$expected_profile"
-  then
-    if test "$proc_name" == "pause"
-    then
-      echo "Root process (pause) can run docker-default, it's ok."
-    else
-      echo "$profile is the WRONG PROFILE!!"
-      return 1
-    fi
-  fi
