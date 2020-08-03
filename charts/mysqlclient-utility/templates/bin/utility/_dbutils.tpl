@@ -30,6 +30,7 @@ function setup() {
   fi
 
   export ONDEMAND_JOB="mariadb-ondemand"
+  export KEEP_POD="false"
 
   IFS=', ' read -re -a NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPACE_LIST"
 }
@@ -418,19 +419,24 @@ function do_list_schema() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
-# Params: <namespace>
+# Params: [-p] <namespace>
 function do_show_databases() {
 
   SHOW_ARGS=("$@")
 
-  check_args SHOW_ARGS 1 1
+  check_args SHOW_ARGS 1 2
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  SHOW_ARGS[2]=$ONDEMAND_POD
+
+  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v SHOW_ARGS[1]
+  fi
+
+  SHOW_ARGS[3]=$ONDEMAND_POD
 
   show_databases "${SHOW_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -438,19 +444,24 @@ function do_show_databases() {
   fi
 }
 
-# Params: <namespace> <database>
+# Params: [-p] <namespace> <database>
 function do_show_tables() {
 
   SHOW_ARGS=("$@")
 
-  check_args SHOW_ARGS 2 2
+  check_args SHOW_ARGS 2 3
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  SHOW_ARGS[3]=$ONDEMAND_POD
+
+  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v SHOW_ARGS[1]
+  fi
+
+  SHOW_ARGS[4]=$ONDEMAND_POD
 
   show_tables "${SHOW_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -458,19 +469,24 @@ function do_show_tables() {
   fi
 }
 
-# Params: <namespace> <database> <table>
+# Params: [-p] <namespace> <database> <table>
 function do_show_rows() {
 
   SHOW_ARGS=("$@")
 
-  check_args SHOW_ARGS 3 3
+  check_args SHOW_ARGS 3 4
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  SHOW_ARGS[4]=$ONDEMAND_POD
+
+  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v SHOW_ARGS[1]
+  fi
+
+  SHOW_ARGS[5]=$ONDEMAND_POD
 
   show_rows "${SHOW_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -478,19 +494,24 @@ function do_show_rows() {
   fi
 }
 
-# Params: <namespace> <database> <table>
+# Params: [-p] <namespace> <database> <table>
 function do_show_schema() {
 
   SHOW_ARGS=("$@")
 
-  check_args SHOW_ARGS 3 3
+  check_args SHOW_ARGS 3 4
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  SHOW_ARGS[4]=$ONDEMAND_POD
+
+  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v SHOW_ARGS[1]
+  fi
+
+  SHOW_ARGS[5]=$ONDEMAND_POD
 
   show_schema "${SHOW_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -498,7 +519,7 @@ function do_show_schema() {
   fi
 }
 
-# Params: <namespace> <tablename>
+# Params: [-p] <namespace> <tablename>
 #   Column names and types will be hardcoded for now
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
@@ -507,14 +528,19 @@ function do_create_table() {
 
   CREATE_ARGS=("$@")
 
-  check_args CREATE_ARGS 2 2
+  check_args CREATE_ARGS 2 3
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  CREATE_ARGS[3]=$ONDEMAND_POD
+
+  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v SHOW_ARGS[1]
+  fi
+
+  CREATE_ARGS[4]=$ONDEMAND_POD
 
   create_table "${CREATE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -522,7 +548,7 @@ function do_create_table() {
   fi
 }
 
-# Params: <namespace> <table>
+# Params: [-p] <namespace> <table>
 #   The row values are hardcoded for now.
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
@@ -531,14 +557,19 @@ function do_create_row() {
 
   CREATE_ARGS=("$@")
 
-  check_args CREATE_ARGS 2 2
+  check_args CREATE_ARGS 2 3
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  CREATE_ARGS[3]=$ONDEMAND_POD
+
+  if [[ "${CREATE_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v CREATE_ARGS[1]
+  fi
+
+  CREATE_ARGS[4]=$ONDEMAND_POD
 
   create_row "${CREATE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -546,7 +577,7 @@ function do_create_row() {
   fi
 }
 
-# Params: <namespace> <table> <colname> <value>
+# Params: [-p] <namespace> <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
@@ -555,14 +586,20 @@ function do_delete_row() {
 
   DELETE_ARGS=("$@")
 
-  check_args DELETE_ARGS 4 4
+  check_args DELETE_ARGS 4 5
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
+
   ensure_ondemand_pod_exists
-  DELETE_ARGS[5]=$ONDEMAND_POD
+
+  if [[ "${DELETE_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v DELETE_ARGS[1]
+  fi
+
+  DELETE_ARGS[6]=$ONDEMAND_POD
 
   delete_row "${DELETE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -570,7 +607,7 @@ function do_delete_row() {
   fi
 }
 
-# Params: <namespace> <tablename>
+# Params: [-p] <namespace> <tablename>
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
 #         at bootrap time.
@@ -578,14 +615,19 @@ function do_delete_table() {
 
   DELETE_ARGS=("$@")
 
-  check_args DELETE_ARGS 2 2
+  check_args DELETE_ARGS 2 3
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  DELETE_ARGS[3]=$ONDEMAND_POD
+
+  if [[ "${DELETE_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v DELETE_ARGS[1]
+  fi
+
+  DELETE_ARGS[4]=$ONDEMAND_POD
 
   delete_table "${DELETE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -633,28 +675,38 @@ function do_restore() {
   unlock
 }
 
-# Params: <namespace>
+# Params: [-p] <namespace>
 function do_sql_prompt() {
 
   PROMPT_ARGS=("$@")
 
-  check_args PROMPT_ARGS 1 1
+  check_args PROMPT_ARGS 1 2
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
-  PROMPT_ARGS[2]=$ONDEMAND_POD
+
+  if [[ "${PROMPT_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v PROMPT_ARGS[1]
+  fi
+
+  PROMPT_ARGS[3]=$ONDEMAND_POD
   sql_prompt "${PROMPT_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
     return 1
   fi
 }
 
+# Params: [namespace]
 function do_cleanup() {
 
-  if [[ "$KEEP_POD" == "false" && ! -z "$USED_NAMESPACES" ]]; then
+  # If a namespace is given go ahead and try to clean it up.
+  if [[ ! -z "$2" ]]; then
+    remove_job "$2" "$ONDEMAND_JOB"
+    unset ONDEMAND_POD
+  elif [[ "$KEEP_POD" == "false" && ! -z "$ONDEMAND_POD" ]]; then
 
     IFS=', ' read -re -a USED_NAMESPACE_ARRAY <<< "$USED_NAMESPACES"
 
@@ -730,19 +782,19 @@ function help() {
   echo "           Retrieves the table schema information for the given table"
   echo "           of the given database from the given archive tarball."
   echo ""
-  echo "       utilscli dbutils show_databases (sd) <namespace>"
+  echo "       utilscli dbutils show_databases (sd) [-p] <namespace>"
   echo "           Retrieves the list of databases in the currently active"
   echo "           mariadb database system for the given namespace."
   echo ""
-  echo "       utilscli dbutils show_tables (st) <namespace> <database>"
+  echo "       utilscli dbutils show_tables (st) [-p] <namespace> <database>"
   echo "           Retrieves the list of tables of the given database in the"
   echo "           currently active mariadb database system."
   echo ""
-  echo "       utilscli dbutils show_rows (sr) <namespace> <database> <table>"
+  echo "       utilscli dbutils show_rows (sr) [-p] <namespace> <database> <table>"
   echo "           Retrieves the list of rows in the given table of the given"
   echo "           database from the currently active mariadb database system."
   echo ""
-  echo "       utilscli dbutils show_schema (ss) <namespace> <database> <table>"
+  echo "       utilscli dbutils show_schema (ss) [-p] <namespace> <database> <table>"
   echo "           Retrieves the table schema information for the given table"
   echo "           of the given database from the currently active mariadb"
   echo "           database system."
@@ -752,14 +804,15 @@ function help() {
   echo "               means all databases are to be restored"
   echo "           Restores the specified database(s)."
   echo ""
-  echo "       utilscli dbutils sql_prompt (sql) <namespace>"
+  echo "       utilscli dbutils sql_prompt (sql) [-p] <namespace>"
   echo "           For manual table/row restoration, this command allows access"
   echo "           to the Mariadb mysql interactive user interface. Type quit"
   echo "           to quit the interface and return back to the dbutils menu."
   echo ""
-  echo "       utilscli dbutils cleanup (c)"
+  echo "       utilscli dbutils cleanup (c) [namespace]"
   echo "           Cleans up (kills) any jobs/pods which are left running for"
   echo "           any namespaces which have been used during this session."
+  echo "           For non-interactive mode, namespace is required for cleanup."
   echo ""
   echo "       utilscli dbutils command_history (ch)"
   echo "           Displays a list of all entered commands during this session."
@@ -773,17 +826,17 @@ function menu() {
   echo "Please select from the available options:"
   echo "Execution methods:          backup (b) [-p] <namespace>"
   echo "                            restore (r) [-rp] <archive> <db_name | all>"
-  echo "                            sql_prompt (sql) <namespace>"
-  echo "                            cleanup (c)"
+  echo "                            sql_prompt (sql) [-p] <namespace>"
+  echo "                            cleanup (c) [namespace]"
   echo "Show Archived details:      list_archives (la) [-rp] <namespace>"
   echo "                            list_databases (ld) [-rp] <archive>"
   echo "                            list_tables (lt) [-rp] <archive> <database>"
   echo "                            list_rows (lr) [-rp] <archive> <database> <table>"
   echo "                            list_schema (ls) [-rp] <archive> <database> <table>"
-  echo "Show Live Database details: show_databases (sd) <namespace>"
-  echo "                            show_tables (st) <namespace> <database>"
-  echo "                            show_rows (sr) <namespace> <database> <table>"
-  echo "                            show_schema (ss) <namespace> <database> <table>"
+  echo "Show Live Database details: show_databases (sd) [-p] <namespace>"
+  echo "                            show_tables (st) [-p] <namespace> <database>"
+  echo "                            show_rows (sr) [-p] <namespace> <database> <table>"
+  echo "                            show_schema (ss) [-p] <namespace> <database> <table>"
   echo "Other:                      command_history (ch)"
   echo "                            repeat_cmd (<)"
   echo "                            help (h)"
@@ -812,7 +865,7 @@ function execute_selection() {
     "sql_prompt"|"sql")           do_sql_prompt "${ARGS[@]}";;
     "command_history"|"ch")       do_command_history;;
     "<")                          ;;
-    "cleanup"|"c"|"quit"|"q")     do_cleanup;;
+    "cleanup"|"c"|"quit"|"q")     do_cleanup "${ARGS[@]}";;
     *)                            help;;
   esac
 }
@@ -852,7 +905,9 @@ function main() {
   # Arguments are passed, execute the requested command then exit
   else
     execute_selection "${ARGS[@]}"
-    do_cleanup
+    if [[ "${ARGS[@]}" != "c" && "${ARGS[@]}" != "cleanup" && "${ARGS[@]}" != "quit" && "${ARGS[@]}" != "q" ]]; then
+      do_cleanup
+    fi
     echo "Task Complete"
   fi
 }

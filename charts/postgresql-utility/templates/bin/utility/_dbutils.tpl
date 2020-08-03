@@ -30,6 +30,7 @@ function setup() {
   fi
 
   export ONDEMAND_JOB="postgresql-ondemand"
+  export KEEP_POD="false"
 
   IFS=', ' read -re -a NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPACE_LIST"
 }
@@ -243,7 +244,7 @@ function unlock() {
   export MY_LOCK="false"
 }
 
-# Params: [-p] [namespace]
+# Params: [-p]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
@@ -266,7 +267,7 @@ function do_backup() {
   unlock
 }
 
-# Params: [-rp] [namespace]
+# Params: [-rp]
 function do_list_archives() {
 
   LIST_ARGS=("$@")
@@ -419,7 +420,6 @@ function do_list_schema() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
-# Params: [namespace]
 function do_show_databases() {
 
   SHOW_ARGS=("$@")
@@ -436,7 +436,7 @@ function do_show_databases() {
   fi
 }
 
-# Params: [namespace] <database>
+# Params: <database>
 function do_show_tables() {
 
   SHOW_ARGS=("$@")
@@ -453,7 +453,7 @@ function do_show_tables() {
   fi
 }
 
-# Params: [namespace] <database> <table>
+# Params: <database> <table>
 function do_show_rows() {
 
   SHOW_ARGS=("$@")
@@ -470,7 +470,7 @@ function do_show_rows() {
   fi
 }
 
-# Params: [namespace] <database> <table>
+# Params: <database> <table>
 function do_show_schema() {
 
   SHOW_ARGS=("$@")
@@ -488,7 +488,7 @@ function do_show_schema() {
   fi
 }
 
-# Params: [namespace] <tablename>
+# Params: <tablename>
 #   Column names and types will be hardcoded for now
 #   NOTE: Database is always a pre-provisioned database.
 function do_create_table() {
@@ -507,7 +507,7 @@ function do_create_table() {
   fi
 }
 
-# Params: [namespace] <table>
+# Params: <table>
 #   The row values are hardcoded for now.
 #   NOTE: Database is always a pre-provisioned database.
 function do_create_row() {
@@ -531,7 +531,7 @@ function do_create_row() {
   fi
 }
 
-# Params: [namespace] <table> <colname> <value>
+# Params: <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
 #   NOTE: Database is always a pre-provisioned database.
 function do_delete_row() {
@@ -551,7 +551,7 @@ function do_delete_row() {
   fi
 }
 
-# Params: [namespace] <tablename>
+# Params: <tablename>
 #   NOTE: Database is always a pre-provisioned database.
 function do_delete_table() {
 
@@ -610,7 +610,6 @@ function do_restore() {
   unlock
 }
 
-# Params: <namespace>
 function do_sql_prompt() {
 
   PROMPT_ARGS=("$@")
@@ -630,9 +629,14 @@ function do_sql_prompt() {
   fi
 }
 
+# Params: [namespace]
 function do_cleanup() {
 
-  if [[ "$KEEP_POD" == "false" && ! -z "$USED_NAMESPACES" ]]; then
+  # If a namespace is given go ahead and try to clean it up.
+  if [[ ! -z "$2" ]]; then
+    remove_job "$2" "$ONDEMAND_JOB"
+    UNSET ONDEMAND_POD
+  elif [[ "$KEEP_POD" == "false" && ! -z "$ONDEMAND_POD" ]]; then
 
     IFS=', ' read -re -a USED_NAMESPACE_ARRAY <<< "$USED_NAMESPACES"
 
@@ -686,11 +690,11 @@ function help() {
   echo "       -p Persistent On-Demand Pod. The On-Demand Pod will not be"
   echo "            removed when the command finishes if applicable."
   echo ""
-  echo "       utilscli dbutils backup (b) [-p] [namespace]"
+  echo "       utilscli dbutils backup (b) [-p]"
   echo "           Performs a manual backup of all databases within Postgresql"
   echo "           for the given namespace."
   echo ""
-  echo "       utilscli dbutils list_archives (la) [-rp] [namespace]"
+  echo "       utilscli dbutils list_archives (la) [-rp]"
   echo "           Retrieves the list of archives."
   echo ""
   echo "       utilscli dbutils list_databases (ld) [-rp] <archive>"
@@ -709,19 +713,19 @@ function help() {
   echo "           Retrieves the table schema information for the given table"
   echo "           of the given database from the given archive tarball."
   echo ""
-  echo "       utilscli dbutils show_databases (sd) [namespace]"
+  echo "       utilscli dbutils show_databases (sd)"
   echo "           Retrieves the list of databases in the currently active"
   echo "           Postgresql database system for the given namespace."
   echo ""
-  echo "       utilscli dbutils show_tables (st) [namespace] <database>"
+  echo "       utilscli dbutils show_tables (st) <database>"
   echo "           Retrieves the list of tables of the given database in the"
   echo "           currently active Postgresql database system."
   echo ""
-  echo "       utilscli dbutils show_rows (sr) [namespace] <database> <table>"
+  echo "       utilscli dbutils show_rows (sr) <database> <table>"
   echo "           Retrieves the list of rows in the given table of the given"
   echo "           database from the currently active Postgresql database system."
   echo ""
-  echo "       utilscli dbutils show_schema (ss) [namespace] <database> <table>"
+  echo "       utilscli dbutils show_schema (ss) <database> <table>"
   echo "           Retrieves the table schema information for the given table"
   echo "           of the given database from the currently active Postgresql"
   echo "           database system."
@@ -731,14 +735,15 @@ function help() {
   echo "               means all databases are to be restored"
   echo "           Restores the specified database(s)."
   echo ""
-  echo "       utilscli dbutils sql_prompt (sql) [namespace]"
+  echo "       utilscli dbutils sql_prompt (sql)"
   echo "           For manual table/row restoration, this command allows access"
   echo "           to the Postgresql psql interactive user interface. Type '\q'"
   echo "           to quit the interface and return back to the dbutils menu."
   echo ""
-  echo "       utilscli dbutils cleanup (c)"
+  echo "       utilscli dbutils cleanup (c) [namespace]"
   echo "           Cleans up (kills) any jobs/pods which are left running for"
   echo "           any namespaces which have been used during this session."
+  echo "           For non-interactive mode, namespace is required for cleanup."
   echo ""
   echo "       utilscli dbutils command_history (ch)"
   echo "           Displays a list of all entered commands during this session."
@@ -750,19 +755,19 @@ function help() {
 
 function menu() {
   echo "Please select from the available options:"
-  echo "Execution methods:          backup (b) [-p] [namespace]"
+  echo "Execution methods:          backup (b) [-p]"
   echo "                            restore (r) [-rp] <archive> <db_name | all>"
-  echo "                            sql_prompt (sql) [namespace]"
+  echo "                            sql_prompt (sql)"
   echo "                            cleanup (c)"
-  echo "Show Archived details:      list_archives (la) [-rp] [namespace]"
+  echo "Show Archived details:      list_archives (la) [-rp]"
   echo "                            list_databases (ld) [-rp] <archive>"
   echo "                            list_tables (lt) [-rp] <archive> <database>"
   echo "                            list_rows (lr) [-rp] <archive> <database> <table>"
   echo "                            list_schema (ls) [-rp] <archive> <database> <table>"
-  echo "Show Live Database details: show_databases (sd) [namespace]"
-  echo "                            show_tables (st) [namespace] <database>"
-  echo "                            show_rows (sr) [namespace] <database> <table>"
-  echo "                            show_schema (ss) [namespace] <database> <table>"
+  echo "Show Live Database details: show_databases (sd)"
+  echo "                            show_tables (st) <database>"
+  echo "                            show_rows (sr) <database> <table>"
+  echo "                            show_schema (ss) <database> <table>"
   echo "Other:                      command_history (ch)"
   echo "                            repeat_cmd (<)"
   echo "                            help (h)"
@@ -791,7 +796,7 @@ function execute_selection() {
     "sql_prompt"|"sql")           do_sql_prompt "${ARGS[@]}";;
     "command_history"|"ch")       do_command_history;;
     "<")                          ;;
-    "cleanup"|"c"|"quit"|"q")     do_cleanup;;
+    "cleanup"|"c"|"quit"|"q")     do_cleanup "${ARGS[@]}";;
     *)                            help;;
   esac
 }
@@ -831,7 +836,9 @@ function main() {
   # Arguments are passed, execute the requested command then exit
   else
     execute_selection "${ARGS[@]}"
-    do_cleanup
+    if [[ "${ARGS[@]}" != "c" && "${ARGS[@]}" != "cleanup" && "${ARGS[@]}" != "quit" && "${ARGS[@]}" != "q" ]]; then
+      do_cleanup
+    fi
     echo "Task Complete"
   fi
 }

@@ -342,7 +342,9 @@ function main() {
   # Arguments are passed, execute the requested command then exit
   else
     execute_selection "${ARGS[@]}"
-    do_cleanup
+    if [[ "${ARGS[@]}" != "c" && "${ARGS[@]}" != "cleanup" && "${ARGS[@]}" != "quit" && "${ARGS[@]}" != "q" ]]; then
+      do_cleanup
+    fi
     echo "Task Complete"
   fi
 }
