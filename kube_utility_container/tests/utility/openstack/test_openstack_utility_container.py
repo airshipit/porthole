@@ -37,3 +37,21 @@ class TestOpenstackUtilityContainer(TestBase):
                     f" value {expected} set for read_only_root_filesystem"
                     f" in pod {openstack_utility_pod.metadata.name}")
         self.assertEqual(0, len(failures), failures)
+
+    def test_verify_apparmor(self):
+        """To verify openstack-utility Apparmor"""
+        failures = []
+        expected = "runtime/default"
+        openstack_utility_pod = \
+            self.client._get_utility_container(self.deployment_name)
+        for container in openstack_utility_pod.spec.containers:
+            annotations_common = \
+                'container.apparmor.security.beta.kubernetes.io/'
+            annotations_key = annotations_common + container.name
+            if expected != openstack_utility_pod.metadata.annotations[
+                    annotations_key]:
+                failures.append(
+                    f"container {container.name} belongs to pod "
+                    f"{openstack_utility_pod.metadata.name} "
+                    f"is not having expected apparmor profile set")
+        self.assertEqual(0, len(failures), failures)

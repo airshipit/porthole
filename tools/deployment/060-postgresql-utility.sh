@@ -19,19 +19,3 @@ helm upgrade --install postgresql-utility ./charts/postgresql-utility --namespac
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
 ./tools/deployment/common/wait-for-pods.sh $namespace
-
-#Validate Apparmor
-pos_pod=$(kubectl get pods --namespace=$namespace  -o wide | grep postgresql | awk '{print $1}')
-expected_profile="docker-default (enforce)"
-profile=`kubectl -n $namespace exec $pos_pod -- cat /proc/1/attr/current`
-echo "Profile running: $profile"
-  if test "$profile" != "$expected_profile"
-  then
-    if test "$proc_name" == "pause"
-    then
-      echo "Root process (pause) can run docker-default, it's ok."
-    else
-      echo "$profile is the WRONG PROFILE!!"
-      return 1
-    fi
-  fi

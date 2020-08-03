@@ -12,46 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 import unittest
 
 from kube_utility_container.tests.utility.base import TestBase
 
-class TestMysqlclientUtilityContainer(TestBase):
+class TestPostgresqlUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'mysqlclient-utility'
-        super(TestMysqlclientUtilityContainer, cls).setUpClass()
-
-    def test_verify_readonly_rootfs(self):
-        """To verify mysqlclient-utility readonly rootfs configuration"""
-        failures = []
-        expected = "False"
-        mysqlclient_utility_pod = \
-            self.client._get_utility_container(self.deployment_name)
-        for container in mysqlclient_utility_pod.spec.containers:
-            if expected != \
-                    str(container.security_context.read_only_root_filesystem):
-                failures.append(
-                    f"container {container.name} is not having expected"
-                    f" value {expected} set for read_only_root_filesystem"
-                    f" in pod {mysqlclient_utility_pod.metadata.name}")
-        self.assertEqual(0, len(failures), failures)
+        cls.deployment_name = 'postgresql-utility'
+        super(TestPostgresqlUtilityContainer, cls).setUpClass()
 
     def test_verify_apparmor(self):
-        """To verify mysqlclient-utility Apparmor"""
+        """To verify postgresql-utility Apparmor"""
         failures = []
         expected = "runtime/default"
-        mysqlclient_utility_pod = \
+        postgresql_utility_pod = \
             self.client._get_utility_container(self.deployment_name)
-        for container in mysqlclient_utility_pod.spec.containers:
+        for container in postgresql_utility_pod.spec.containers:
             annotations_common = \
                 'container.apparmor.security.beta.kubernetes.io/'
             annotations_key = annotations_common + container.name
-            if expected != mysqlclient_utility_pod.metadata.annotations[
+            if expected != postgresql_utility_pod.metadata.annotations[
                     annotations_key]:
                 failures.append(
                     f"container {container.name} belongs to pod "
-                    f"{mysqlclient_utility_pod.metadata.name} "
+                    f"{postgresql_utility_pod.metadata.name} "
                     f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
