@@ -50,6 +50,7 @@ function run_feature_tests() {
       python -m unittest discover -s ${PLUGINS}/tests/utility/calico -v
       python -m unittest discover -s ${PLUGINS}/tests/utility/ceph -v
       python -m unittest discover -s ${PLUGINS}/tests/utility/mysqlclient -v
+      python -m unittest discover -s ${PLUGINS}/tests/utility/openstack -v
 }
 
 function run_unit_tests() {
