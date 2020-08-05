@@ -307,6 +307,7 @@ function main() {
   export ONDEMAND_JOB="etcd-ondemand"
   # Save a backup of NODE if needed later
   export NODE_BACKUP="$NODE"
+  export KEEP_POD="false"
 
   # If no arguments are passed, enter interactive mode
   if [[ "${#ARGS[@]}" -eq 0 ]]; then
