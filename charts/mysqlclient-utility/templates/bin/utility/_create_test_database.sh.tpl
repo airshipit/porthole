@@ -2,13 +2,17 @@
 
 set -e +x
 
+{{- $envAll := . }}
 trap cleanup EXIT SIGTERM SIGINT
 
 IFS=', ' read -re -a BACKUP_RESTORE_NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPACE_LIST"
 ADMIN_USER_CNF=$(mktemp -p /tmp)
+CERT_DIR=$(mktemp -d)
+TLS_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.tls_secret }}
 
 function cleanup {
   rm -f "${ADMIN_USER_CNF}"
+  rm -rf "${CERT_DIR}"
   echo 'Cleanup Finished.'
 }
 
@@ -20,11 +24,32 @@ do
   PASSWD=$(grep password "$ADMIN_USER_CNF" | awk '{print $3}')
   PORT=$(grep port "$ADMIN_USER_CNF" | awk '{print $3}')
 
-  MYSQL="mysql \
-    -u $USER -p${PASSWD} \
-    --host=mariadb.$NAMESPACE.svc.cluster.local \
-    --port=$PORT \
-    --connect-timeout 10"
+  if ! kubectl -n "$NAMESPACE" --no-headers=true get secret "$TLS_SECRET" > /dev/null 2>&1 ; then
+
+    MYSQL="mysql \
+      -u $USER -p${PASSWD} \
+      --host=mariadb.$NAMESPACE.svc.cluster.local \
+      --port=$PORT \
+      --connect-timeout 10"
+
+  else
+
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
+          | grep " ca.crt: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/ca.crt
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
+          | grep " tls.crt: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/tls.crt
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
+          | grep " tls.key: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/tls.key
+
+    MYSQL="mysql \
+      -u $USER -p${PASSWD} \
+      --host=mariadb.$NAMESPACE.svc.cluster.local \
+      --port=$PORT \
+      --ssl-ca=$CERT_DIR/ca.crt \
+      --ssl-key=$CERT_DIR/tls.key \
+      --ssl-cert=$CERT_DIR/tls.crt \
+      --connect-timeout 10"
+  fi
 
   # Verify if test database exists already
   DB_ARGS="use ${TEST_DB_NAME}"

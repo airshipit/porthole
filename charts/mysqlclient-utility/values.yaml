@@ -105,6 +105,7 @@ conf:
     secrets:
       rgw_secret: mariadb-backup-user
       conf_secret: mariadb-backup-restore
+      tls_secret: mariadb-tls-direct
   features:
     utility: true
   mysqlclientconf:
