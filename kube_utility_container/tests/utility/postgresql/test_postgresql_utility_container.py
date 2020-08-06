@@ -16,11 +16,21 @@ import unittest
 
 from kube_utility_container.tests.utility.base import TestBase
 
+
 class TestPostgresqlUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
         cls.deployment_name = 'postgresql-utility'
         super(TestPostgresqlUtilityContainer, cls).setUpClass()
+
+    def test_verify_postgresql_client_psql_is_present(self):
+        """To verify psql-client is present"""
+        exec_cmd = ['utilscli', 'psql' , '-V']
+        expected = 'psql'
+        result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
+        self.assertIn(
+            expected, result_set, 'Unexpected value for command: {}, '
+            'Command Output: {}'.format(exec_cmd, result_set))
 
     def test_verify_apparmor(self):
         """To verify postgresql-utility Apparmor"""
