@@ -13,7 +13,12 @@
 # limitations under the License.
 
 import re
-import unittest
+from unittest.mock import patch
+
+from kube_utility_container.services.exceptions import \
+    KubePodNotFoundException
+from kube_utility_container.services.utility_container_client import \
+    UtilityContainerClient
 
 from kube_utility_container.tests.utility.base import TestBase
 
@@ -38,6 +43,25 @@ class TestOpenstackUtilityContainer(TestBase):
                     f" in pod {openstack_utility_pod.metadata.name}")
         self.assertEqual(0, len(failures), failures)
 
+    def test_verify_openstack_utility_pod_logs(self):
+        """To verify openstack-utility pod logs"""
+        date_1 = (self.client.exec_cmd(
+            self.deployment_name,
+            ['date', '+%Y-%m-%d %H'])).replace('\n','')
+        date_2 = (self.client.exec_cmd(
+            self.deployment_name,
+            ['date', '+%b %d %H'])).replace('\n','')
+        exec_cmd = ['utilscli', 'openstack', 'version']
+        self.client.exec_cmd(self.deployment_name, exec_cmd)
+        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
+            replace('\n','')
+        if date_1 in pod_logs:
+            latest_pod_logs = (pod_logs.split(date_1))[1:]
+        else:
+            latest_pod_logs = (pod_logs.split(date_2))[1:]
+        self.assertNotEqual(
+            0, len(latest_pod_logs), "Not able to get the latest logs")
+
     def test_verify_apparmor(self):
         """To verify openstack-utility Apparmor"""
         failures = []
@@ -55,3 +79,14 @@ class TestOpenstackUtilityContainer(TestBase):
                     f"{openstack_utility_pod.metadata.name} "
                     f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
+
+    @patch(
+        'kube_utility_container.services.utility_container_client.'
+        'UtilityContainerClient._get_utility_container',
+        side_effect=KubePodNotFoundException('utility'))
+    def test_exec_cmd_no_openstack_utility_pods_returned(self, mock_list_pods):
+        mock_list_pods.return_value = []
+        utility_container_client = UtilityContainerClient()
+        exec_cmd = ['utilscli', 'openstack', 'version']
+        with self.assertRaises(KubePodNotFoundException):
+            utility_container_client.exec_cmd(self.deployment_name, exec_cmd)
