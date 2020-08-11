@@ -27,6 +27,8 @@ from kube_utility_container.services.exceptions import \
     KubeEnvVarException
 from kube_utility_container.services.exceptions import \
     KubePodNotFoundException
+from kube_utility_container.services.dataloader import \
+    DeploymentMapping
 
 from kubernetes import client as kubeclient
 from kubernetes import config as kubeconf
@@ -38,7 +40,6 @@ from oslo_log import log as logging
 from urllib3.exceptions import MaxRetryError
 
 LOG = logging.getLogger(__name__)
-
 
 class UtilityContainerClient(object):
     """Client to execute utilscli command on utility containers"""
@@ -175,6 +176,8 @@ class UtilityContainerClient(object):
             utility_container {V1Pod} -- Returns the first pod matched.
         :exception: KubePodNotFoundException -- Exception raised if not pods are found.
         """
+        namesMapping = DeploymentMapping(deployment_name)
+        deployment_name = namesMapping._get_mapping_realname()
         deployment_selectors = self._get_deployment_selectors(deployment_name)
         utility_containers = self._corev1api_api_client.list_namespaced_pod(
             self.NAMESPACE, label_selector=deployment_selectors).items
