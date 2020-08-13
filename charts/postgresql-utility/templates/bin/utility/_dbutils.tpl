@@ -242,9 +242,10 @@ function check_lock() {
 function unlock() {
   rm /tmp/dbutils.lock > /dev/null 2>&1
   export MY_LOCK="false"
+  echo "Lock Removed."
 }
 
-# Params: [-p]
+# Params: [-p] [database]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
@@ -262,7 +263,23 @@ function do_backup() {
   lock
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_postgresql.sh
+  if [[ -z "${BACKUP_ARGS[1]}" ]]; then
+    DB_LOC=0
+  else
+    if [[ "${BACKUP_ARGS[1]}" != "-p" ]]; then
+      DB_LOC=1
+    else
+      DB_LOC=2
+    fi
+  fi
+
+  if [[ "$DB_LOC" == 0 ]]; then
+    COMMAND="/tmp/backup_postgresql.sh"
+  else
+    COMMAND="/tmp/backup_postgresql.sh ${BACKUP_ARGS[$DB_LOC]}"
+  fi
+
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- $COMMAND
 
   unlock
 }

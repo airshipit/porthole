@@ -243,14 +243,15 @@ function check_lock() {
 function unlock() {
   rm /tmp/dbutils.lock > /dev/null 2>&1
   export MY_LOCK="false"
+  echo "Lock Removed."
 }
 
-# Params: [-p] <namespace>
+# Params: [-p] <namespace> [database]
 function do_backup() {
 
   BACKUP_ARGS=("$@")
 
-  check_args BACKUP_ARGS 1 2
+  check_args BACKUP_ARGS 1 3
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -263,7 +264,25 @@ function do_backup() {
   lock
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_mariadb.sh
+  if [[ "${BACKUP_ARGS[1]}" == "-p" ]]; then
+    if [[ -z "${BACKUP_ARGS[3]}" ]]; then
+      DB_LOC=0
+    else
+      DB_LOC=3
+    fi
+  elif [[ -z "${BACKUP_ARGS[2]}" ]]; then
+    DB_LOC=0
+  else
+    DB_LOC=2
+  fi
+
+  if [[ "${DB_LOC}" == 0 ]]; then
+    COMMAND="/tmp/backup_mariadb.sh"
+  else
+    COMMAND="/tmp/backup_mariadb.sh ${BACKUP_ARGS[${DB_LOC}]}"
+  fi
+
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- ${COMMAND}
 
   unlock
 }
