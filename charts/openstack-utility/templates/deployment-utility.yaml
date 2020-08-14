@@ -81,7 +81,11 @@ spec:
 {{ dict "envAll" $envAll "application" "openstack" "container" "openstack_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           env:
             - name: OS_AUTH_URL
+{{- if empty .Values.conf.keystone_auth.auth_url }}
+              value: {{ tuple "identity" "public" "api" $envAll | include "helm-toolkit.endpoints.keystone_endpoint_uri_lookup" }}
+{{- else }}
               value: {{ .Values.conf.keystone_auth.auth_url }}
+{{- end }}
             - name: OS_IDENTITY_API_VERSION
               value: "{{ .Values.conf.keystone_auth.auth_version }}"
           command:
