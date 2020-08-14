@@ -15,6 +15,13 @@
 import re
 import unittest
 
+from unittest.mock import patch
+
+from kube_utility_container.services.exceptions import \
+    KubePodNotFoundException
+from kube_utility_container.services.utility_container_client import \
+    UtilityContainerClient
+
 from kube_utility_container.tests.utility.base import TestBase
 
 class TestEtcdUtilityContainer(TestBase):
@@ -93,3 +100,14 @@ class TestEtcdUtilityContainer(TestBase):
             latest_pod_logs = (pod_logs.split(date_2))[1:]
         self.assertNotEqual(
             0, len(latest_pod_logs), "Not able to get the latest logs")
+
+    @patch(
+        'kube_utility_container.services.utility_container_client.'
+        'UtilityContainerClient._get_utility_container',
+        side_effect=KubePodNotFoundException('utility'))
+    def test_exec_cmd_no_etcdctl_utility_pods_returned(self, mock_list_pods):
+        mock_list_pods.return_value = []
+        utility_container_client = UtilityContainerClient()
+        exec_cmd = ['utilscli', 'etcdctl', 'version']
+        with self.assertRaises(KubePodNotFoundException):
+            utility_container_client.exec_cmd(self.deployment_name, exec_cmd)
