@@ -47,3 +47,18 @@ class TestCephUtilityContainer(TestBase):
                     f"{calico_utility_pod.metadata.name} "
                     f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
+
+    def test_verify_readonly_rootfs(self):
+        """To verify ceph-utility readonly rootfs configuration"""
+        failures = []
+        expected = "False"
+        ceph_utility_pod = \
+            self.client._get_utility_container(self.deployment_name)
+        for container in ceph_utility_pod.spec.containers:
+            if expected != \
+                    str(container.security_context.read_only_root_filesystem):
+                failures.append(
+                    f"container {container.name} is not having expected"
+                    f" value {expected} set for read_only_root_filesystem"
+                    f" in pod {ceph_utility_pod.metadata.name}")
+        self.assertEqual(0, len(failures), failures)
