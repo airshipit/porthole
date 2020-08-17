@@ -24,7 +24,7 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-deploy-feature-test
+        - airship-porthole-deploy-functional-tests
 
     gate:
       jobs:
@@ -36,7 +36,7 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-deploy-feature-test
+        - airship-porthole-deploy-functional-tests
 
     post:
       jobs:
@@ -47,7 +47,7 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-        - airship-porthole-deploy-feature-test
+        - airship-porthole-deploy-functional-tests
 
 - nodeset:
     name: airship-porthole-single-node
@@ -81,7 +81,7 @@
 
 
 - job:
-    name: airship-porthole-deploy-feature-test
+    name: airship-porthole-deploy-functional-tests
     description: |
        Deploys all UC's and Executes unit and feature tests.
     run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
