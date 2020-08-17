@@ -28,6 +28,15 @@ class TestOpenstackUtilityContainer(TestBase):
         cls.deployment_name = 'openstack-utility'
         super(TestOpenstackUtilityContainer, cls).setUpClass()
 
+    def test_verify_openstack_client_is_present(self):
+        """To verify openstack-client is present"""
+        exec_cmd = ['utilscli', 'openstack' , '--version']
+        expected = 'openstack'
+        result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
+        self.assertIn(
+            expected, result_set, 'Unexpected value for command: {}, '
+            'Command Output: {}'.format(exec_cmd, result_set))
+
     def test_verify_readonly_rootfs(self):
         """To verify openstack-utility readonly rootfs configuration"""
         failures = []

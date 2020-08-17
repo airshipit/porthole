@@ -23,6 +23,15 @@ class TestMysqlclientUtilityContainer(TestBase):
         cls.deployment_name = 'mysqlclient-utility'
         super(TestMysqlclientUtilityContainer, cls).setUpClass()
 
+    def test_verify_mysql_client_is_present(self):
+        """To verify mysql-client is present"""
+        exec_cmd = ['utilscli', 'mysql' , '-V']
+        expected = 'Ver'
+        result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
+        self.assertIn(
+            expected, result_set, 'Unexpected value for command: {}, '
+            'Command Output: {}'.format(exec_cmd, result_set))
+
     def test_verify_readonly_rootfs(self):
         """To verify mysqlclient-utility readonly rootfs configuration"""
         failures = []
