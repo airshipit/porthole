@@ -21,6 +21,14 @@ fi
 
 export TMP_FILE=$(mktemp -p /tmp)
 
+if ! kubectl -n ${MARIADB_POD_NAMESPACE} --no-headers=true get secret {{ $envAll.Values.conf.mariadb_backup_restore.secrets.tls_secret }} > /dev/null 2>&1 ; then
+  echo "TLS is not enabled in ${MARIADB_POD_NAMESPACE} namespace"
+  export TLS_ENABLED="false"
+else
+  echo "TLS is enabled in ${MARIADB_POD_NAMESPACE} namespace"
+  export TLS_ENABLED="true"
+fi
+
 cat > $TMP_FILE << EOF
 ---
 apiVersion: batch/v1
@@ -147,7 +155,67 @@ if $MARIADB_REMOTE_BACKUP_ENABLED; then
 EOF
 fi
 
-cat >> $TMP_FILE << EOF
+if $TLS_ENABLED; then
+  export TLS_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.tls_secret }}
+  cat >> $TMP_FILE << EOF
+          volumeMounts:
+            - name: pod-tmp
+              mountPath: /tmp
+            - mountPath: /tmp/restore_mariadb.sh
+              name: mariadb-bin
+              readOnly: true
+              subPath: restore_mariadb.sh
+            - mountPath: /tmp/restore_main.sh
+              name: mariadb-bin
+              readOnly: true
+              subPath: restore_main.sh
+            - mountPath: /tmp/backup_mariadb.sh
+              name: mariadb-bin
+              readOnly: true
+              subPath: backup_mariadb.sh
+            - mountPath: /tmp/backup_main.sh
+              name: mariadb-bin
+              readOnly: true
+              subPath: backup_main.sh
+            - mountPath: ${MARIADB_BACKUP_BASE_PATH}
+              name: mariadb-backup-dir
+            - name: mariadb-secrets
+              mountPath: /etc/mysql/admin_user.cnf
+              subPath: admin_user.cnf
+              readOnly: true
+            - name: mariadb-tls-secret
+              mountPath: /etc/mysql/certs/tls.crt
+              subPath: tls.crt
+              readOnly: true
+            - name: mariadb-tls-secret
+              mountPath: /etc/mysql/certs/tls.key
+              subPath: tls.key
+              readOnly: true
+            - name: mariadb-tls-secret
+              mountPath: /etc/mysql/certs/ca.crt
+              subPath: ca.crt
+              readOnly: true
+      volumes:
+        - name: pod-tmp
+          emptyDir: {}
+        - name: mariadb-secrets
+          secret:
+            secretName: mariadb-secrets
+            defaultMode: 292
+        - name: mariadb-bin
+          configMap:
+            name: mariadb-bin
+            defaultMode: 365
+        - name: mariadb-backup-dir
+          persistentVolumeClaim:
+            claimName: mariadb-backup-data
+        - name: mariadb-tls-secret
+          secret:
+            secretName: ${TLS_SECRET}
+            defaultMode: 292
+EOF
+else
+  cat >> $TMP_FILE << EOF
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
@@ -188,6 +256,7 @@ cat >> $TMP_FILE << EOF
           persistentVolumeClaim:
             claimName: mariadb-backup-data
 EOF
+fi
 
 kubectl create -n $MARIADB_POD_NAMESPACE -f $TMP_FILE
 rm -rf $TMP_FILE
