@@ -42,6 +42,9 @@ metadata:
 spec:
   template:
     metadata:
+      annotations:
+        {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+{{ dict "envAll" $envAll "podName" "mariadb-ondemand" "containerNames" (list "ondemand-perms" "mariadb-ondemand" ) | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:
 {{ tuple $envAll "mariadb-ondemand" "ondemand" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:

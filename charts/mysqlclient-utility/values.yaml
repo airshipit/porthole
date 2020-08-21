@@ -66,6 +66,9 @@ pod:
     type: apparmor
     mysqlclient-utility:
       mysqlclient-utility: runtime/default
+    mariadb-ondemand:
+      ondemand-perms: runtime/default
+      mariadb-ondemand: runtime/default
   resources:
     enabled: false
     utility:
