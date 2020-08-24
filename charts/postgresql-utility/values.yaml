@@ -66,6 +66,9 @@ pod:
     type: apparmor
     postgresql-utility:
       postgresql-utility: runtime/default
+    postgresql-ondemand:
+      backup-perms: runtime/default
+      postgresql-ondemand: runtime/default
   resources:
     enabled: false
     utility:
