@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 # Nautilus 14.2.10
 ARG CEPH_RELEASE=nautilus
 ARG CEPH_RELEASE_TAG=14.2.10-1.0~bionic
-ARG KUBE_VERSION=1.17.3
+ARG KUBE_VERSION=1.18.6
 
 ARG CEPH_REPO=https://mirror.mirantis.com/testing/ceph-nautilus/bionic/
 ARG CEPH_KEY=https://mirror.mirantis.com/testing/ceph-nautilus/bionic/archive-ceph-nautilus.key
