@@ -39,6 +39,9 @@ metadata:
 spec:
   template:
     metadata:
+      annotations:
+        {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
+{{ dict "envAll" $envAll "podName" "etcd-ondemand" "containerNames" (list  "etcd-ondemand" ) | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:
 {{ tuple $envAll "etcd-ondemand" "ondemand" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
