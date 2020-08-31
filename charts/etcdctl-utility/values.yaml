@@ -46,6 +46,13 @@ pod:
         etcdctl_utility:
           allowPrivilegeEscalation: true
           readOnlyRootFilesystem: false
+    etcd_ondemand:
+      pod:
+        runAsUser: 65534
+      container:
+        etcd_ondemand:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
   mandatory_access_control:
     type: apparmor
     etcdctl-utility:

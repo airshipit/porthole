@@ -45,6 +45,7 @@ spec:
       labels:
 {{ tuple $envAll "etcd-ondemand" "ondemand" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
+{{ dict "envAll" $envAll "application" "etcd_ondemand" | include "helm-toolkit.snippets.kubernetes_pod_security_context" | indent 6 }}
       restartPolicy: OnFailure
       serviceAccountName: kubernetes-etcd-etcd-backup
       nodeName: ${NODE}
@@ -52,6 +53,7 @@ spec:
         - name: etcd-ondemand
           image: ${ETCD_IMAGE_NAME}
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.etcd_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
+{{ dict "envAll" $envAll "application" "etcd_ondemand" "container" "etcd_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - /bin/sleep
             - "1000000"
