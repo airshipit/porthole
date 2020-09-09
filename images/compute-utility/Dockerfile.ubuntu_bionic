@@ -19,6 +19,7 @@ RUN set -xe \
     && apt-get install -y apt-transport-https \
        bash \
        ca-certificates \
+       openvswitch-switch \
        curl \
        gnupg \
        hexedit \
