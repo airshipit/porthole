@@ -652,7 +652,7 @@ function do_cleanup() {
   # If a namespace is given go ahead and try to clean it up.
   if [[ ! -z "$2" ]]; then
     remove_job "$2" "$ONDEMAND_JOB"
-    UNSET ONDEMAND_POD
+    unset ONDEMAND_POD
   elif [[ "$KEEP_POD" == "false" && ! -z "$ONDEMAND_POD" ]]; then
 
     IFS=', ' read -re -a USED_NAMESPACE_ARRAY <<< "$USED_NAMESPACES"
