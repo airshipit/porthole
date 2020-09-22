@@ -18,8 +18,8 @@ function cleanup {
 
 for NAMESPACE in "${BACKUP_RESTORE_NAMESPACE_ARRAY[@]}";
 do
-  kubectl -n "$NAMESPACE" get secret mariadb-secrets -o yaml \
-          | grep admin_user.cnf | awk '{print $2}' | base64 -d > "${ADMIN_USER_CNF}"
+  kubectl -n "$NAMESPACE" get secret mariadb-secrets -o json \
+          | jq -r '.data."admin_user.cnf"' | base64 -d > "${ADMIN_USER_CNF}"
   USER=$(grep user "$ADMIN_USER_CNF" | awk '{print $3}')
   PASSWD=$(grep password "$ADMIN_USER_CNF" | awk '{print $3}')
   PORT=$(grep port "$ADMIN_USER_CNF" | awk '{print $3}')
@@ -34,12 +34,12 @@ do
 
   else
 
-    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
-          | grep " ca.crt: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/ca.crt
-    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
-          | grep " tls.crt: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/tls.crt
-    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o yaml \
-          | grep " tls.key: " | awk '{print $2}' | base64 -d > "$CERT_DIR"/tls.key
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
+          | jq -r '.data."ca.crt"'  | base64 -d > "$CERT_DIR"/ca.crt
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
+          | jq -r '.data."tls.crt"'  | base64 -d > "$CERT_DIR"/tls.crt
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
+          | jq -r '.data."tls.key"'  | base64 -d > "$CERT_DIR"/tls.key
 
     MYSQL="mysql \
       -u $USER -p${PASSWD} \
