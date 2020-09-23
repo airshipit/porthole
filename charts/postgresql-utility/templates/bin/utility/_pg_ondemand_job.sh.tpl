@@ -108,6 +108,11 @@ spec:
                 secretKeyRef:
                   key: PG_DUMPALL_OPTIONS
                   name: ${POSTGRESQL_CONF_SECRET}
+            - name: STORAGE_POLICY
+              valueFrom:
+                secretKeyRef:
+                  key: REMOTE_BACKUP_STORAGE_POLICY
+                  name: ${POSTGRESQL_CONF_SECRET}
             - name: OS_IDENTITY_API_VERSION
               value: "3"
 EOF

@@ -90,6 +90,11 @@ spec:
                 secretKeyRef:
                   key: REMOTE_BACKUP_ENABLED
                   name: ${ETCD_CONF_SECRET}
+            - name: STORAGE_POLICY
+              valueFrom:
+                secretKeyRef:
+                  key: REMOTE_BACKUP_STORAGE_POLICY
+                  name: ${ETCD_CONF_SECRET}
             - name: CONTAINER_NAME
               valueFrom:
                 secretKeyRef:
