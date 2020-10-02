@@ -48,7 +48,7 @@ pod:
           readOnlyRootFilesystem: false
     etcd_ondemand:
       pod:
-        runAsUser: 65534
+        runAsUser: 0
       container:
         etcd_ondemand:
           allowPrivilegeEscalation: false
