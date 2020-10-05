@@ -10,8 +10,8 @@ fi
 
 export MARIADB_CONF_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.conf_secret }}
 export MARIADB_IMAGE_NAME=$(kubectl get cronjob -n ${MARIADB_POD_NAMESPACE} mariadb-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep mysqlclient-utility)
-export MARIADB_BACKUP_BASE_PATH=$(kubectl get secret -o yaml -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} | grep BACKUP_BASE_PATH | awk '{print $2}' | base64 -d)
-MARIADB_REMOTE_BACKUP_ENABLED=$(kubectl get secret -o yaml -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} | grep REMOTE_BACKUP_ENABLED | awk '{print $2}' | base64 -d)
+export MARIADB_BACKUP_BASE_PATH=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.BACKUP_BASE_PATH | base64 -d)
+MARIADB_REMOTE_BACKUP_ENABLED=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.REMOTE_BACKUP_ENABLED | base64 -d)
 export MARIADB_REMOTE_BACKUP_ENABLED=$(echo $MARIADB_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
 if [[ $MARIADB_IMAGE_NAME == "" ]]; then

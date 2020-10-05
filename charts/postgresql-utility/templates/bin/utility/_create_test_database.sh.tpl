@@ -7,7 +7,7 @@ IFS=', ' read -re -a BACKUP_RESTORE_NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPA
 function database_cmd() {
   NAMESPACE=$1
 
-  POSTGRES_PWD=$(kubectl get secret -n "$NAMESPACE" postgresql-admin -o yaml  | grep POSTGRES_PASSWORD | awk '{print $2}' | base64 -d)
+  POSTGRES_PWD=$(kubectl get secret -n "$NAMESPACE" postgresql-admin -o json | jq -r .data.POSTGRES_PASSWORD | base64 -d)
   POSTGRES_CREDS="postgresql://postgres:${POSTGRES_PWD}@postgresql.${NAMESPACE}.svc.cluster.local?sslmode=disable"
   SQL_CMD="psql $POSTGRES_CREDS"
 

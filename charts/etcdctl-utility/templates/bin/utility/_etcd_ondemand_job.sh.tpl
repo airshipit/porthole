@@ -10,8 +10,8 @@ fi
 
 export ETCD_CONF_SECRET={{ $envAll.Values.conf.etcd_backup_restore.secrets.kube_system.conf_secret }}
 export ETCD_IMAGE_NAME=$(kubectl get cronjob -n ${ETCD_POD_NAMESPACE} kubernetes-etcd-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep etcdctl-utility)
-export ETCD_BACKUP_BASE_PATH=$(kubectl get secret -o yaml -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} | grep BACKUP_BASE_PATH | awk '{print $2}' | base64 -d)
-ETCD_REMOTE_BACKUP_ENABLED=$(kubectl get secret -o yaml -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} | grep REMOTE_BACKUP_ENABLED | awk '{print $2}' | base64 -d)
+export ETCD_BACKUP_BASE_PATH=$(kubectl get secret -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} -o json | jq -r .data.BACKUP_BASE_PATH | base64 -d)
+ETCD_REMOTE_BACKUP_ENABLED=$(kubectl get secret -n ${ETCD_POD_NAMESPACE} ${ETCD_CONF_SECRET} -o json | jq -r .data.REMOTE_BACKUP_ENABLED | base64 -d)
 export ETCD_REMOTE_BACKUP_ENABLED=$(echo $ETCD_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
 if [[ $NODE == "" ]];then

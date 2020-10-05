@@ -4,7 +4,7 @@ function database_cmd() {
   NAMESPACE=$1
 
   get_postgres_password() {
-    PW=$(kubectl get secret -n "$NAMESPACE" postgresql-admin -o yaml  | grep POSTGRES_PASSWORD | awk '{print $2}' | base64 -d)
+    PW=$(kubectl get secret -n "$NAMESPACE" postgresql-admin -o json  | jq -r .data.POSTGRES_PASSWORD | base64 -d)
     echo "$PW"
   }
   POSTGRES_PWD=$(get_postgres_password)

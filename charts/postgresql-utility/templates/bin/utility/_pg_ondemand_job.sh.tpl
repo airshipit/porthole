@@ -10,8 +10,8 @@ fi
 
 export POSTGRESQL_CONF_SECRET={{ $envAll.Values.conf.postgresql_backup_restore.secrets.conf_secret }}
 export POSTGRESQL_IMAGE_NAME=$(kubectl get cronjob -n ucp postgresql-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep postgresql-utility)
-export POSTGRESQL_BACKUP_BASE_PATH=$(kubectl get secret -o yaml -n ${POSTGRESQL_POD_NAMESPACE} ${POSTGRESQL_CONF_SECRET} | grep BACKUP_BASE_PATH | awk '{print $2}' | base64 -d)
-POSTGRESQL_REMOTE_BACKUP_ENABLED=$(kubectl get secret -o yaml -n ${POSTGRESQL_POD_NAMESPACE} ${POSTGRESQL_CONF_SECRET} | grep REMOTE_BACKUP_ENABLED | awk '{print $2}' | base64 -d)
+export POSTGRESQL_BACKUP_BASE_PATH=$(kubectl get secret -n ${POSTGRESQL_POD_NAMESPACE} ${POSTGRESQL_CONF_SECRET} -o json | jq -r .data.BACKUP_BASE_PATH | base64 -d)
+POSTGRESQL_REMOTE_BACKUP_ENABLED=$(kubectl get secret -n ${POSTGRESQL_POD_NAMESPACE} ${POSTGRESQL_CONF_SECRET} -o json | jq -r .data.REMOTE_BACKUP_ENABLED | base64 -d)
 export POSTGRESQL_REMOTE_BACKUP_ENABLED=$(echo $POSTGRESQL_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
 if [[ $POSTGRESQL_IMAGE_NAME == "" ]]; then
