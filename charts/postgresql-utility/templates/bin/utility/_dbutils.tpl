@@ -284,7 +284,7 @@ function do_backup() {
   unlock
 }
 
-# Params: [-rp]
+# Params: [-rp] [namespace]
 function do_list_archives() {
 
   LIST_ARGS=("$@")
@@ -437,6 +437,39 @@ function do_list_schema() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_postgresql.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
+# Params: [-rp] <archive>
+function do_delete_archive() {
+
+  # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
+  DELETE_ARCH_ARGS=("$@")
+  if [[ "${DELETE_ARCH_ARGS[1]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[1]}"
+    ARCHIVE_POS=1
+  elif [[ "${DELETE_ARCH_ARGS[2]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[2]}"
+    ARCHIVE_POS=2
+  else
+    echo "ERROR: Archive file not found in 1st or 2nd argument position."
+    return 1
+  fi
+
+  NAMESPACE="$(echo "${ARCHIVE}" | awk -F '.' '{print $2}')"
+  DELETE_ARCH_ARGS=("${DELETE_ARCH_ARGS[@]:0:$ARCHIVE_POS}" "${NAMESPACE}" "${DELETE_ARCH_ARGS[@]:$ARCHIVE_POS}")
+
+  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into DELETE_ARCH_ARGS increases max arguments by 1
+  check_args DELETE_ARCH_ARGS 1 3
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  # Execute the command in the on-demand pod
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_postgresql.sh delete_archive "${ARCHIVE}" "${LOCATION}"
+}
+
+# Params: [namespace]
 function do_show_databases() {
 
   SHOW_ARGS=("$@")
@@ -453,7 +486,7 @@ function do_show_databases() {
   fi
 }
 
-# Params: <database>
+# Params: [namespace] <database>
 function do_show_tables() {
 
   SHOW_ARGS=("$@")
@@ -470,7 +503,7 @@ function do_show_tables() {
   fi
 }
 
-# Params: <database> <table>
+# Params: [namespace] <database> <table>
 function do_show_rows() {
 
   SHOW_ARGS=("$@")
@@ -487,7 +520,7 @@ function do_show_rows() {
   fi
 }
 
-# Params: <database> <table>
+# Params: [namespace] <database> <table>
 function do_show_schema() {
 
   SHOW_ARGS=("$@")
@@ -505,7 +538,7 @@ function do_show_schema() {
   fi
 }
 
-# Params: <tablename>
+# Params: [namespace] <tablename>
 #   Column names and types will be hardcoded for now
 #   NOTE: Database is always a pre-provisioned database.
 function do_create_table() {
@@ -524,7 +557,7 @@ function do_create_table() {
   fi
 }
 
-# Params: <table>
+# Params: [namespace] <table>
 #   The row values are hardcoded for now.
 #   NOTE: Database is always a pre-provisioned database.
 function do_create_row() {
@@ -536,11 +569,6 @@ function do_create_row() {
     return 1
   fi
 
-  setup_namespace "${CREATE_ARGS[1]}"
-  if [[ $? -ne 0 ]]; then
-    return 1
-  fi
-
   CREATE_ARGS=("${CREATE_ARGS[@]:0:1}" "$NAMESPACE" "${CREATE_ARGS[@]:1}")
   create_row "${CREATE_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
@@ -548,7 +576,75 @@ function do_create_row() {
   fi
 }
 
-# Params: <table> <colname> <value>
+# Params: [namespace]
+#   Create grants for the test user to access the test database.
+#   NOTE: Database is always a pre-provisioned database.
+#   NOTE: In order for this function to create a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test database
+#         at bootstrap time. Otherwise it cannot correctly give the user any
+#         privileges.
+function do_create_user_grants() {
+
+  CREATE_GRANTS_ARGS=("$@")
+
+  check_args CREATE_GRANTS_ARGS 0 1
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  CREATE_GRANTS_ARGS=("${CREATE_GRANTS_ARGS[0]}" "${NAMESPACE}")
+  create_user_grants "${CREATE_GRANTS_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [namespace]
+#   Query the test user of the test database.
+#   Returns a string indicating whether or not the query was successful.
+#   NOTE: Database is always a pre-provisioned database.
+#   NOTE: In order for this function to show a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test user
+#         at bootstrap time.
+function do_query_user() {
+
+  QUERY_USER_ARGS=("$@")
+
+  check_args QUERY_USER_ARGS 0 1
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  QUERY_USER_ARGS=("${QUERY_USER_ARGS[0]}" "${NAMESPACE}")
+  query_user "${QUERY_USER_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [namespace]
+#   Delete the grants for the test user in the test database.
+#   NOTE: Database is always a pre-provisioned database.
+#   NOTE: In order for this function to delete a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test user
+#         at bootstrap time. If the user isn't there this will fail.
+function do_delete_user_grants() {
+
+  DELETE_GRANTS_ARGS=("$@")
+
+  check_args DELETE_GRANTS_ARGS 0 1
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  DELETE_GRANTS_ARGS=("${DELETE_GRANTS_ARGS[0]}" "${NAMESPACE}")
+  delete_user_grants "${DELETE_GRANTS_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [namespace] <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
 #   NOTE: Database is always a pre-provisioned database.
 function do_delete_row() {
@@ -568,7 +664,7 @@ function do_delete_row() {
   fi
 }
 
-# Params: <tablename>
+# Params: [namespace] <tablename>
 #   NOTE: Database is always a pre-provisioned database.
 function do_delete_table() {
 
@@ -582,6 +678,29 @@ function do_delete_table() {
   DELETE_ARGS=("${DELETE_ARGS[@]:0:1}" "$NAMESPACE" "${DELETE_ARGS[@]:1}")
 
   delete_table "${DELETE_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [namespace]
+#   Delete the test backups that have been created by the test functions above.
+#   NOTE: only backups associated with the test database will be deleted.
+#         Both local and remote test backups will be deleted.
+function do_delete_backups() {
+
+  DELETE_BACKUPS_ARGS=("$@")
+
+  check_args DELETE_BACKUPS_ARGS 0 1
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  DELETE_BACKUPS_ARGS=("${DELETE_BACKUPS_ARGS[0]}" "${NAMESPACE}" ${ONDEMAND_POD})
+  delete_backups "${DELETE_BACKUPS_ARGS[@]}"
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -606,7 +725,7 @@ function do_restore() {
   NAMESPACE="$(echo "$ARCHIVE" | awk -F '.' '{print $2}')"
   RESTORE_ARGS=("${RESTORE_ARGS[@]:0:$ARCHIVE_POS}" "$NAMESPACE" "${RESTORE_ARGS[@]:$ARCHIVE_POS}")
 
-  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into LIST_ARGS increases max arguments by 1
+  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into RESTORE_ARGS increases max arguments by 1
   check_args RESTORE_ARGS 2 4
   if [[ $? -ne 0 ]]; then
     return 1
@@ -752,6 +871,10 @@ function help() {
   echo "               means all databases are to be restored"
   echo "           Restores the specified database(s)."
   echo ""
+  echo "       utilscli dbutils delete_archive (da) [-rp] <archive>"
+  echo "           Deletes the specified archive from either the local file"
+  echo "           system or the remove rgw location."
+  echo ""
   echo "       utilscli dbutils sql_prompt (sql)"
   echo "           For manual table/row restoration, this command allows access"
   echo "           to the Postgresql psql interactive user interface. Type '\q'"
@@ -775,6 +898,7 @@ function menu() {
   echo "Execution methods:          backup (b) [-p]"
   echo "                            restore (r) [-rp] <archive> <db_name | all>"
   echo "                            sql_prompt (sql)"
+  echo "                            delete_archive (da) [-rp] <archive>"
   echo "                            cleanup (c)"
   echo "Show Archived details:      list_archives (la) [-rp]"
   echo "                            list_databases (ld) [-rp] <archive>"
@@ -801,14 +925,19 @@ function execute_selection() {
     "list_tables"|"lt")           do_list_tables "${ARGS[@]}";;
     "list_rows"|"lr")             do_list_rows "${ARGS[@]}";;
     "list_schema"|"ls")           do_list_schema "${ARGS[@]}";;
+    "delete_archive"|"da")        do_delete_archive "${ARGS[@]}";;
     "show_databases"|"sd")        do_show_databases "${ARGS[@]}";;
     "show_tables"|"st")           do_show_tables "${ARGS[@]}";;
     "show_rows"|"sr")             do_show_rows "${ARGS[@]}";;
     "show_schema"|"ss")           do_show_schema "${ARGS[@]}";;
     "create_test_table"|"ctt")    do_create_table "${ARGS[@]}";;
     "create_test_row"|"ctr")      do_create_row "${ARGS[@]}";;
+    "create_test_user_grants"|"ctug")     do_create_user_grants "${ARGS[@]}";;
+    "query_test_user"|"qtu")              do_query_user "${ARGS[@]}";;
+    "delete_test_user_grants"|"dtug")     do_delete_user_grants "${ARGS[@]}";;
     "delete_test_row"|"dtr")      do_delete_row "${ARGS[@]}";;
     "delete_test_table"|"dtt")    do_delete_table "${ARGS[@]}";;
+    "delete_test_backups"|"dtb")  do_delete_backups "${ARGS[@]}";;
     "restore"|"r")                do_restore "${ARGS[@]}";;
     "sql_prompt"|"sql")           do_sql_prompt "${ARGS[@]}";;
     "command_history"|"ch")       do_command_history;;

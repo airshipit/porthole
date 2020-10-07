@@ -438,6 +438,38 @@ function do_list_schema() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
+# Params: [-rp] <archive>
+function do_delete_archive() {
+
+  # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
+  DELETE_ARCH_ARGS=("$@")
+  if [[ "${DELETE_ARCH_ARGS[1]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[1]}"
+    ARCHIVE_POS=1
+  elif [[ "${DELETE_ARCH_ARGS[2]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[2]}"
+    ARCHIVE_POS=2
+  else
+    echo "ERROR: Archive file not found in 1st or 2nd argument position."
+    return 1
+  fi
+
+  NAMESPACE="$(echo "${ARCHIVE}" | awk -F '.' '{print $2}')"
+  DELETE_ARCH_ARGS=("${DELETE_ARCH_ARGS[@]:0:$ARCHIVE_POS}" "$NAMESPACE" "${DELETE_ARCH_ARGS[@]:$ARCHIVE_POS}")
+
+  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into DELETE_ARCH_ARGS increases max arguments by 1
+  check_args DELETE_ARCH_ARGS 1 3
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  # Execute the command in the on-demand pod
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh delete_archive "${ARCHIVE}" "${LOCATION}"
+}
+
 # Params: [-p] <namespace>
 function do_show_databases() {
 
@@ -542,7 +574,7 @@ function do_show_schema() {
 #   Column names and types will be hardcoded for now
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
-#         at bootrap time.
+#         at bootstrap time.
 function do_create_table() {
 
   CREATE_ARGS=("$@")
@@ -555,8 +587,8 @@ function do_create_table() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
-  if [[ "${SHOW_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
-    unset -v SHOW_ARGS[1]
+  if [[ "${CREATE_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v CREATE_ARGS[1]
   fi
 
   CREATE_ARGS[4]=$ONDEMAND_POD
@@ -571,7 +603,7 @@ function do_create_table() {
 #   The row values are hardcoded for now.
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
-#         at bootrap time.
+#         at bootstrap time.
 function do_create_row() {
 
   CREATE_ARGS=("$@")
@@ -596,11 +628,100 @@ function do_create_row() {
   fi
 }
 
+# Params: [-p] <namespace>
+#   Create grants for the test user to access the test database.
+#   NOTE: In order for this function to create a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test database
+#         at bootstrap time. Otherwise it cannot correctly give the user any
+#         privileges.
+function do_create_user_grants() {
+
+  CREATE_GRANTS_ARGS=("$@")
+
+  check_args CREATE_GRANTS_ARGS 1 2
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  if [[ "${CREATE_GRANTS_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v CREATE_GRANTS_ARGS[1]
+  fi
+
+  CREATE_GRANTS_ARGS[3]=${ONDEMAND_POD}
+
+  create_user_grants "${CREATE_GRANTS_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [-p] <namespace>
+#   Query the test user of the test database (test for existence).
+#   Returns a string indicating whether or not the query was successful.
+#   NOTE: In order for this function to show a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test user
+#         at bootstrap time.
+function do_query_user() {
+
+  QUERY_ARGS=("$@")
+
+  check_args QUERY_ARGS 1 2
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  if [[ "${QUERY_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v QUERY_ARGS[1]
+  fi
+
+  QUERY_ARGS[3]=${ONDEMAND_POD}
+
+  query_user "${QUERY_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
+# Params: [-p] <namespace>
+#   Delete the grants for the test user in the test database.
+#   NOTE: In order for this function to delete a user, create_test_database in
+#         values.yaml file needs to be set to true to create the test user
+#         at bootstrap time. If the user isn't there this will fail.
+function do_delete_user_grants() {
+
+  DELETE_GRANTS_ARGS=("$@")
+
+  check_args DELETE_GRANTS_ARGS 1 2
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  if [[ "${DELETE_GRANTS_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v DELETE_GRANTS_ARGS[1]
+  fi
+
+  DELETE_GRANTS_ARGS[3]=${ONDEMAND_POD}
+
+  delete_user_grants "${DELETE_GRANTS_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
 # Params: [-p] <namespace> <table> <colname> <value>
 #   Where: <colname> = <value> is the condition used to find the row to be deleted.
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
-#         at bootrap time.
+#         at bootstrap time.
 function do_delete_row() {
 
   DELETE_ARGS=("$@")
@@ -611,7 +732,6 @@ function do_delete_row() {
   fi
 
   # Be sure that an ondemand pod is ready (start if not started)
-
   ensure_ondemand_pod_exists
 
   if [[ "${DELETE_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
@@ -629,7 +749,7 @@ function do_delete_row() {
 # Params: [-p] <namespace> <tablename>
 #   NOTE: In order for this function to work, create_test_database in
 #         values.yaml file needs to be set to true to create a test database
-#         at bootrap time.
+#         at bootstrap time.
 function do_delete_table() {
 
   DELETE_ARGS=("$@")
@@ -654,6 +774,34 @@ function do_delete_table() {
   fi
 }
 
+# Params: [-p] <namespace>
+#   Delete the test backups that have been created by the test functions above.
+#   NOTE: only backups associated with the test database will be deleted.
+#         Both local and remote test backups will be deleted.
+function do_delete_backups() {
+
+  DELETE_BACKUPS_ARGS=("$@")
+
+  check_args DELETE_BACKUPS_ARGS 1 2
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  if [[ "${DELETE_BACKUPS_ARGS[1]}" =~ ^-rp|^-pr|^-p ]]; then
+    unset -v DELETE_BACKUPS_ARGS[1]
+  fi
+
+  DELETE_BACKUPS_ARGS[3]=${ONDEMAND_POD}
+
+  delete_backups "${DELETE_BACKUPS_ARGS[@]}"
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+}
+
 # Params: [-rp] <archive> <db_name>
 function do_restore() {
 
@@ -673,7 +821,7 @@ function do_restore() {
   NAMESPACE="$(echo "$ARCHIVE" | awk -F '.' '{print $2}')"
   RESTORE_ARGS=("${RESTORE_ARGS[@]:0:$ARCHIVE_POS}" "$NAMESPACE" "${RESTORE_ARGS[@]:$ARCHIVE_POS}")
 
-  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into LIST_ARGS increases max arguments by 1
+  # NAMESPACE is pulled from the ARCHIVE name, and is inserted into RESTORE_ARGS increases max arguments by 1
   check_args RESTORE_ARGS 2 4
   if [[ $? -ne 0 ]]; then
     return 1
@@ -823,6 +971,10 @@ function help() {
   echo "               means all databases are to be restored"
   echo "           Restores the specified database(s)."
   echo ""
+  echo "       utilscli dbutils delete_archive (da) [-rp] <archive>"
+  echo "           Deletes the specified archive from either the local file"
+  echo "           system or the remove rgw location."
+  echo ""
   echo "       utilscli dbutils sql_prompt (sql) [-p] <namespace>"
   echo "           For manual table/row restoration, this command allows access"
   echo "           to the Mariadb mysql interactive user interface. Type quit"
@@ -846,6 +998,7 @@ function menu() {
   echo "Execution methods:          backup (b) [-p] <namespace>"
   echo "                            restore (r) [-rp] <archive> <db_name | all>"
   echo "                            sql_prompt (sql) [-p] <namespace>"
+  echo "                            delete_archive (da) [-rp] <archive>"
   echo "                            cleanup (c) [namespace]"
   echo "Show Archived details:      list_archives (la) [-rp] <namespace>"
   echo "                            list_databases (ld) [-rp] <archive>"
@@ -872,14 +1025,19 @@ function execute_selection() {
     "list_tables"|"lt")           do_list_tables "${ARGS[@]}";;
     "list_rows"|"lr")             do_list_rows "${ARGS[@]}";;
     "list_schema"|"ls")           do_list_schema "${ARGS[@]}";;
+    "delete_archive"|"da")        do_delete_archive "${ARGS[@]}";;
     "show_databases"|"sd")        do_show_databases "${ARGS[@]}";;
     "show_tables"|"st")           do_show_tables "${ARGS[@]}";;
     "show_rows"|"sr")             do_show_rows "${ARGS[@]}";;
     "show_schema"|"ss")           do_show_schema "${ARGS[@]}";;
     "create_test_table"|"ctt")    do_create_table "${ARGS[@]}";;
     "create_test_row"|"ctr")      do_create_row "${ARGS[@]}";;
+    "create_test_user_grants"|"ctug")  do_create_user_grants "${ARGS[@]}";;
+    "query_test_user"|"qtu")           do_query_user "${ARGS[@]}";;
+    "delete_test_user_grants"|"dtug")  do_delete_user_grants "${ARGS[@]}";;
     "delete_test_row"|"dtr")      do_delete_row "${ARGS[@]}";;
     "delete_test_table"|"dtt")    do_delete_table "${ARGS[@]}";;
+    "delete_test_backups"|"dtb")  do_delete_backups "${ARGS[@]}";;
     "restore"|"r")                do_restore "${ARGS[@]}";;
     "sql_prompt"|"sql")           do_sql_prompt "${ARGS[@]}";;
     "command_history"|"ch")       do_command_history;;

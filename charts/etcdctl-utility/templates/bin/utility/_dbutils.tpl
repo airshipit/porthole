@@ -149,7 +149,7 @@ function remove_job() {
   fi
 }
 
-# Params: [-p] [node]
+# Params: [-p] <node>
 function do_backup() {
 
   BACKUP_ARGS=("$@")
@@ -166,7 +166,7 @@ function do_backup() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/backup_etcd.sh
 }
 
-# Params: [-rp] [node]
+# Params: [-rp] <node>
 function do_list_archives() {
 
   LIST_ARGS=("$@")
@@ -183,7 +183,7 @@ function do_list_archives() {
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_etcd.sh list_archives "$LOCATION"
 }
 
-# Params: [-rp] <archive> <anchor> [node]
+# Params: [-rp] <archive> <anchor> <node>
 function do_restore() {
 
   # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
@@ -214,6 +214,37 @@ function do_restore() {
 
   # Execute the command in the on-demand pod
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_etcd.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
+}
+
+# Params: [-rp] <archive> <node>
+function do_delete_archive() {
+
+  # Determine which argument is the ARCHIVE in order to detect the NAMESPACE
+  DELETE_ARCH_ARGS=("$@")
+  if [[ "${DELETE_ARCH_ARGS[1]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[1]}"
+    ARCHIVE_POS=1
+  elif [[ "${DELETE_ARCH_ARGS[2]}" =~ .tar.gz ]]; then
+    ARCHIVE="${DELETE_ARCH_ARGS[2]}"
+    ARCHIVE_POS=2
+  else
+    echo "ERROR: Archive file not found in 1st or 2nd argument position."
+    return 1
+  fi
+
+  # NAMESPACE is always set to kube-system and is inserted into DELETE_ARCH_ARGS; increases max arguments by 1
+  check_args DELETE_ARCH_ARGS 1 3
+  if [[ $? -ne 0 ]]; then
+    return 1
+  fi
+
+  DELETE_ARCH_ARGS=("${DELETE_ARCH_ARGS[@]:0:$ARCHIVE_POS}" "${NAMESPACE}" "${DELETE_ARCH_ARGS[@]:$ARCHIVE_POS}")
+
+  # Be sure that an ondemand pod is ready (start if not started)
+  ensure_ondemand_pod_exists
+
+  # Execute the command in the on-demand pod
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_etcd.sh delete_archive "${ARCHIVE}" "${LOCATION}"
 }
 
 function do_cleanup() {
@@ -254,14 +285,18 @@ function help() {
   echo "       -p Persistent On-Demand Pod. The On-Demand Pod will not be"
   echo "            removed when the command finishes if applicable."
   echo ""
-  echo "       utilscli dbutils backup (b) [-p] [node]"
+  echo "       utilscli dbutils backup (b) [-p] <node>"
   echo "           Performs a manual backup of etcd."
   echo ""
-  echo "       utilscli dbutils list_archives (la) [-rp] [node]"
+  echo "       utilscli dbutils list_archives (la) [-rp] <node>"
   echo "           Retrieves the list of archives."
   echo ""
-  echo "       utilscli dbutils restore (r) [-rp] <archive> <anchor> [node]"
+  echo "       utilscli dbutils restore (r) [-rp] <archive> <anchor> <node>"
   echo "           Restores the specified etcd archive from an archive."
+  echo ""
+  echo "       utilscli dbutils delete_archive (da) [-rp] <archive> <node>"
+  echo "           Deletes the specified archive from either the local file"
+  echo "           system or the remove rgw location."
   echo ""
   echo "       utilscli dbutils cleanup (c)"
   echo "           Cleans up (kills) any jobs/pods which are left running"
@@ -277,9 +312,10 @@ function help() {
 
 function menu() {
   echo "Please select from the available options:"
-  echo "Execution methods:          backup (b) [-p] [node]"
-  echo "                            list_archives (la) [-rp] [node]"
-  echo "                            restore (r) [-rp] <archive> <anchor> [node]"
+  echo "Execution methods:          backup (b) [-p] <node>"
+  echo "                            list_archives (la) [-rp] <node>"
+  echo "                            restore (r) [-rp] <archive> <anchor> <node>"
+  echo "                            delete_archive (da) [-rp] <archive> <node>"
   echo "                            cleanup (c)"
   echo "Other:                      command_history (ch)"
   echo "                            repeat_cmd (<)"
@@ -293,6 +329,7 @@ function execute_selection() {
     "backup"|"b")                   do_backup "${ARGS[@]}";;
     "list_archives"|"la")           do_list_archives "${ARGS[@]}";;
     "restore"|"r")                  do_restore "${ARGS[@]}";;
+    "delete_archive"|"da")          do_delete_archive "${ARGS[@]}";;
     "cleanup"|"c"|"quit"|"q")       do_cleanup;;
     "command_history"|"ch")         do_command_history;;
     "<")                            ;;
