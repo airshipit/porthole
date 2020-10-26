@@ -105,6 +105,7 @@ conf:
   mariadb_backup_restore:
     enabled_namespaces: ""
     test_database_name: "test_database"
+    test_database_user: "test_database_user"
     secrets:
       rgw_secret: mariadb-backup-user
       conf_secret: mariadb-backup-restore

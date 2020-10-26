@@ -9,7 +9,6 @@ IFS=', ' read -re -a BACKUP_RESTORE_NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPA
 ADMIN_USER_CNF=$(mktemp -p /tmp)
 CERT_DIR=$(mktemp -d)
 TLS_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.tls_secret }}
-TEST_DB_USER="${TEST_DB_NAME}_user"
 
 function cleanup {
   rm -f "${ADMIN_USER_CNF}"
@@ -78,21 +77,24 @@ do
     echo "Test database created in namespace $NAMESPACE."
   fi
 
-  # Verify if test user exists already
-  DB_ARGS="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
-  if ${MYSQL} --execute="${DB_ARGS}" 2>/dev/null | grep ${TEST_DB_USER}; then
-    echo "Test user already exists in namespace ${NAMESPACE}."
+  if [[ -n ${TEST_DB_USER} ]]; then
+    # Verify if test user exists already
+    DB_ARGS="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
+    if ${MYSQL} --execute="${DB_ARGS}" 2>/dev/null | grep ${TEST_DB_USER}; then
+      echo "Test user already exists in namespace ${NAMESPACE}."
+    else
+      # Add a test user that has access only to this database
+      ${MYSQL} --execute="CREATE USER '${TEST_DB_USER}'@'%' IDENTIFIED BY '${TEST_DB_USER}';"
+      echo "Test user created in namespace ${NAMESPACE}."
+    fi
+
+    # Grant privileges for the test database to the test user.
+    # Note: this will not fail if the grants already exist.
+    DB_ARGS="GRANT ALL PRIVILEGES ON ${TEST_DB_NAME}.* TO '${TEST_DB_USER}'@'%' \
+             ;FLUSH PRIVILEGES;"
+    ${MYSQL} --execute="${DB_ARGS}"
+    echo "Test user is granted access to the test database in namespace ${NAMESPACE}."
   else
-    # Add a test user that has access only to this database
-    ${MYSQL} --execute="CREATE USER '${TEST_DB_USER}'@'%' IDENTIFIED BY '${TEST_DB_USER}';"
-    echo "Test user created in namespace ${NAMESPACE}."
+    echo "No test user configured to access test database in namespace ${NAMESPACE}"
   fi
-
-  # Grant privileges for the test database to the test user.
-  # Note: this will not fail if the grants already exist.
-  DB_ARGS="GRANT ALL PRIVILEGES ON ${TEST_DB_NAME}.* TO '${TEST_DB_USER}'@'%' \
-           ;FLUSH PRIVILEGES;"
-  ${MYSQL} --execute="${DB_ARGS}"
-  echo "Test user is granted access to the test database in namespace ${NAMESPACE}."
-
 done

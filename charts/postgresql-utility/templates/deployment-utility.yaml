@@ -129,6 +129,10 @@ spec:
             {{- if .Values.manifests.create_test_database }}
             - name: TEST_DB_NAME
               value: {{ .Values.conf.postgresql_backup_restore.test_database_name | quote }}
+            {{- if .Values.conf.postgresql_backup_restore.test_database_user }}
+            - name: TEST_DB_USER
+              value: {{ .Values.conf.postgresql_backup_restore.test_database_user | quote }}
+            {{- end }}
             {{- end }}
           volumeMounts:
             - name: postgresql-utility-bin

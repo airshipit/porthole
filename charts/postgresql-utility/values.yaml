@@ -109,6 +109,7 @@ conf:
   postgresql_backup_restore:
     enabled_namespaces: "openstack"
     test_database_name: "test_database"
+    test_database_user: "test_database_user"
     secrets:
       rgw_secret: postgresql-backup-user
       conf_secret: postgresql-backup-restore

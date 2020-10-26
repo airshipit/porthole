@@ -1,7 +1,5 @@
 #!/bin/bash
 
-TEST_DB_USER="${TEST_DB_NAME}_user"
-
 function database_cmd() {
   NAMESPACE=$1
 
@@ -147,14 +145,18 @@ function create_user_grants() {
   CREATE_GRANTS_ARGS=("$@")
   NAMESPACE=${CREATE_GRANTS_ARGS[1]}
 
-  DB_CMD=$(database_cmd ${NAMESPACE})
+  if [[ -n ${TEST_DB_USER} ]]; then
+    DB_CMD=$(database_cmd ${NAMESPACE})
 
-  # If the test user and grants do not exist already,
-  # give the test user privilege to access the test database
-  if ${DB_CMD} -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
-    ${DB_CMD} -tc "GRANT ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} TO ${TEST_DB_USER};"
+    # If the test user and grants do not exist already,
+    # give the test user privilege to access the test database
+    if ${DB_CMD} -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
+      ${DB_CMD} -tc "GRANT ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} TO ${TEST_DB_USER};"
+    else
+      echo "Test user does not exist in namespace ${NAMESPACE}"
+    fi
   else
-    echo "Test user does not exist in namespace ${NAMESPACE}"
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
 }
 
@@ -171,43 +173,47 @@ function query_user() {
   QUERY_ARGS=("$@")
   NAMESPACE=${QUERY_ARGS[1]}
 
-  DB_CMD=$(database_cmd ${NAMESPACE})
+  if [[ -n ${TEST_DB_USER} ]]; then
+    DB_CMD=$(database_cmd ${NAMESPACE})
 
-  # Sub-command to retrieve the test user
-  DB_ARGS="\du ${TEST_DB_USER}"
+    # Sub-command to retrieve the test user
+    DB_ARGS="\du ${TEST_DB_USER}"
 
-  # Execute the command to query for the test user
-  # Result should look like this: (assuming TEST_DB_NAME = test)
-  #                   List of roles
-  #          Role name        |  Attributes  | Member of
-  #  -------------------------+--------------+-----------
-  #          test_user        | Cannot login | {}
-  USERS=$(${DB_CMD} -tc ${DB_ARGS} | grep ${TEST_DB_USER} | wc -l)
-  if [[ ${USERS} -ne 1 ]]; then
-    # There should only be one user
-    echo "${TEST_DB_USER} does not exist"
-    return
+    # Execute the command to query for the test user
+    # Result should look like this: (assuming TEST_DB_NAME = test)
+    #                   List of roles
+    #          Role name        |  Attributes  | Member of
+    #  -------------------------+--------------+-----------
+    #          test_user        | Cannot login | {}
+    USERS=$(${DB_CMD} -tc ${DB_ARGS} | grep ${TEST_DB_USER} | wc -l)
+    if [[ ${USERS} -ne 1 ]]; then
+      # There should only be one user
+      echo "${TEST_DB_USER} does not exist"
+      return
+    fi
+
+    # Sub-command to retrieve the grants for the test database
+    DB_ARGS="\l+ ${TEST_DB_NAME}"
+
+    # Execute the command to query the grants for the test user.
+    # Result should look like this: (assuming TEST_DB_NAME = test)
+    #                                                                List of databases
+    #         Name        |  Owner   | Encoding |  Collate   |   Ctype    |          Access privileges           |  Size   | Tablespace | Description
+    # --------------------+----------+----------+------------+------------+--------------------------------------+---------+------------+-------------
+    #         test        | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =Tc/postgres                        +| 7087 kB | pg_default |
+    #                     |          |          |            |            | postgres=CTc/postgres               +|         |            |
+    #                     |          |          |            |            | test_user=CTc/postgres               |         |            |
+    GRANTS=$(${DB_CMD} -tc ${DB_ARGS} | grep "${TEST_DB_USER}=CTc" | wc -l)
+    if [[ ${GRANTS} -ne 1 ]]; then
+      # There should only be 1 GRANT statement for this user
+      echo "${TEST_DB_USER} does not have the correct grants"
+      return
+    fi
+
+    echo "${TEST_DB_USER} exists and has the correct grants."
+  else
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
-
-  # Sub-command to retrieve the grants for the test database
-  DB_ARGS="\l+ ${TEST_DB_NAME}"
-
-  # Execute the command to query the grants for the test user.
-  # Result should look like this: (assuming TEST_DB_NAME = test)
-  #                                                                List of databases
-  #         Name        |  Owner   | Encoding |  Collate   |   Ctype    |          Access privileges           |  Size   | Tablespace | Description
-  # --------------------+----------+----------+------------+------------+--------------------------------------+---------+------------+-------------
-  #         test        | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =Tc/postgres                        +| 7087 kB | pg_default |
-  #                     |          |          |            |            | postgres=CTc/postgres               +|         |            |
-  #                     |          |          |            |            | test_user=CTc/postgres               |         |            |
-  GRANTS=$(${DB_CMD} -tc ${DB_ARGS} | grep "${TEST_DB_USER}=CTc" | wc -l)
-  if [[ ${GRANTS} -ne 1 ]]; then
-    # There should only be 1 GRANT statement for this user
-    echo "${TEST_DB_USER} does not have the correct grants"
-    return
-  fi
-
-  echo "${TEST_DB_USER} exists and has the correct grants."
 }
 
 # Params: <namespace>
@@ -220,13 +226,17 @@ function delete_user_grants() {
   DELETE_GRANTS_ARGS=("$@")
   NAMESPACE=${DELETE_GRANTS_ARGS[1]}
 
-  DB_CMD=$(database_cmd ${NAMESPACE})
+  if [[ -n ${TEST_DB_USER} ]]; then
+    DB_CMD=$(database_cmd ${NAMESPACE})
 
-  # Execute the commands to delete the grants.
-  if $DB_CMD -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
-    ${DB_CMD} -tc "REVOKE ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} FROM ${TEST_DB_USER};"
+    # Execute the commands to delete the grants.
+    if $DB_CMD -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
+      ${DB_CMD} -tc "REVOKE ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} FROM ${TEST_DB_USER};"
+    else
+      echo "Test user does not exist in namespace ${NAMESPACE}"
+    fi
   else
-    echo "Test user does not exist in namespace ${NAMESPACE}"
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
 }
 
@@ -309,5 +319,3 @@ function delete_backups() {
     done
   fi
 }
-
-

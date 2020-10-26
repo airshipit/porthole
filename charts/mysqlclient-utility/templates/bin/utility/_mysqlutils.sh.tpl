@@ -1,7 +1,5 @@
 #!/bin/bash
 
-TEST_DB_USER="${TEST_DB_NAME}_user"
-
 function database_cmd() {
   echo "mysql --defaults-file=/etc/mysql/admin_user.cnf --connect-timeout 10"
 }
@@ -110,17 +108,21 @@ function create_user_grants() {
 
   CREATE_GRANTS_ARGS=("$@")
 
-  MYSQL_CMD=$(database_cmd)
-  DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
-  USERS=$(kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
-  if [[ ${USERS} -eq 1 ]]; then
-    DB_CMD="GRANT ALL PRIVILEGES ON ${TEST_DB_NAME}.* TO '${TEST_DB_USER}'@'%'; \
-            FLUSH PRIVILEGES;"
+  if [[ -n ${TEST_DB_USER} ]]; then
+    MYSQL_CMD=$(database_cmd)
+    DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
+    USERS=$(kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
+    if [[ ${USERS} -eq 1 ]]; then
+      DB_CMD="GRANT ALL PRIVILEGES ON ${TEST_DB_NAME}.* TO '${TEST_DB_USER}'@'%'; \
+              FLUSH PRIVILEGES;"
 
-    # Execute the command in the on-demand pod
-    kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+      # Execute the command in the on-demand pod
+      kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+    else
+      echo "Test user does not exist in namespace ${NAMESPACE}."
+    fi
   else
-    echo "Test user does not exist in namespace ${NAMESPACE}."
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
 }
 
@@ -134,46 +136,50 @@ function query_user() {
 
   QUERY_ARGS=("$@")
 
-  MYSQL_CMD=$(database_cmd)
+  if [[ -n ${TEST_DB_USER} ]]; then
+    MYSQL_CMD=$(database_cmd)
 
-  # Retrieve the test user
-  DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
+    # Retrieve the test user
+    DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
 
-  # Execute the command in the on-demand pod
-  # Result should look like this: (assuming TEST_DB_NAME = test)
-  #    +----------------+
-  #    | user           |
-  #    +----------------+
-  #    | test_user      |
-  #    +----------------+
-  #    1 row in set (0.00 sec)
-  USERS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep ${TEST_DB_USER} | wc -l)
-  if [[ ${USERS} -ne 1 ]]; then
-    # There should only be one user
-    echo "${TEST_DB_USER} does not exist"
-    return
+    # Execute the command in the on-demand pod
+    # Result should look like this: (assuming TEST_DB_NAME = test)
+    #    +----------------+
+    #    | user           |
+    #    +----------------+
+    #    | test_user      |
+    #    +----------------+
+    #    1 row in set (0.00 sec)
+    USERS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep ${TEST_DB_USER} | wc -l)
+    if [[ ${USERS} -ne 1 ]]; then
+      # There should only be one user
+      echo "${TEST_DB_USER} does not exist"
+      return
+    fi
+
+    # Retrieve the grants for this test user in the test database
+    DB_CMD="SHOW GRANTS FOR '${TEST_DB_USER}'@'%';"
+
+    # Execute the command in the on-demand pod
+    # Result should look like this: (assuming TEST_DB_NAME = test)
+    #    +---------------------------------------------------------------------------------------------------------------+
+    #    | Grants for test_user@%                                                                                        |
+    #    +---------------------------------------------------------------------------------------------------------------+
+    #    | GRANT USAGE ON *.* TO 'test_user'@'%' IDENTIFIED BY PASSWORD '<redacted>';                                    |
+    #    | GRANT ALL PRIVILEGES ON `test`.* TO 'test_user'@'%'                                                           |
+    #    +---------------------------------------------------------------------------------------------------------------+
+    #    2 rows in set (0.00 sec)
+    GRANTS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep "GRANT.*${TEST_DB_USER}" | wc -l)
+    if [[ ${GRANTS} -ne 2 ]]; then
+      # There should only be 2 GRANT statements for this user
+      echo "${TEST_DB_USER} does not have the correct grants"
+      return
+    fi
+
+    echo "${TEST_DB_USER} exists and has the correct grants."
+  else
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
-
-  # Retrieve the grants for this test user in the test database
-  DB_CMD="SHOW GRANTS FOR '${TEST_DB_USER}'@'%';"
-
-  # Execute the command in the on-demand pod
-  # Result should look like this: (assuming TEST_DB_NAME = test)
-  #    +---------------------------------------------------------------------------------------------------------------+
-  #    | Grants for test_user@%                                                                                        |
-  #    +---------------------------------------------------------------------------------------------------------------+
-  #    | GRANT USAGE ON *.* TO 'test_user'@'%' IDENTIFIED BY PASSWORD '<redacted>';                                    |
-  #    | GRANT ALL PRIVILEGES ON `test`.* TO 'test_user'@'%'                                                           |
-  #    +---------------------------------------------------------------------------------------------------------------+
-  #    2 rows in set (0.00 sec)
-  GRANTS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep "GRANT.*${TEST_DB_USER}" | wc -l)
-  if [[ ${GRANTS} -ne 2 ]]; then
-    # There should only be 2 GRANT statements for this user
-    echo "${TEST_DB_USER} does not have the correct grants"
-    return
-  fi
-
-  echo "${TEST_DB_USER} exists and has the correct grants."
 }
 
 # Params: <namespace> <pod_name>
@@ -185,17 +191,21 @@ function delete_user_grants() {
 
   DELETE_GRANTS_ARGS=("$@")
 
-  MYSQL_CMD=$(database_cmd)
-  DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
-  USERS=$(kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
-  if [[ ${USERS} -eq 1 ]]; then
-    DB_CMD="REVOKE ALL PRIVILEGES ON ${TEST_DB_NAME}.* FROM '${TEST_DB_USER}'@'%'; \
-            FLUSH PRIVILEGES;"
+  if [[ -n ${TEST_DB_USER} ]]; then
+    MYSQL_CMD=$(database_cmd)
+    DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
+    USERS=$(kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
+    if [[ ${USERS} -eq 1 ]]; then
+      DB_CMD="REVOKE ALL PRIVILEGES ON ${TEST_DB_NAME}.* FROM '${TEST_DB_USER}'@'%'; \
+              FLUSH PRIVILEGES;"
 
-    # Execute the command in the on-demand pod
-    kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+      # Execute the command in the on-demand pod
+      kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+    else
+      echo "Test user does not exist in namespace ${NAMESPACE}."
+    fi
   else
-    echo "Test user does not exist in namespace ${NAMESPACE}."
+    echo "Test user was not deployed in namespace ${NAMESPACE}"
   fi
 }
 

@@ -3,7 +3,6 @@
 set -e +x
 
 IFS=', ' read -re -a BACKUP_RESTORE_NAMESPACE_ARRAY <<< "$BACKUP_RESTORE_NAMESPACE_LIST"
-TEST_DB_USER="${TEST_DB_NAME}_user"
 TEST_TABLE="test_table1"
 
 function database_cmd() {
@@ -46,16 +45,20 @@ EOF
     INSERT INTO ${TEST_TABLE} VALUES ( 'name1', '1' );
 EOF
 
-  # Create a test user if it has not been created before.
-  if ${PSQL} -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
-    echo "Test user already exists in namespace ${NAMESPACE}"
-  else
-    ${PSQL} -tc "CREATE ROLE ${TEST_DB_USER};"
-    echo "Test user created in namespace ${NAMESPACE}."
-  fi
+  if [[ -n ${TEST_DB_USER} ]]; then
+    # Create a test user if it has not been created before.
+    if ${PSQL} -tc "SELECT rolname FROM pg_roles WHERE rolname='${TEST_DB_USER}';" | grep ${TEST_DB_USER}; then
+      echo "Test user already exists in namespace ${NAMESPACE}"
+    else
+      ${PSQL} -tc "CREATE ROLE ${TEST_DB_USER};"
+      echo "Test user created in namespace ${NAMESPACE}."
+    fi
 
-  # Note, if the GRANT is already there, the following command will not fail,
-  # so no need to check existence first.
-  ${PSQL} -tc "GRANT ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} TO ${TEST_DB_USER};"
-  echo "Test user is granted permissions to the test database in namespace ${NAMESPACE}."
+    # Note, if the GRANT is already there, the following command will not fail,
+    # so no need to check existence first.
+    ${PSQL} -tc "GRANT ALL PRIVILEGES ON DATABASE ${TEST_DB_NAME} TO ${TEST_DB_USER};"
+    echo "Test user is granted permissions to the test database in namespace ${NAMESPACE}."
+  else
+    echo "No test user configured to access test database in namespace ${NAMESPACE}"
+  fi
 done

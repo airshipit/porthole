@@ -128,6 +128,10 @@ spec:
             {{- if .Values.manifests.create_test_database }}
             - name: TEST_DB_NAME
               value: {{ .Values.conf.mariadb_backup_restore.test_database_name | quote }}
+            {{- if .Values.conf.mariadb_backup_restore.test_database_user }}
+            - name: TEST_DB_USER
+              value: {{ .Values.conf.mariadb_backup_restore.test_database_user | quote }}
+            {{- end }}
             {{- end }}
             - name: BACKUP_RESTORE_SCOPE
               value: "mariadb"
