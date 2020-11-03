@@ -208,40 +208,27 @@ function remove_job() {
   fi
 }
 
+# Params: timeout (how long in seconds flock waited on the lock to be released)
+function flock_error() {
+   echo "ERROR: Lock did not release after $1 seconds."
+   echo "  Another process may have locked /tmp/dbutils.lock"
+   echo "  If you are sure no other process is running, rm /tmp/dbutils.lock"
+   echo "  and run dbutils again."
+
+   exit 1
+}
+
+# Params: timeout (if locked, how long should flock wait on the lock to be released)
 function lock() {
-  exec 100>/tmp/dbutils.lock || exit 1
-  flock 100 || exit 1
+  timeout=$1
+  exec 200>/tmp/dbutils.lock
+  flock -w "$timeout" 200 || flock_error "$timeout"
   export MY_LOCK="true"
   echo "Acquired lock."
 }
 
-# Params: wait (how long in seconds to wait on the lock to be released.
-function check_lock() {
-
-  if [[ ! -e /tmp/dbutils.lock ]]; then
-    return 0
-  fi
-
-  echo "Waiting up to $1 seconds to acquire lock."
-
-  WAIT=$(($(date +'%s')+$1))
-
-  while [[ "$WAIT" -ge "$(date +'%s')" ]]; do
-    if [[ ! -e /tmp/dbutils.lock ]]; then
-      return 0
-    fi
-  done
-
-  echo "ERROR: Lock did not release after $1 seconds."
-  echo "  Another process may have locked /tmp/dbutils.lock"
-  echo "  If you are sure no other process is running, rm /tmp/dbutils.lock"
-  echo "  and run dbutils again."
-
-  exit 1
-}
-
 function unlock() {
-  rm /tmp/dbutils.lock > /dev/null 2>&1
+  flock -u 200
   export MY_LOCK="false"
   echo "Lock Removed."
 }
@@ -259,9 +246,7 @@ function do_backup() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
-  check_lock 60
-
-  lock
+  lock 60
 
   # Execute the command in the on-demand pod
   if [[ "${BACKUP_ARGS[1]}" == "-p" ]]; then
@@ -832,9 +817,7 @@ function do_restore() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
-  check_lock 60
-
-  lock
+  lock 60
 
   # Execute the command in the on-demand pod
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
