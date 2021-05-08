@@ -8,6 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
+ARG UPPER_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/train
 ARG KUBE_VERSION=1.18.6
 
 RUN set -xe  \
@@ -27,7 +28,7 @@ RUN set -xe  \
         python3.6 \
         python3-pip  \
         jq \
-    && pip3 install \
+    && pip3 install -c ${UPPER_CONSTRAINTS_FILE} \
         oslo.rootwrap==5.8.0 \
         python-openstackclient==4.0.1 \
         python-swiftclient \
