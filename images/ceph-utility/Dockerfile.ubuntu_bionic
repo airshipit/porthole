@@ -8,13 +8,13 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-# Nautilus 14.2.10
-ARG CEPH_RELEASE=nautilus
-ARG CEPH_RELEASE_TAG=14.2.10-1.0~bionic
+# octopus 15.2.13-1bionic
+ARG CEPH_RELEASE=octopus
+ARG CEPH_RELEASE_TAG=15.2.13-1bionic
 ARG KUBE_VERSION=1.18.6
 
-ARG CEPH_REPO=https://mirror.mirantis.com/testing/ceph-nautilus/bionic/
-ARG CEPH_KEY=https://mirror.mirantis.com/testing/ceph-nautilus/bionic/archive-ceph-nautilus.key
+ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-octopus/
+ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-octopus/release.asc
 
 ADD ${CEPH_KEY} /etc/apt/ceph-${CEPH_RELEASE}.key
 RUN set -xe \
@@ -46,6 +46,7 @@ RUN set -xe \
            iperf \
            python3.6 \
            python3-pip \
+    && pip3 install --upgrade pip \
     && pip3 install \
            oslo.rootwrap==5.8.0 \
     && apt-get remove --purge -y wget apt-transport-https \

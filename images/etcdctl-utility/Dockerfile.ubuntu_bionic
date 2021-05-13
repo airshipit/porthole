@@ -33,6 +33,8 @@ RUN set -xe \
        python3.6 \
        python3-pip \
        jq \
+       rclone \
+    && pip3 install --upgrade pip \
     && pip3 install \
          oslo.rootwrap==5.8.0 \
          python-openstackclient==3.18.1 \
