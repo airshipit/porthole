@@ -30,6 +30,7 @@ RUN set -xe \
        socat \
        python3.6 \
        python3-pip \
+    && pip3 install --upgrade pip \
     && pip3 install \
          oslo.rootwrap==5.8.0 \
     && apt-get clean -y \

@@ -35,6 +35,7 @@ RUN set -xe \
        xz-utils \
        python3.6 \
        python3-pip \
+    && pip3 install --upgrade pip \
     && pip3 install \
          oslo.rootwrap==5.8.0 \
     && apt-get remove --purge -y wget apt-transport-https \
