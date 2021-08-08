@@ -182,6 +182,9 @@ spec:
               mountPath: /etc/mysqlclient-utility/rootwrap.conf
               subPath: rootwrap.conf
               readOnly: true
+{{- if .Values.pod.mounts.mysqlclient.container.mysqlclient_utility.volumeMounts }}
+{{ .Values.pod.mounts.mysqlclient.container.mysqlclient_utility.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: mysqlclient-utility-sudoers
           configMap:
@@ -199,4 +202,7 @@ spec:
           configMap:
             name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
             defaultMode: 0755
+{{- if .Values.pod.mounts.mysqlclient.container.mysqlclient_utility.volumes }}
+{{ .Values.pod.mounts.mysqlclient.container.mysqlclient_utility.volumes | toYaml | indent 8 }}
+{{- end }}
 {{- end }}

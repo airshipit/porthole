@@ -175,6 +175,9 @@ cat >> $TMP_FILE << EOF
             - name: host-etcd
               mountPath: /var/lib/etcd
               subPath: .
+{{- if .Values.pod.mounts.etcd_ondemand.container.etcd_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.etcd_ondemand.container.etcd_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: pod-tmp
           emptyDir: {}
@@ -196,6 +199,9 @@ cat >> $TMP_FILE << EOF
         - name: host-etcd
           hostPath:
             path: /var/lib/etcd
+{{- if .Values.pod.mounts.etcd_ondemand.container.etcd_ondemand.volumes }}
+{{ .Values.pod.mounts.etcd_ondemand.container.etcd_ondemand.volumes | toYaml | indent 8 }}
+{{- end }}
 EOF
 
 kubectl create -n $ETCD_POD_NAMESPACE -f $TMP_FILE

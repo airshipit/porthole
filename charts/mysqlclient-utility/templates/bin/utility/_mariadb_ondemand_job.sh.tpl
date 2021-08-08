@@ -198,6 +198,9 @@ if $TLS_ENABLED; then
               mountPath: /etc/mysql/certs/ca.crt
               subPath: ca.crt
               readOnly: true
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: pod-tmp
           emptyDir: {}
@@ -216,6 +219,9 @@ if $TLS_ENABLED; then
           secret:
             secretName: ${TLS_SECRET}
             defaultMode: 292
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumes }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumes | toYaml | indent 8 }}
+{{- end }}
 EOF
 else
   cat >> $TMP_FILE << EOF
@@ -244,6 +250,9 @@ else
               mountPath: /etc/mysql/admin_user.cnf
               subPath: admin_user.cnf
               readOnly: true
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: pod-tmp
           emptyDir: {}
@@ -258,6 +267,9 @@ else
         - name: mariadb-backup-dir
           persistentVolumeClaim:
             claimName: mariadb-backup-data
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumes }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumes | toYaml | indent 8 }}
+{{- end }}
 EOF
 fi
 

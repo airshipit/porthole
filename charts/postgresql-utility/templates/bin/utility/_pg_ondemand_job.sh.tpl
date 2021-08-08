@@ -184,6 +184,9 @@ cat >> $TMP_FILE << EOF
               mountPath: /etc/postgresql/admin_user.conf
               subPath: admin_user.conf
               readOnly: true
+{{- if .Values.pod.mounts.postgresql_ondemand.container.postgresql_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.postgresql_ondemand.container.postgresql_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       restartPolicy: OnFailure
       volumes:
         - name: pod-tmp
@@ -199,6 +202,9 @@ cat >> $TMP_FILE << EOF
         - name: postgresql-backup-dir
           persistentVolumeClaim:
             claimName: postgresql-backup-data
+{{- if .Values.pod.mounts.postgresql_ondemand.container.postgresql_ondemand.volumes }}
+{{ .Values.pod.mounts.postgresql_ondemand.container.postgresql_ondemand.volumes | toYaml | indent 8 }}
+{{- end }}
 EOF
 
 kubectl create -n $POSTGRESQL_POD_NAMESPACE -f $TMP_FILE

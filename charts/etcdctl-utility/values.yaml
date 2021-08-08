@@ -53,6 +53,25 @@ pod:
         etcd_ondemand:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
+  mounts:
+    etcd:
+      container:
+        etcdctl_utility:
+          volumes:
+            - name: runasuser-home
+              emptyDir: {}
+          volumeMounts:
+            - name: runasuser-home
+              mountPath: /nonexistent
+    etcd_ondemand:
+      container:
+        etcd_ondemand:
+          volumes:
+            - name: runasuser-home
+              emptyDir: {}
+          volumeMounts:
+            - name: runasuser-home
+              mountPath: /root
   mandatory_access_control:
     type: apparmor
     etcdctl-utility:

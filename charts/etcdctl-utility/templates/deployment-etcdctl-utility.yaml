@@ -183,6 +183,9 @@ spec:
               mountPath: /etc/etcd/etcdctl.cfg
               subPath: etcdctl.cfg
               readOnly: true
+{{- if .Values.pod.mounts.etcd.container.etcdctl_utility.volumeMounts }}
+{{ .Values.pod.mounts.etcd.container.etcdctl_utility.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: etcdctl-utility-sudoers
           configMap:
@@ -204,4 +207,7 @@ spec:
           secret:
             secretName: etcdctl-etcd-secrets
             defaultMode: 0444
+{{- if .Values.pod.mounts.etcd.container.etcdctl_utility.volumes }}
+{{ .Values.pod.mounts.etcd.container.etcdctl_utility.volumes | toYaml | indent 8 }}
+{{- end }}
 {{- end }}

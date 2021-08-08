@@ -185,6 +185,9 @@ spec:
               mountPath: /etc/postgresql/rootwrap.conf
               subPath: rootwrap.conf
               readOnly: true
+{{- if .Values.pod.mounts.postgresql.container.postgresql_utility.volumeMounts }}
+{{ .Values.pod.mounts.postgresql.container.postgresql_utility.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: postgresql-utility-sudoers
           configMap:
@@ -206,4 +209,7 @@ spec:
           secret:
             secretName: {{ .Values.secrets.postgresql.admin | quote }}
             defaultMode: 0444
+{{- if .Values.pod.mounts.postgresql.container.postgresql_utility.volumes }}
+{{ .Values.pod.mounts.postgresql.container.postgresql_utility.volumes | toYaml | indent 8 }}
+{{- end }}
 {{- end }}

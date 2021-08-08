@@ -53,6 +53,25 @@ pod:
           runAsUser: 65534
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
+  mounts:
+    mysqlclient:
+      container:
+        mysqlclient_utility:
+          volumes:
+            - name: runasuser-home
+              emptyDir: {}
+          volumeMounts:
+            - name: runasuser-home
+              mountPath: /nonexistent
+    mariadb_ondemand:
+      container:
+        mariadb_ondemand:
+          volumes:
+            - name: runasuser-home
+              emptyDir: {}
+          volumeMounts:
+            - name: runasuser-home
+              mountPath: /nonexistent
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
