@@ -22,12 +22,12 @@ RUN set -xe \
        python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==5.8.0 \
-         python-openstackclient==4.0.1 \
-         python-glanceclient==2.17.0 \
-         python-novaclient==15.1.1 \
-         python-neutronclient==6.14.1 \
-         python-cinderclient==5.0.0 \
+         oslo.rootwrap==6.0.2 \
+         python-openstackclient==5.2.0 \
+         python-glanceclient==3.1.2 \
+         python-novaclient==17.0.0 \
+         python-neutronclient==7.1.1 \
+         python-cinderclient==7.0.1 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
