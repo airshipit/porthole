@@ -31,8 +31,8 @@ RUN set -xe \
        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==5.8.0 \
-         python-openstackclient==4.0.1 \
+         oslo.rootwrap==6.0.2 \
+         python-openstackclient==5.2.0 \
          python-swiftclient \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
     && apt-get clean -y \
