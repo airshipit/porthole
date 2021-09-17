@@ -24,7 +24,7 @@ from kube_utility_container.tests.utility.base import TestBase
 class TestCalicoUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'calicoctl-utility'
+        cls.deployment_name = cls._get_deployment_name("calicoctl-utility")
         super(TestCalicoUtilityContainer, cls).setUpClass()
 
     def test_verify_calico_client_calicoctl_is_present(self):

@@ -29,7 +29,7 @@ node = os.uname().nodename
 class TestComputeUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'compute-utility'
+        cls.deployment_name = cls._get_deployment_name("compute-utility")
         super(TestComputeUtilityContainer, cls).setUpClass()
 
     @unittest.expectedFailure

@@ -20,7 +20,7 @@ from kube_utility_container.tests.utility.base import TestBase
 class TestMysqlclientUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'mysqlclient-utility'
+        cls.deployment_name = cls._get_deployment_name("mysqlclient-utility")
         super(TestMysqlclientUtilityContainer, cls).setUpClass()
 
     def test_verify_mysql_client_is_present(self):

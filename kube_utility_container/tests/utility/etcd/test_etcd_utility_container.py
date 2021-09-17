@@ -27,7 +27,7 @@ from kube_utility_container.tests.utility.base import TestBase
 class TestEtcdUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'etcdctl-utility'
+        cls.deployment_name = cls._get_deployment_name("etcdctl-utility")
         super(TestEtcdUtilityContainer, cls).setUpClass()
 
     def test_verify_etcd_ctl_is_present(self):

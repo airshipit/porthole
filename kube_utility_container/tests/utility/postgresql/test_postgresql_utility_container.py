@@ -19,7 +19,7 @@ from kube_utility_container.tests.utility.base import TestBase
 class TestPostgresqlUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'postgresql-utility'
+        cls.deployment_name = cls._get_deployment_name("postgresql-utility")
         super(TestPostgresqlUtilityContainer, cls).setUpClass()
 
     def test_verify_readonly_rootfs(self):

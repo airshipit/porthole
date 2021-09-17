@@ -25,7 +25,7 @@ from kube_utility_container.tests.utility.base import TestBase
 class TestOpenstackUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_name = 'openstack-utility'
+        cls.deployment_name = cls._get_deployment_name("openstack-utility")
         super(TestOpenstackUtilityContainer, cls).setUpClass()
 
     def test_verify_openstack_client_is_present(self):

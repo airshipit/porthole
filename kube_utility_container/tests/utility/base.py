@@ -16,6 +16,8 @@ import unittest
 
 from kube_utility_container.services.utility_container_client\
     import UtilityContainerClient
+from kube_utility_container.services.dataloader import \
+    DeploymentMapping
 
 
 class TestBase(unittest.TestCase):
@@ -23,3 +25,14 @@ class TestBase(unittest.TestCase):
     def setUpClass(cls):
         cls.client = UtilityContainerClient()
 
+    def _get_deployment_name(deployment_name):
+        """
+        :param deployment_name: if specified the deployment name of the utility pod
+            where the utilscli command is to be executed.
+        :type deployment_name: string
+            where the utilscli command is to be executed.
+        :return: deployment_name extracted from the deployment
+        """
+        namesMapping = DeploymentMapping(deployment_name)
+        deployment_name = namesMapping._get_mapping_realname()
+        return deployment_name
