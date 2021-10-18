@@ -17,7 +17,7 @@ limitations under the License.
 {{- $serviceAccountName := printf "%s" $envAll.Release.Name }}
 {{ tuple $envAll "utility" $serviceAccountName | include "helm-toolkit.snippets.kubernetes_pod_rbac_serviceaccount" }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ $serviceAccountName }}
@@ -60,7 +60,7 @@ rules:
       - update
       - delete
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ $serviceAccountName }}
