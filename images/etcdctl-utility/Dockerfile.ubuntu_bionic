@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 ARG ETCDCTL_VERSION=v3.4.16
-ARG KUBE_VERSION=1.20.9
+ARG KUBE_VERSION=1.21.7
 
 ENV GOOGLE_URL=https://storage.googleapis.com/etcd
 ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
@@ -36,8 +36,8 @@ RUN set -xe \
        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==5.8.0 \
-         python-openstackclient==3.18.1 \
+         oslo.rootwrap==6.0.2 \
+         python-openstackclient==5.2.0 \
          python-swiftclient \
     && curl --silent -L  "${DOWNLOAD_URL}/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
      |  tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl"  \

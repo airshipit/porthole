@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.20.9
+ARG KUBE_VERSION=1.21.7
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -37,7 +37,7 @@ RUN set -xe \
        python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==5.8.0 \
+         oslo.rootwrap==6.0.2 \
     && apt-get remove --purge -y wget apt-transport-https \
     && apt-get autoremove -y \
     && apt-get clean \

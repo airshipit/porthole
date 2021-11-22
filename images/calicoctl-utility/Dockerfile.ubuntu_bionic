@@ -32,7 +32,7 @@ RUN set -xe \
        python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==5.8.0 \
+         oslo.rootwrap==6.0.2 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
