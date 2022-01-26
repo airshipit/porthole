@@ -115,6 +115,21 @@ spec:
                   name: ${POSTGRESQL_CONF_SECRET}
             - name: OS_IDENTITY_API_VERSION
               value: "3"
+            - name: NUMBER_OF_RETRIES_SEND_BACKUP_TO_REMOTE
+              valueFrom:
+                secretKeyRef:
+                  key: REMOTE_BACKUP_RETRIES
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: MIN_DELAY_SEND_BACKUP_TO_REMOTE
+              valueFrom:
+                secretKeyRef:
+                  key: REMOTE_BACKUP_SEND_DELAY_MIN
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: MAX_DELAY_SEND_BACKUP_TO_REMOTE
+              valueFrom:
+                secretKeyRef:
+                  key: REMOTE_BACKUP_SEND_DELAY_MAX
+                  name: ${POSTGRESQL_CONF_SECRET}
 EOF
 
 if $POSTGRESQL_REMOTE_BACKUP_ENABLED; then
