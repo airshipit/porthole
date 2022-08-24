@@ -19,6 +19,7 @@ release_group: null
 
 images:
   tags:
+    mariadb: docker.io/openstackhelm/mariadb:latest-ubuntu_focal
     mysqlclient_utility: 'quay.io/airshipit/porthole-mysqlclient-utility:latest-ubuntu_bionic'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent
@@ -49,7 +50,14 @@ pod:
         ondemand_perms:
           runAsUser: 0
           readOnlyRootFilesystem: true
+        verify_perms:
+          runAsUser: 0
+          readOnlyRootFilesystem: true
         mariadb_ondemand:
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        mariadb_verify_server:
           runAsUser: 65534
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
@@ -83,6 +91,8 @@ pod:
         default: kubernetes.io/hostname
   mandatory_access_control:
     type: apparmor
+    mariadb-verify-server:
+      mariadb-verify-server: runtime/default
     mysqlclient-utility:
       mysqlclient-utility: runtime/default
     mariadb-ondemand:
@@ -97,6 +107,13 @@ pod:
       limits:
         memory: "250Mi"
         cpu: "500m"
+    server:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "1024Mi"
+        cpu: "2000m"
     jobs:
       bootstrap:
         limits:

@@ -16,6 +16,8 @@ import unittest
 
 from kube_utility_container.tests.utility.base import TestBase
 
+import warnings
+
 class TestPostgresqlUtilityContainer(TestBase):
     @classmethod
     def setUpClass(cls):
@@ -39,6 +41,7 @@ class TestPostgresqlUtilityContainer(TestBase):
 
     def test_verify_postgresql_utility_pod_logs(self):
         """To verify postgresql-utility pod logs"""
+        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
         date_1 = (self.client.exec_cmd(
             self.deployment_name,
             ['date', '+%Y-%m-%d %H'])).replace('\n','')

@@ -10,10 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-docker_daemon:
-  group: zuul
-  registry-mirrors:
-    - "http://{{ zuul_site_mirror_fqdn }}:8082/"
-  storage-driver: overlay2
-ansible_python_interpreter: python3
+---
+- name: ensuring python3 is present on all hosts
+  raw: test -e /usr/bin/python3 || (sudo apt -y update && sudo apt install -y python3-minimal) || (sudo yum install -y python3) || (sudo dnf install -y python3)
 ...

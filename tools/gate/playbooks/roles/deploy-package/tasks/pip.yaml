@@ -10,10 +10,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-docker_daemon:
-  group: zuul
-  registry-mirrors:
-    - "http://{{ zuul_site_mirror_fqdn }}:8082/"
-  storage-driver: overlay2
-ansible_python_interpreter: python3
+---
+- name: managing pip packages
+  become: true
+  become_user: root
+  environment:
+    http_proxy: "{{ proxy.http }}"
+    https_proxy: "{{ proxy.https }}"
+    no_proxy: "{{ proxy.noproxy }}"
+  vars:
+    state: present
+  pip:
+    name: "{{ item }}"
+    state: "{{ state }}"
+  with_items: "{{ packages }}"
 ...

@@ -24,19 +24,19 @@ function install_helm_binary {
   if [[ -z "${HELM}" ]]
   then
     echo "No Helm binary target location."
-    exit -1
+    exit 1
   fi
 
   if [[ -w "$(dirname ${HELM})" ]]
   then
     TMP_DIR=${BUILD_DIR:-$(mktemp -d)}
     curl -o "${TMP_DIR}/helm.tar.gz" "${HELM_ARTIFACT_URL}"
-    cd ${TMP_DIR}
+    cd ${TMP_DIR} || exit
     tar -xvzf helm.tar.gz
     cp "${TMP_DIR}/linux-amd64/helm" "${HELM}"
   else
     echo "Cannot write to ${HELM}"
-    exit -1
+    exit 1
   fi
 }
 

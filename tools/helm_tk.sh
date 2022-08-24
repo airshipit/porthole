@@ -22,7 +22,7 @@ HELM=${1}
 HELM_PIDFILE=${2}
 SERVE_DIR=$(mktemp -d)
 
-HTK_STABLE_COMMIT=${HTK_COMMIT:-"b1a247e7f54ab12d830ab74f7634457b4e43f3ef"}
+HTK_STABLE_COMMIT=${HTK_COMMIT:-"5c4056ad341afcc577e63902b6ddbfb222d757e1"}
 
 ${HELM} init --client-only --skip-refresh --stable-repo-url "https://charts.helm.sh/stable"
 
@@ -69,11 +69,11 @@ fi
 
 {
     cd "${SERVE_DIR}"
+    rm -rf openstack-helm-infra
     git clone https://git.openstack.org/openstack/openstack-helm-infra.git || true
     cd openstack-helm-infra
     git reset --hard "${HTK_STABLE_COMMIT}"
-
     make helm-toolkit
 }
 
-rm -rf "${SERVE_DIR}"
+# rm -rf "${SERVE_DIR}"

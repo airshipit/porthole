@@ -4,6 +4,8 @@ set -xe
 cd ${INSTALL_PATH}
 
 # Clone dependencies
+rm -rf openstack-helm-infra
+rm -rf openstack-helm
 git clone https://opendev.org/openstack/openstack-helm-infra.git
 git clone https://opendev.org/openstack/openstack-helm.git
 # Install Packages

@@ -131,6 +131,7 @@ spec:
           command:
             - /tmp/bootstrap.sh
           volumeMounts:
+{{- if .Values.manifests.secret_certificates }}
             - name: etcdctl-etcd-secrets
               mountPath: {{ .Values.endpoints.etcd.auth.client.path.ca }}
               subPath: tls.ca
@@ -143,6 +144,7 @@ spec:
               mountPath: {{ .Values.endpoints.etcd.auth.client.path.key }}
               subPath: tls.key
               readOnly: true
+{{- end }}
             - name: etcdctl-utility-bin-utilscli
               mountPath: /tmp/bootstrap.sh
               subPath: bootstrap.sh
@@ -203,10 +205,12 @@ spec:
           configMap:
             name: {{ printf "%s-%s" $envAll.Release.Name "bin-utilscli" }}
             defaultMode: 0755
+{{- if .Values.manifests.secret_certificates }}
         - name: etcdctl-etcd-secrets
           secret:
             secretName: etcdctl-etcd-secrets
             defaultMode: 0444
+{{- end }}
 {{- if .Values.pod.mounts.etcd.container.etcdctl_utility.volumes }}
 {{ .Values.pod.mounts.etcd.container.etcdctl_utility.volumes | toYaml | indent 8 }}
 {{- end }}

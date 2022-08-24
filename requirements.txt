@@ -4,9 +4,9 @@
 
 # When modifying this file `tox -e freeze-req` must be run to regenerate the requirements-frozen.txt.
 coverage==4.5.1
-kubeconfig==1.0.1
-kubernetes==10.0.1
+kubeconfig==1.1.1
+kubernetes==23.6.0
 oslo.config==6.7.0 # Apache-2.0
 oslo.log==3.40.1 # Apache-2.0
 pbr==3.1.1
-stestr==3.1.0 # Apache-2.0
+stestr==3.2.1 # Apache-2.0

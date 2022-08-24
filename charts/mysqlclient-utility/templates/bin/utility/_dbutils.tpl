@@ -110,7 +110,7 @@ function ensure_ondemand_pod_exists() {
     CONTAINERS=$(echo "$POD_LISTING" | awk '{print $2}')
     # There should only ever be one ondemand pod existing at any time, so if
     #    we find any which are not ready remove them, even if completed.
-    if [[ $STATUS != "Running" || $CONTAINERS != "1/1" ]]; then
+    if [[ $STATUS != "Running" || $CONTAINERS != "2/2" ]]; then
       echo "Found an old on-demand pod; removing it."
       remove_job "$NAMESPACE" "$ONDEMAND_JOB"
       if [[ $? -ne 0 ]]; then

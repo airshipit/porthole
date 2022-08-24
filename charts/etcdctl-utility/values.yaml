@@ -246,4 +246,4 @@ manifests:
   configmap_etc_sudoers: true
   deployment_etcdctl_utility: true
   job_image_repo_sync: false
-  secret_certificates: true
+  secret_certificates: false

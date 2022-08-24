@@ -75,3 +75,6 @@ tmp/
 
 # Developer symlinks
 helm-toolkit
+
+# VScode IDE
+.vscode
