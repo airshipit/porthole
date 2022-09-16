@@ -36,9 +36,9 @@ RUN set -xe \
        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==6.0.2 \
-         python-openstackclient==5.2.0 \
-         python-swiftclient \
+        oslo.rootwrap==6.2.0 \
+        python-openstackclient==5.4.0 \
+        python-swiftclient==3.10.1 \
     && curl --silent -L  "${DOWNLOAD_URL}/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
      |  tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl"  \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
