@@ -8,7 +8,6 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG UPPER_CONSTRAINTS_FILE=https://releases.openstack.org/constraints/upper/ussuri
 ARG KUBE_VERSION=1.21.7
 
 RUN set -xe  \
@@ -30,10 +29,10 @@ RUN set -xe  \
         jq \
         rclone \
     && pip3 install --upgrade pip \
-    && pip3 install -c ${UPPER_CONSTRAINTS_FILE} \
-        oslo.rootwrap==6.0.2 \
-        python-openstackclient==5.2.0 \
-        python-swiftclient \
+    && pip3 install \
+        oslo.rootwrap==6.2.0 \
+        python-openstackclient==5.4.0 \
+        python-swiftclient==3.10.1 \
     && apt-get clean -y \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
