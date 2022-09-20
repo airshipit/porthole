@@ -252,7 +252,7 @@ function do_backup() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
-  lock 60
+  lock 300
 
   # Execute the command in the on-demand pod
   if [[ "${BACKUP_ARGS[1]}" == "-p" ]]; then
@@ -823,7 +823,7 @@ function do_restore() {
   # Be sure that an ondemand pod is ready (start if not started)
   ensure_ondemand_pod_exists
 
-  lock 60
+  lock 300
 
   # Execute the command in the on-demand pod
   kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
