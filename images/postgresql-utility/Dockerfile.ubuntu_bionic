@@ -17,6 +17,10 @@ RUN set -xe  \
     && apt-get update \
     && apt-get install -y wget curl \
         apt-transport-https ca-certificates gnupg \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -o /etc/apt/trusted.gpg.d/postgresql_release_signing_key.asc 'https://www.postgresql.org/media/keys/ACCC4CF8.asc' \
+    && apt-get update \
+    && apt-get install -y \
         bash \
         moreutils \
         rsyslog \
