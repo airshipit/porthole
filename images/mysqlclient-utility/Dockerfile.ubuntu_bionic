@@ -14,6 +14,11 @@ RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update \
+    && apt-get install -y wget curl \
+        apt-transport-https ca-certificates gnupg \
+   && curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc' \
+   && echo 'deb https://mirrors.gigenet.com/mariadb/repo/10.6/ubuntu bionic main' >>/etc/apt/sources.list \
     && apt-get update  \
     && apt-get install -y \
        bash \
