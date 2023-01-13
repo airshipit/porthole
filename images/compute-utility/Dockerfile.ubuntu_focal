@@ -1,4 +1,4 @@
-ARG FROM=docker.io/ubuntu:bionic
+ARG FROM=docker.io/ubuntu:focal
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -10,46 +10,41 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 ARG KUBE_VERSION=1.24.6
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN set -xe \
-    && export DEBIAN_FRONTEND=noninteractive \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
-    && apt-get update \
-    && apt-get install -y wget curl \
-        apt-transport-https ca-certificates gnupg \
-   && curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc' \
-   && echo 'deb https://mirrors.gigenet.com/mariadb/repo/10.6/ubuntu bionic main' >>/etc/apt/sources.list \
-    && apt-get update  \
-    && apt-get install -y \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y apt-transport-https \
        bash \
-       sudo \
-       rsyslog \
-       pwgen \
+       ca-certificates \
+       openvswitch-switch \
        curl \
-       libdbi-perl \
-       libdbd-mysql-perl \
-       moreutils \
-       mysql-client \
-       python3.6 \
-       python3-pip \
+       gnupg \
+       hexedit \
+       iperf \
        jq \
-       rclone \
+       moreutils \
+       radosgw \
+       rsyslog \
+       s3cmd \
+       rsync \
+       sudo \
+       wget \
+       xz-utils \
+       python3.8 \
+       python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
          oslo.rootwrap==6.2.0 \
-         python-openstackclient==5.4.0 \
-         python-swiftclient==3.10.1 \
-    && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
-    && apt-get clean -y \
+    && apt-get remove --purge -y wget apt-transport-https \
+    && apt-get autoremove -y \
+    && apt-get clean \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
-    && curl --silent -L https://percona.com/get/percona-toolkit.tar.gz \
-       | tar -zC /usr/local/bin/ --strip-components=2 --wildcards -x "*/*/pt-show-grants" \
     && rm -rf \
-      /tmp/* \
-      /var/cache/debconf/* \
-      /var/lib/apt/lists/* \
-      /var/tmp/*
+       /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

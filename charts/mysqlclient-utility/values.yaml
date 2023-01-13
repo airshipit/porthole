@@ -19,7 +19,7 @@ release_group: null
 
 images:
   tags:
-    mariadb: docker.io/openstackhelm/mariadb:latest-ubuntu_focal
+    mariadb: docker.io/openstackhelm/mariadb:latest-ubuntu_bionic
     mysqlclient_utility: 'quay.io/airshipit/porthole-mysqlclient-utility:latest-ubuntu_bionic'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent

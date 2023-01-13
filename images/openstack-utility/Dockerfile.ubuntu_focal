@@ -1,4 +1,4 @@
-ARG FROM=docker.io/ubuntu:bionic
+ARG FROM=docker.io/ubuntu:focal
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -8,43 +8,28 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.24.6
-
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN set -xe \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
-    && apt-get update \
-    && apt-get install -y apt-transport-https \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y \
        bash \
-       ca-certificates \
-       openvswitch-switch \
-       curl \
-       gnupg \
-       hexedit \
-       iperf \
-       jq \
-       moreutils \
-       radosgw \
-       rsyslog \
-       s3cmd \
-       rsync \
        sudo \
-       wget \
-       xz-utils \
-       python3.6 \
+       rsyslog \
+       python3.8 \
        python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-         oslo.rootwrap==6.2.0 \
-    && apt-get remove --purge -y wget apt-transport-https \
-    && apt-get autoremove -y \
-    && apt-get clean \
-    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
-    && rm -rf \
-       /var/lib/apt/lists/*
+        oslo.rootwrap==6.2.0 \
+        python-openstackclient==5.4.0 \
+        python-glanceclient==3.2.2 \
+        python-novaclient==17.2.1 \
+        python-neutronclient==7.2.1 \
+        python-cinderclient==7.2.2 \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

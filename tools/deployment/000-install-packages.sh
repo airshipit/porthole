@@ -13,4 +13,6 @@ bash -c "./openstack-helm-infra/tools/deployment/common/000-install-packages.sh"
 
 sudo apt-get update
 sudo apt-get install --no-install-recommends -y \
-        lvm2
+        lvm2 \
+        ca-certificates \
+        python3-certifi

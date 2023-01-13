@@ -17,7 +17,7 @@
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-mysqlclient-utility
-      distro_suffix: &distro_suffix ubuntu_bionic
+      distro_suffix: &distro_suffix ubuntu_focal
     files:
       - ^charts/mysqlclient-utility/.*$
       - ^images/mysqlclient-utility/.*$

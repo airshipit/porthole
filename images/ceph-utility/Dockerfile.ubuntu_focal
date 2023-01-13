@@ -1,4 +1,4 @@
-ARG FROM=docker.io/ubuntu:bionic
+ARG FROM=docker.io/ubuntu:focal
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -8,41 +8,54 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
+# Pacific 16.2.10
+ARG CEPH_RELEASE=pacific
+ARG CEPH_RELEASE_TAG=16.2.10-1focal
 ARG KUBE_VERSION=1.24.6
 
-RUN set -xe  \
+ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-pacific/
+ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-pacific/release.asc
+
+ADD ${CEPH_KEY} /etc/apt/ceph-${CEPH_RELEASE}.key
+RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
-    && sed -i '/nobody/d' /etc/passwd  \
+    && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
-    && apt-get update \
-    && apt-get install -y wget curl \
-        apt-transport-https ca-certificates gnupg \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-    && curl -o /etc/apt/trusted.gpg.d/postgresql_release_signing_key.asc 'https://www.postgresql.org/media/keys/ACCC4CF8.asc' \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y wget curl apt-transport-https ca-certificates gnupg\
+    && apt-key add /etc/apt/ceph-${CEPH_RELEASE}.key \
+    && rm -f /etc/apt/ceph-${CEPH_RELEASE}.key \
+    && echo "deb ${CEPH_REPO} focal main" | tee /etc/apt/sources.list.d/ceph.list \
     && apt-get update \
     && apt-get install -y \
-        bash \
-        moreutils \
-        rsyslog \
-        screen \
-        sudo \
-        postgresql-client \
-        postgresql-common \
-        python3.6 \
-        python3-pip  \
-        jq \
-        rclone \
+           bash \
+           moreutils \
+           vim \
+           sudo \
+           screen \
+           ceph=${CEPH_RELEASE_TAG} \
+           ceph-common=${CEPH_RELEASE_TAG} \
+           python3-rbd \
+           radosgw=${CEPH_RELEASE_TAG} \
+           hexedit \
+           jq \
+           s3cmd \
+           rsyslog \
+           rsync \
+           xz-utils \
+           iperf \
+           python3.8 \
+           python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-        oslo.rootwrap==6.2.0 \
-        python-openstackclient==5.4.0 \
-        python-swiftclient==3.10.1 \
-    && apt-get clean -y \
+           oslo.rootwrap==6.2.0 \
+    && apt-get remove --purge -y wget apt-transport-https \
+    && apt-get autoremove -y \
+    && apt-get clean \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
     && rm -rf \
-       /var/cache/debconf/* \
-       /var/lib/apt/lists/*
+         /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

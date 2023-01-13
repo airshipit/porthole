@@ -17,7 +17,7 @@
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-etcdctl-utility
-      distro_suffix: &distro_suffix ubuntu_bionic
+      distro_suffix: &distro_suffix ubuntu_focal
     files:
       - ^images/etcdctl-utility/.*$
       - ^charts/etcdctl-utility/.*$
