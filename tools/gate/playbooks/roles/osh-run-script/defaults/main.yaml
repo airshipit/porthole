@@ -11,7 +11,7 @@
 # limitations under the License.
 
 osh_params:
-  openstack_release: newton
+  openstack_release: yoga
   container_distro_name: ubuntu
-  container_distro_version: bionic
+  container_distro_version: focal
   #feature_gates:

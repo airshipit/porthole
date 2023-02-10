@@ -22,7 +22,7 @@ HELM=${1}
 HELM_PIDFILE=${2}
 SERVE_DIR=$(mktemp -d)
 
-HTK_STABLE_COMMIT=${HTK_COMMIT:-"5c4056ad341afcc577e63902b6ddbfb222d757e1"}
+HTK_STABLE_COMMIT=${HTK_COMMIT:-"fa8916f5bcc8cbf064a387569e2630b7bbf0b49b"}
 
 ${HELM} init --client-only --skip-refresh --stable-repo-url "https://charts.helm.sh/stable"
 

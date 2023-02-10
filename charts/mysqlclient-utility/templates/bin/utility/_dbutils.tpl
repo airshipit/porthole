@@ -133,7 +133,7 @@ function ensure_ondemand_pod_exists() {
       exit 1
     fi
 
-    sleep 2s
+    sleep 10s
     ONDEMAND_POD=$(kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB" -o json | jq -r .items[].metadata.name)
     if [[ -z "$ONDEMAND_POD" ]]; then
       echo "ERROR: Failed to obtain the ONDEMAND_POD name."

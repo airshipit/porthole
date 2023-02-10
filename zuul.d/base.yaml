@@ -67,7 +67,7 @@
     timeout: 1800
     post-timeout: 1800
     run: tools/gate/playbooks/docker-image-build.yaml
-    nodeset: airship-porthole-single-node
+    nodeset: airship-porthole-focal-single-node
     vars:
       publish: false
       tags:
@@ -83,7 +83,7 @@
       Lints files for trailing whitespace
     run: tools/gate/playbooks/zuul-linter.yaml
     timeout: 300
-    nodeset: airship-porthole-single-node
+    nodeset: airship-porthole-focal-single-node
 
 
 - job:
