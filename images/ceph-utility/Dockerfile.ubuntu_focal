@@ -48,7 +48,7 @@ RUN set -xe \
            python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
-           oslo.rootwrap==6.2.0 \
+           oslo.rootwrap==6.3.1 \
     && apt-get remove --purge -y wget apt-transport-https \
     && apt-get autoremove -y \
     && apt-get clean \
