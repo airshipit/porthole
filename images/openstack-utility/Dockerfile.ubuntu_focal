@@ -22,12 +22,14 @@ RUN set -xe \
        python3-pip \
     && pip3 install --upgrade pip \
     && pip3 install \
+        munch \
         oslo.rootwrap==6.3.1 \
         python-openstackclient==5.8.0 \
         python-glanceclient==3.6.0 \
         python-novaclient==17.7.0 \
         python-neutronclient==7.8.0 \
         python-cinderclient==8.3.0 \
+        python-heatclient==2.5.1 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
