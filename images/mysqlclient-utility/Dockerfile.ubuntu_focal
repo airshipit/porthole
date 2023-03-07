@@ -15,11 +15,13 @@ RUN set -xe \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update \
-    && apt-get install -y wget curl \
+    && apt-get install -y \
+        wget curl \
         apt-transport-https ca-certificates gnupg \
-    && curl -o /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc 'https://mariadb.org/mariadb_release_signing_key.asc' \
-    && echo 'deb https://mirrors.gigenet.com/mariadb/repo/10.6/ubuntu focal main' >> /etc/apt/sources.list \
-    && apt-get update && apt-get upgrade -y \
+    && curl -LsS -O https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
+    && bash mariadb_repo_setup --mariadb-server-version=10.6 \
+    && apt-get update  \
+    && apt-get upgrade -y \
     && apt-get install -y \
        bash \
        sudo \
@@ -29,7 +31,7 @@ RUN set -xe \
        libdbi-perl \
        libdbd-mysql-perl \
        moreutils \
-       mysql-client \
+       mariadb-client \
        python3.8 \
        python3-pip \
        jq \
