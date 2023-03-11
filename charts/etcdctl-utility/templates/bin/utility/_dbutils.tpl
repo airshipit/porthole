@@ -119,7 +119,19 @@ function ensure_ondemand_pod_exists() {
       exit 1
     fi
 
-    sleep 10s
+    # waiting for ondemand pod to be created
+    RETRIES=10
+    until kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB"  | grep ondemand; do
+      RETRIES=$((RETRIES-1))
+      if [ ${RETRIES} -ge 1 ]; then
+        echo "ONDEMAND_POD is being created... Waiting for 10 seconds... Retries left ${RETRIES}..."
+        sleep 10s
+      else
+        echo "ERROR: Failed to create a new on-demand pod. Exiting..."
+        exit 1
+      fi
+    done
+
     ONDEMAND_POD=$(kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB" -o json | jq -r .items[].metadata.name)
     if [[ -z "$ONDEMAND_POD" ]]; then
       echo "ERROR: Failed to obtain the ONDEMAND_POD name."
