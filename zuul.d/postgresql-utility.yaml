@@ -29,9 +29,7 @@
     name: airship-porthole-images-publish-postgresql-utility
     parent: *parent
     secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
+      - quay_credentials
     vars:
       image_name: *image_name
       distro_suffix: *distro_suffix
