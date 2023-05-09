@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
-import unittest
-
 from kube_utility_container.tests.utility.base import TestBase
+
 
 class TestMysqlclientUtilityContainer(TestBase):
     @classmethod
@@ -25,7 +23,7 @@ class TestMysqlclientUtilityContainer(TestBase):
 
     def test_verify_mysql_client_is_present(self):
         """To verify mysql-client is present"""
-        exec_cmd = ['utilscli', 'mysql' , '-V']
+        exec_cmd = ['utilscli', 'mysql', '-V']
         expected = 'Ver'
         result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
         self.assertIn(
@@ -59,27 +57,26 @@ class TestMysqlclientUtilityContainer(TestBase):
             annotations_key = annotations_common + container.name
             if expected != mysqlclient_utility_pod.metadata.annotations[
                     annotations_key]:
-                failures.append(
-                    f"container {container.name} belongs to pod "
-                    f"{mysqlclient_utility_pod.metadata.name} "
-                    f"is not having expected apparmor profile set")
+                failures.append(f"container {container.name} belongs to pod "
+                                f"{mysqlclient_utility_pod.metadata.name} "
+                                f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
 
     def test_verify_mysqlclient_utility_pod_logs(self):
         """To verify mysqlclient-utility pod logs"""
-        date_1 = (self.client.exec_cmd(
-            self.deployment_name,
-            ['date', '+%Y-%m-%d %H'])).replace('\n','')
-        date_2 = (self.client.exec_cmd(
-            self.deployment_name,
-            ['date', '+%b %d %H'])).replace('\n','')
+        date_1 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%Y-%m-%d %H'])).replace(
+                                           '\n', '')
+        date_2 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%b %d %H'])).replace(
+                                           '\n', '')
         exec_cmd = ['utilscli', 'mysql', 'version']
         self.client.exec_cmd(self.deployment_name, exec_cmd)
         pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
-            replace('\n','')
+            replace('\n', '')
         if date_1 in pod_logs:
             latest_pod_logs = (pod_logs.split(date_1))[1:]
         else:
             latest_pod_logs = (pod_logs.split(date_2))[1:]
-        self.assertNotEqual(
-            0, len(latest_pod_logs), "Not able to get the latest logs")
+        self.assertNotEqual(0, len(latest_pod_logs),
+                            "Not able to get the latest logs")

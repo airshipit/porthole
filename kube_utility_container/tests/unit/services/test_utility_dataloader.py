@@ -17,6 +17,7 @@ import unittest
 from kube_utility_container.services.dataloader \
     import DeploymentMapping
 
+
 class TestDeploymentNameMapping(unittest.TestCase):
     """Unit tests for Utility Service Data Loader
         Verify deployment name is consistent with the mapping.
@@ -30,8 +31,11 @@ class TestDeploymentNameMapping(unittest.TestCase):
         pass
 
     def test_deployment_name_is_consistent_with_name_mapping(self):
-        """ Verify the correct deployment names is returned when mapping is been used"""
-        self.assertTrue(self.mapping._is_deployment_name_consistent("clcp-etcd-utility"))
+        """ Verify the correct deployment names is returned when mapping
+                has been used
+        """
+        self.assertTrue(
+            self.mapping._is_deployment_name_consistent("clcp-etcd-utility"))
 
     def test_deployment_name_use_the_defaults(self):
         """ Check if default deployment names are been used."""

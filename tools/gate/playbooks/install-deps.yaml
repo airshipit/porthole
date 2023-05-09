@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-
-# Copyright 2020 AT&T Intellectual Property.  All other rights reserved.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,11 +10,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
+# Combine several test tasks into a single playbook
+# to minimize Zuul node consumption
 
-try:
-    import multiprocessing  # noqa
-except ImportError:
-    pass
-
-setup(setup_requires=['setuptools>=17.1', 'pbr>=2.0.0'], pbr=True)
+- hosts: primary
+  roles:
+    - clear-firewall
+    - ensure-docker
+    - ensure-python
+    - ensure-tox
+  tasks:
+    - name: Install deps for tests
+      shell: |
+        ./tools/gate/deploy.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+        executable: /bin/bash
+      become: True

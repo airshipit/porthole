@@ -31,12 +31,14 @@ build_$(IMAGE_NAME):
 ifeq ($(BUILD_TYPE), community)
 	docker build -f Dockerfile.$(OS_RELEASE) \
 		--network host \
+		--no-cache \
 		$(EXTRA_BUILD_ARGS) \
 		-t $(IMAGE) \
 		.
 else
 	docker build -f Dockerfile_calicoq_calicoctl.$(OS_RELEASE) \
 		--network host \
+		--no-cache \
 		$(EXTRA_BUILD_ARGS) \
 		-t $(IMAGE) \
 		.

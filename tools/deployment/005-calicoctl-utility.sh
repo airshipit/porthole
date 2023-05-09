@@ -13,8 +13,7 @@
 
 set -xe
 namespace=utility
-helm dependency update charts/calicoctl-utility
-helm upgrade --install calicoctl-utility ./charts/calicoctl-utility --namespace=$namespace
+helm upgrade --install calicoctl-utility ./artifacts/calicoctl-utility.tgz --namespace=$namespace
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

@@ -3,7 +3,7 @@
 set -ex
 
 ./tools/deployment/000-install-packages.sh
-./tools/deployment/002-build-helm-toolkit.sh
+./tools/deployment/002-build-charts.sh
 ./tools/deployment/003-deploy-k8s.sh
 ./tools/deployment/005-calicoctl-utility.sh
 ./tools/deployment/010-ceph-utility.sh

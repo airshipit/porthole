@@ -27,8 +27,9 @@ class TestBase(unittest.TestCase):
 
     def _get_deployment_name(deployment_name):
         """
-        :param deployment_name: if specified the deployment name of the utility pod
-            where the utilscli command is to be executed.
+        :param deployment_name: if specified the deployment name of
+            the utility pod where the utilscli command is
+            to be executed.
         :type deployment_name: string
             where the utilscli command is to be executed.
         :return: deployment_name extracted from the deployment

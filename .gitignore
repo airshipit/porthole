@@ -68,6 +68,8 @@ releasenotes/build
 **/*.tgz
 **/_partials.tpl
 **/_globals.tpl
+/charts/deps/*/
+/charts/deps/*
 
 # Gate and Check Logs
 logs/

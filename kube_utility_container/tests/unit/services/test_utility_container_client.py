@@ -31,12 +31,10 @@ from kube_utility_container.services.utility_container_client import \
 class TestUtilityContainerClient(unittest.TestCase):
     """Unit tests for Utility Container Client"""
 
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._get_utility_container')
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._get_exec_cmd_output')
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._get_utility_container')
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._get_exec_cmd_output')
     def test_exec_cmd(self, mock_get_exec_cmd_output, mock_utility_container):
         v1_container_obj = Mock(
             spec=client.V1Container(
@@ -60,44 +58,40 @@ class TestUtilityContainerClient(unittest.TestCase):
         self.assertIsInstance(response, str)
         self.assertEqual(response, mock_get_exec_cmd_output.return_value)
 
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._get_utility_container',
-        side_effect=KubePodNotFoundException('utility'))
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._get_utility_container',
+           side_effect=KubePodNotFoundException('utility'))
     def test_exec_cmd_no_utility_pods_returned(self, mock_list_pods):
         mock_list_pods.return_value = []
         utility_container_client = UtilityContainerClient()
         with self.assertRaises(KubePodNotFoundException):
-            utility_container_client.exec_cmd(
-                'clcp-utility', ['utilscli', 'ceph', 'status'])
+            utility_container_client.exec_cmd('clcp-utility',
+                                              ['utilscli', 'ceph', 'status'])
 
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._get_deployment_selectors',
-        side_effect=KubeDeploymentNotFoundException('utility'))
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._corev1api_api_client')
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._get_deployment_selectors',
+           side_effect=KubeDeploymentNotFoundException('utility'))
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._corev1api_api_client')
     def test_exec_cmd_no_deployments_returned(self, deployment, api_client):
         deployment.return_value = []
         api_client.return_value = []
         utility_container_client = UtilityContainerClient()
         with self.assertRaises(KubeDeploymentNotFoundException):
-            utility_container_client.exec_cmd(
-                'clcp-ceph-utility', ['utilscli', 'ceph', 'status'])
+            utility_container_client.exec_cmd('clcp-ceph-utility',
+                                              ['utilscli', 'ceph', 'status'])
 
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._get_deployment_selectors',
-        side_effect=KubeEnvVarException('utility'))
-    @patch(
-        'kube_utility_container.services.utility_container_client.'
-        'UtilityContainerClient._appsv1api_api_client',
-        side_effect=KubeEnvVarException('KUBECONFIG'))
-    def test_env_var_kubeconfig_not_set_raises_exception(self, deployment, api_client):
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._get_deployment_selectors',
+           side_effect=KubeEnvVarException('utility'))
+    @patch('kube_utility_container.services.utility_container_client.'
+           'UtilityContainerClient._appsv1api_api_client',
+           side_effect=KubeEnvVarException('KUBECONFIG'))
+    def test_env_var_kubeconfig_not_set_raises_exception(
+            self, deployment, api_client):
         deployment.return_value = []
         api_client.return_value = []
         utility_container_client = UtilityContainerClient()
         with self.assertRaises(KubeEnvVarException):
-            utility_container_client.exec_cmd(
-                'clcp-ceph-utility', ['utilscli', 'ceph', 'status'])
+            utility_container_client.exec_cmd('clcp-ceph-utility',
+                                              ['utilscli', 'ceph', 'status'])

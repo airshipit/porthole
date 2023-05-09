@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 class KubeUtilityContainerException(Exception):
     """Class for Kube Utility Container Plugin Exceptions"""
 
     def __init__(self, error="", message=""):
         self.error = error or self.__class__.error
         self.message = message or self.__class__.message
-        super(KubeUtilityContainerException, self).__init__(
-            ''.join([self.error, '::', self.message]))
+        super(KubeUtilityContainerException,
+              self).__init__(''.join([self.error, '::', self.message]))
 
 
 class KubeConfigException(Exception):

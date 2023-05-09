@@ -13,8 +13,7 @@
 
 set -xe
 namespace="utility"
-helm dependency update charts/mysqlclient-utility
-helm upgrade --install mysqlclient-utility ./charts/mysqlclient-utility --namespace=$namespace
+helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz --namespace=$namespace
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

@@ -41,6 +41,7 @@ from urllib3.exceptions import MaxRetryError
 
 LOG = logging.getLogger(__name__)
 
+
 class UtilityContainerClient(object):
     """Client to execute utilscli command on utility containers"""
 
@@ -136,8 +137,8 @@ class UtilityContainerClient(object):
     def _get_deployment_selectors(self, deployment_name):
         """Method to get the deployment selectors of the deployment queried.
 
-        :param deployment_name: if specified the deployment name of the utility pod
-            where the utilscli command is to be executed.
+        :param deployment_name: if specified the deployment name of the utility
+            pod where the utilscli command is to be executed.
         :type deployment_name: string
             where the utilscli command is to be executed.
         :return: selectors extracted from the deployment
@@ -168,13 +169,14 @@ class UtilityContainerClient(object):
     def _get_utility_container(self, deployment_name):
         """Method to get a specific utility container filtered by the selectors
 
-        :param deployment_name: if specified the deployment name of the utility pod
-            where the utilscli command is to be executed.
+        :param deployment_name: if specified the deployment name of the utility
+            pod where the utilscli command is to be executed.
         :type deployment_name: string
             where the utilscli command is to be executed.
         :return: selectors extracted from the deployment
             utility_container {V1Pod} -- Returns the first pod matched.
-        :exception: KubePodNotFoundException -- Exception raised if not pods are found.
+        :exception: KubePodNotFoundException -- Exception raised if not pods
+            are found.
         """
         namesMapping = DeploymentMapping(deployment_name)
         deployment_name = namesMapping._get_mapping_realname()
@@ -186,14 +188,14 @@ class UtilityContainerClient(object):
         else:
             raise KubePodNotFoundException(
                 'No Pods found in Deployment {} with selectors {} in {} '
-                'namespace'.format(
-                    deployment_name, deployment_selectors, self.NAMESPACE))
+                'namespace'.format(deployment_name, deployment_selectors,
+                                   self.NAMESPACE))
 
     def _get_pod_logs(self, deployment_name):
         """Method to get logs for a specific utility pod
 
-        :param deployment_name: if specified the deployment name of the utility pod
-            where the utilscli command is to be executed
+        :param deployment_name: if specified the deployment name of
+            the utility podwhere the utilscli command is to be executed
         :return: pod logs for specific pod
         """
         pod = self._get_utility_container(deployment_name)
@@ -217,11 +219,9 @@ class UtilityContainerClient(object):
 
         try:
             container = utility_container.spec.containers[0].name
-            LOG.info(
-                '\nPod Name: {} \nNamespace: {} \nContainer Name: {} '
-                '\nCommand: {}'.format(
-                    utility_container.metadata.name, self.NAMESPACE, container,
-                    ex_cmd))
+            LOG.info('\nPod Name: {} \nNamespace: {} \nContainer Name: {} '
+                     '\nCommand: {}'.format(utility_container.metadata.name,
+                                            self.NAMESPACE, container, ex_cmd))
             cmd_output = stream(
                 self._corev1api_api_client.connect_get_namespaced_pod_exec,
                 utility_container.metadata.name,
@@ -232,15 +232,13 @@ class UtilityContainerClient(object):
                 stdin=False,
                 stdout=True,
                 tty=False)
-            LOG.info(
-                'Pod Name: {} Command Output: {}'.format(
-                    utility_container.metadata.name, cmd_output))
-            if default is 1:
+            LOG.info('Pod Name: {} Command Output: {}'.format(
+                utility_container.metadata.name, cmd_output))
+            if default == 1:
                 return cmd_output
         except (ApiException, MaxRetryError) as err:
-            LOG.exception(
-                "An exception occurred in pod "
-                "exec command: {}".format(err))
+            LOG.exception("An exception occurred in pod "
+                          "exec command: {}".format(err))
             raise KubeApiException(err)
 
     def exec_cmd(self, deployment_name, cmd):

@@ -52,8 +52,7 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
 
 # Deploy Ceph-Utility
 cd ${CURRENT_DIR}
-helm dependency update charts/ceph-utility
-helm upgrade --install ceph-utility ./charts/ceph-utility --namespace=$namespace
+helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

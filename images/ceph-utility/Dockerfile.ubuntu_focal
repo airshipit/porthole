@@ -22,7 +22,7 @@ RUN set -xe \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
-    && apt-get install -y wget curl apt-transport-https ca-certificates gnupg\
+    && apt-get install -y wget curl apt-transport-https ca-certificates gnupg \
     && apt-key add /etc/apt/ceph-${CEPH_RELEASE}.key \
     && rm -f /etc/apt/ceph-${CEPH_RELEASE}.key \
     && echo "deb ${CEPH_REPO} focal main" | tee /etc/apt/sources.list.d/ceph.list \

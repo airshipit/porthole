@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
-
 from kube_utility_container.tests.utility.base import TestBase
 
 import warnings
+
 
 class TestPostgresqlUtilityContainer(TestBase):
     @classmethod
@@ -41,27 +40,28 @@ class TestPostgresqlUtilityContainer(TestBase):
 
     def test_verify_postgresql_utility_pod_logs(self):
         """To verify postgresql-utility pod logs"""
-        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
-        date_1 = (self.client.exec_cmd(
-            self.deployment_name,
-            ['date', '+%Y-%m-%d %H'])).replace('\n','')
-        date_2 = (self.client.exec_cmd(
-            self.deployment_name,
-            ['date', '+%b %d %H'])).replace('\n','')
+        warnings.filterwarnings(
+            action="ignore", message="unclosed", category=ResourceWarning)
+        date_1 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%Y-%m-%d %H'])).replace(
+                                           '\n', '')
+        date_2 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%b %d %H'])).replace(
+                                           '\n', '')
         exec_cmd = ['utilscli', 'psql', 'version']
         self.client.exec_cmd(self.deployment_name, exec_cmd)
         pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
-            replace('\n','')
+            replace('\n', '')
         if date_1 in pod_logs:
             latest_pod_logs = (pod_logs.split(date_1))[1:]
         else:
             latest_pod_logs = (pod_logs.split(date_2))[1:]
-        self.assertNotEqual(
-            0, len(latest_pod_logs), "Not able to get the latest logs")
+        self.assertNotEqual(0, len(latest_pod_logs),
+                            "Not able to get the latest logs")
 
     def test_verify_postgresql_client_psql_is_present(self):
         """To verify psql-client is present"""
-        exec_cmd = ['utilscli', 'psql' , '-V']
+        exec_cmd = ['utilscli', 'psql', '-V']
         expected = 'psql'
         result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
         self.assertIn(
@@ -80,8 +80,7 @@ class TestPostgresqlUtilityContainer(TestBase):
             annotations_key = annotations_common + container.name
             if expected != postgresql_utility_pod.metadata.annotations[
                     annotations_key]:
-                failures.append(
-                    f"container {container.name} belongs to pod "
-                    f"{postgresql_utility_pod.metadata.name} "
-                    f"is not having expected apparmor profile set")
+                failures.append(f"container {container.name} belongs to pod "
+                                f"{postgresql_utility_pod.metadata.name} "
+                                f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)

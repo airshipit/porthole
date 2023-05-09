@@ -17,6 +17,10 @@
     check:
       jobs:
         - airship-porthole-linter
+        - openstack-tox-pep8
+        - openstack-tox-docs
+        - airship-porthole-openstack-tox-py38-focal
+        - airship-porthole-openstack-tox-cover-focal
         - airship-porthole-images-build-gate-calicoctl-utility
         - airship-porthole-images-build-gate-ceph-utility
         - airship-porthole-images-build-gate-compute-utility
@@ -24,11 +28,16 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-tests
+        # disabled because this one was replaces by tox-py38 and tox-cover tests
+        # - airship-porthole-deploy-functional-tests
 
     gate:
       jobs:
         - airship-porthole-linter
+        - openstack-tox-pep8
+        - openstack-tox-docs
+        - airship-porthole-openstack-tox-py38-focal
+        - airship-porthole-openstack-tox-cover-focal
         - airship-porthole-images-build-gate-calicoctl-utility
         - airship-porthole-images-build-gate-ceph-utility
         - airship-porthole-images-build-gate-compute-utility
@@ -36,7 +45,8 @@
         - airship-porthole-images-build-gate-mysqlclient-utility
         - airship-porthole-images-build-gate-openstack-utility
         - airship-porthole-images-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-tests
+        # disabled because this one was replaces by tox-py38 and tox-cover tests
+        # - airship-porthole-deploy-functional-tests
 
     post:
       jobs:
@@ -47,7 +57,6 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-        - airship-porthole-deploy-functional-tests
 
 - nodeset:
     name: airship-porthole-single-node
@@ -60,6 +69,20 @@
     nodes:
       - name: primary
         label: ubuntu-focal
+
+- job:
+    name: airship-porthole-openstack-tox-py38-focal
+    parent: openstack-tox-py38
+    description: Runs cover job on focal
+    nodeset: airship-porthole-focal-single-node
+    pre-run: tools/gate/playbooks/install-deps.yaml
+
+- job:
+    name: airship-porthole-openstack-tox-cover-focal
+    parent: openstack-tox-cover
+    description: Runs cover job on focal
+    nodeset: airship-porthole-focal-single-node
+    pre-run: tools/gate/playbooks/install-deps.yaml
 
 - job:
     name: airship-porthole-images

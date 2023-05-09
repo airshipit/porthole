@@ -13,8 +13,7 @@
 
 set -xe
 namespace="utility"
-helm dependency update charts/openstack-utility
-helm upgrade --install openstack-utility ./charts/openstack-utility --namespace=$namespace
+helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz --namespace=$namespace
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

@@ -14,6 +14,7 @@
 
 from kubeconfig import KubeConfig
 
+
 class KubeCfg(KubeConfig):
     """This class inherits from the KubeConfig module. It overides the
 
@@ -21,21 +22,20 @@ class KubeCfg(KubeConfig):
     file that is generated.
     """
 
-    def set_credentials(
-            self,
-            name,
-            auth_provider=None,
-            auth_provider_args=None,
-            client_certificate=None,
-            client_key=None,
-            embed_certs=None,
-            password=None,
-            token=None,
-            username=None,
-            exec_command=None,
-            exec_api_version=None,
-            exec_arg=None,
-            exec_env=None):
+    def set_credentials(self,
+                        name,
+                        auth_provider=None,
+                        auth_provider_args=None,
+                        client_certificate=None,
+                        client_key=None,
+                        embed_certs=None,
+                        password=None,
+                        token=None,
+                        username=None,
+                        exec_command=None,
+                        exec_api_version=None,
+                        exec_arg=None,
+                        exec_env=None):
         """Creates or updates a ``user`` entry under the ``users`` entry.
 
         In the case where you are updating an existing user, only the optional
