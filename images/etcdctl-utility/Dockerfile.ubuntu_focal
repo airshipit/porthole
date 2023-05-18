@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 ARG ETCDCTL_VERSION=v3.5.3
-ARG KUBE_VERSION=1.25.5
+ARG KUBE_VERSION=1.27.1
 
 ENV GOOGLE_URL=https://storage.googleapis.com/etcd
 ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
