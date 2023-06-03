@@ -13,7 +13,8 @@
 
 set -xe
 namespace="utility"
-helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz --namespace=$namespace
+helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz --namespace=$namespace \
+    --set "images.tags.etcdctl_utility=quay.io/airshipit/porthole-etcdctl-utility:latest-${DISTRO}"
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

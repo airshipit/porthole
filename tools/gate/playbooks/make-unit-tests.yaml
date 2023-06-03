@@ -13,11 +13,14 @@
 - hosts: primary
   tasks:
     - name: Execute the make target for unit testing
-      make:
-        chdir: "{{ zuul.project.src_dir }}"
-        target: unit_tests
-      register: result
-      failed_when: result.failed
+      block:
+        - make:
+            chdir: "{{ zuul.project.src_dir }}"
+            target: unit_tests
+          register: result
+          failed_when: result.failed
+        - debug:
+            var: result
 
 - name: Include collecting running logs
   import_playbook: airship-porthole-collect-logs.yaml

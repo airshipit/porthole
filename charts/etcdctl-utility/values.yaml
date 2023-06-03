@@ -20,7 +20,7 @@ release_group: null
 images:
   pull_policy: IfNotPresent
   tags:
-    etcdctl_utility: 'quay.io/airshipit/porthole-etcdctl-utility:latest-ubuntu_bionic'
+    etcdctl_utility: 'quay.io/airshipit/porthole-etcdctl-utility:latest-ubuntu_focal'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: "IfNotPresent"
   local_registry:

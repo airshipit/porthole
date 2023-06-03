@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from kube_utility_container.tests.utility.base import TestBase
+import time
 
-import warnings
+from kube_utility_container.tests.utility.base import TestBase
 
 
 class TestPostgresqlUtilityContainer(TestBase):
@@ -22,6 +22,15 @@ class TestPostgresqlUtilityContainer(TestBase):
     def setUpClass(cls):
         cls.deployment_name = cls._get_deployment_name("postgresql-utility")
         super(TestPostgresqlUtilityContainer, cls).setUpClass()
+
+    def test_verify_postgresql_client_psql_is_present(self):
+        """To verify psql-client is present"""
+        exec_cmd = ['utilscli', 'psql', '-V']
+        expected = 'psql'
+        result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
+        self.assertIn(
+            expected, result_set, 'Unexpected value for command: {}, '
+            'Command Output: {}'.format(exec_cmd, result_set))
 
     def test_verify_readonly_rootfs(self):
         """To verify postgresql-utility readonly rootfs configuration"""
@@ -37,36 +46,6 @@ class TestPostgresqlUtilityContainer(TestBase):
                     f" value {expected} set for read_only_root_filesystem"
                     f" in pod {postgresql_utility_pod.metadata.name}")
         self.assertEqual(0, len(failures), failures)
-
-    def test_verify_postgresql_utility_pod_logs(self):
-        """To verify postgresql-utility pod logs"""
-        warnings.filterwarnings(
-            action="ignore", message="unclosed", category=ResourceWarning)
-        date_1 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%Y-%m-%d %H'])).replace(
-                                           '\n', '')
-        date_2 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%b %d %H'])).replace(
-                                           '\n', '')
-        exec_cmd = ['utilscli', 'psql', 'version']
-        self.client.exec_cmd(self.deployment_name, exec_cmd)
-        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
-            replace('\n', '')
-        if date_1 in pod_logs:
-            latest_pod_logs = (pod_logs.split(date_1))[1:]
-        else:
-            latest_pod_logs = (pod_logs.split(date_2))[1:]
-        self.assertNotEqual(0, len(latest_pod_logs),
-                            "Not able to get the latest logs")
-
-    def test_verify_postgresql_client_psql_is_present(self):
-        """To verify psql-client is present"""
-        exec_cmd = ['utilscli', 'psql', '-V']
-        expected = 'psql'
-        result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
-        self.assertIn(
-            expected, result_set, 'Unexpected value for command: {}, '
-            'Command Output: {}'.format(exec_cmd, result_set))
 
     def test_verify_apparmor(self):
         """To verify postgresql-utility Apparmor"""
@@ -84,3 +63,24 @@ class TestPostgresqlUtilityContainer(TestBase):
                                 f"{postgresql_utility_pod.metadata.name} "
                                 f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
+
+    def test_verify_postgresql_utility_pod_logs(self):
+        """To verify postgresql-utility pod logs"""
+        date_1 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%Y-%m-%d %H'])).replace(
+                                           '\n', '')
+        date_2 = (self.client.exec_cmd(self.deployment_name,
+                                       ['date', '+%b %d %H'])).replace(
+                                           '\n', '')
+        exec_cmd = ['utilscli', 'dbutils', 'show_databases']
+        self.client.exec_cmd(self.deployment_name, exec_cmd)
+        time.sleep(10)
+        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
+            replace('\n', '')
+        print(pod_logs)
+        if date_1 in pod_logs:
+            latest_pod_logs = (pod_logs.split(date_1))[1:]
+        else:
+            latest_pod_logs = (pod_logs.split(date_2))[1:]
+        self.assertNotEqual(0, len(latest_pod_logs),
+                            "Not able to get the latest logs")

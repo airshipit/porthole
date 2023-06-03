@@ -1,0 +1,53 @@
+ARG FROM=docker.io/ubuntu:bionic
+FROM ${FROM}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+ARG KUBE_VERSION=1.24.6
+
+RUN set -xe  \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && sed -i '/nobody/d' /etc/passwd  \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update \
+    && apt-get install -y wget curl \
+        apt-transport-https ca-certificates gnupg \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -o /etc/apt/trusted.gpg.d/postgresql_release_signing_key.asc 'https://www.postgresql.org/media/keys/ACCC4CF8.asc' \
+    && apt-get update \
+    && apt-get install -y \
+        bash \
+        moreutils \
+        rsyslog \
+        screen \
+        sudo \
+        postgresql-client \
+        postgresql-common \
+        python3.6 \
+        python3-pip  \
+        jq \
+        rclone \
+    && pip3 install --upgrade pip \
+    && pip3 install \
+        oslo.rootwrap==6.2.0 \
+        python-openstackclient==5.4.0 \
+        python-swiftclient==3.10.1 \
+    && apt-get clean -y \
+    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
+    && rm -rf \
+       /var/cache/debconf/* \
+       /var/lib/apt/lists/*
+
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+
+CMD ["/bin/bash"]

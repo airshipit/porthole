@@ -11,8 +11,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 set -xe
+
+CURRENT_DIR="$(pwd)"
+ : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+
+# Deploy postgresql server
+cd "${OSH_INFRA_PATH}"
+bash -c "./tools/deployment/common/postgresql.sh"
+bash -c "./tools/deployment/common/020-ingress.sh"
+# Deploy postgresql-utility
+cd ${CURRENT_DIR}
+
 namespace="utility"
-helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz --namespace=$namespace
+helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz --namespace=$namespace \
+    --set "images.tags.postgresql_utility=quay.io/airshipit/porthole-postgresql-utility:latest-${DISTRO}" \
+    --set "conf.postgresql_backup_restore.enabled_namespaces=osh-infra"
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

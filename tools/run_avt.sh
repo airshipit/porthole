@@ -24,8 +24,8 @@ function setup_venv() {
     python3 -m venv ${VENV}
     if [[ -f ${VENV}/bin/activate ]] ;then
       source $VENV/bin/activate
-      ${VENV}/bin/pip install -r requirements-frozen.txt
-      ${VENV}/bin/python -m pip list --format=columns
+      ${VENV}/bin/pip3 install -r requirements-frozen.txt
+      ${VENV}/bin/python3 -m pip list --format=columns
       kubectl get deployment -n utility
       kubectl get nodes -o wide
       kubectl get po --all-namespaces -o wide
@@ -45,17 +45,17 @@ function run_avt() {
 }
 
 function run_feature_tests() {
-      python -m unittest discover -s ${PLUGINS}/tests/utility/compute -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/etcd -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/calico -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/ceph -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/mysqlclient -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/openstack -v
-      python -m unittest discover -s ${PLUGINS}/tests/utility/postgresql -v
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/compute -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/etcd -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/calico -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/ceph -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/openstack -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/postgresql -vv
+      python3 -m unittest discover -s ${PLUGINS}/tests/utility/mysqlclient -vv
 }
 
 function run_unit_tests() {
-      python -m unittest discover -s ${PLUGINS}/tests/unit/services -v
+      python3 -m unittest discover -s ${PLUGINS}/tests/unit/services -vv
 }
 
 run_avt

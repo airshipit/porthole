@@ -26,8 +26,10 @@ class TestDeploymentNameMapping(unittest.TestCase):
 
     def setUp(self) -> None:
         self.mapping = DeploymentMapping(self)
+        super().setUp()
 
     def tearDown(self) -> None:
+        super().tearDown()
         pass
 
     def test_deployment_name_is_consistent_with_name_mapping(self):

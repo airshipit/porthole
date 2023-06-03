@@ -12,8 +12,50 @@
 #    under the License.
 
 set -xe
+
+CURRENT_DIR="$(pwd)"
+ : "${OSH_PATH:="../openstack-helm"}"
+
+# Deploy mariadb server
+cd "${OSH_PATH}"
+tee /tmp/mariadb-server-config.yaml <<EOF
+conf:
+  backup:
+    enabled: true
+secrets:
+  mariadb:
+    backup_restore: mariadb-backup-restore
+manifests:
+    cron_job_mariadb_backup: true
+    secret_backup_restore: true
+    pvc_backup: true
+EOF
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(./tools/deployment/common/get-values-overrides.sh mariadb)"}
+
+#NOTE: Lint and package chart
+make -C ${HELM_CHART_ROOT_PATH} mariadb
+
+#NOTE: Deploy command
+: ${OSH_EXTRA_HELM_ARGS:=""}
+helm upgrade --install mariadb ${HELM_CHART_ROOT_PATH}/mariadb \
+    --namespace=openstack \
+    --values /tmp/mariadb-server-config.yaml \
+    --set pod.replicas.server=1 \
+    ${OSH_EXTRA_HELM_ARGS} \
+    ${OSH_EXTRA_HELM_ARGS_MARIADB}
+
+#NOTE: Wait for deploy
+./tools/deployment/common/wait-for-pods.sh openstack
+
+# Deploy mysqlclient-utility
+cd ${CURRENT_DIR}
+
 namespace="utility"
-helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz --namespace=$namespace
+helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz --namespace=$namespace \
+    --set "images.tags.mysqlclient_utility=quay.io/airshipit/porthole-mysqlclient-utility:latest-${DISTRO}" \
+    --set "conf.mariadb_backup_restore.enabled_namespaces=openstack"
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

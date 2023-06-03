@@ -13,11 +13,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-build-gate-ceph-utility
+    name: airship-porthole-images-focal-build-gate-ceph-utility
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-ceph-utility
-      distro_suffix: &distro_suffix ubuntu_focal
+      distro_suffix: ubuntu_focal
     files:
       - ^charts/ceph-utility/.*$
       - ^images/ceph-utility/.*$
@@ -29,10 +29,40 @@
     name: airship-porthole-images-publish-ceph-utility
     parent: *parent
     secrets:
-      - quay_credentials
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
     vars:
       image_name: *image_name
-      distro_suffix: *distro_suffix
+      distro_suffix: ubuntu_focal
+      publish: true
+      tags:
+        dynamic:
+          commit: true
+
+- job:
+    name: airship-porthole-images-bionic-build-gate-ceph-utility
+    parent: *parent
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
+    files:
+      - ^charts/ceph-utility/.*$
+      - ^images/ceph-utility/.*$
+      - ^Makefile$
+      - ^tools/.*$
+      - ^zuul.d/.*$
+
+- job:
+    name: airship-porthole-images-bionic-publish-ceph-utility
+    parent: *parent
+    secrets:
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
       publish: true
       tags:
         dynamic:

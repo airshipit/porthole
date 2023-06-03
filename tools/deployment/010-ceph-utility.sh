@@ -52,7 +52,8 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
 
 # Deploy Ceph-Utility
 cd ${CURRENT_DIR}
-helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace
+helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace \
+    --set "images.tags.ceph_utility=quay.io/airshipit/porthole-ceph-utility:latest-${DISTRO}"
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

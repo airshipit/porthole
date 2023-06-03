@@ -13,7 +13,8 @@
 
 set -xe
 namespace="utility"
-helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz --namespace=$namespace
+helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz --namespace=$namespace \
+    --set "images.tags.openstack_utility=quay.io/airshipit/porthole-openstack-utility:latest-${DISTRO}"
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

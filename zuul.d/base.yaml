@@ -19,34 +19,53 @@
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py38-focal
-        - airship-porthole-openstack-tox-cover-focal
-        - airship-porthole-images-build-gate-calicoctl-utility
-        - airship-porthole-images-build-gate-ceph-utility
-        - airship-porthole-images-build-gate-compute-utility
-        - airship-porthole-images-build-gate-etcdctl-utility
-        - airship-porthole-images-build-gate-mysqlclient-utility
-        - airship-porthole-images-build-gate-openstack-utility
-        - airship-porthole-images-build-gate-postgresql-utility
-        # disabled because this one was replaces by tox-py38 and tox-cover tests
-        # - airship-porthole-deploy-functional-tests
+        - airship-porthole-openstack-tox-py38
+        - airship-porthole-openstack-tox-cover
+        - airship-porthole-images-focal-build-gate-calicoctl-utility
+        - airship-porthole-images-focal-build-gate-ceph-utility
+        - airship-porthole-images-focal-build-gate-compute-utility
+        - airship-porthole-images-focal-build-gate-etcdctl-utility
+        - airship-porthole-images-focal-build-gate-mysqlclient-utility
+        - airship-porthole-images-focal-build-gate-openstack-utility
+        - airship-porthole-images-focal-build-gate-postgresql-utility
+        - airship-porthole-images-bionic-build-gate-calicoctl-utility
+        - airship-porthole-images-bionic-build-gate-ceph-utility
+        - airship-porthole-images-bionic-build-gate-compute-utility
+        - airship-porthole-images-bionic-build-gate-etcdctl-utility
+        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
+        - airship-porthole-images-bionic-build-gate-openstack-utility
+        - airship-porthole-images-bionic-build-gate-postgresql-utility
+        - airship-porthole-deploy-functional-unit-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
+        - airship-porthole-deploy-functional-feature-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
 
     gate:
       jobs:
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py38-focal
-        - airship-porthole-openstack-tox-cover-focal
-        - airship-porthole-images-build-gate-calicoctl-utility
-        - airship-porthole-images-build-gate-ceph-utility
-        - airship-porthole-images-build-gate-compute-utility
-        - airship-porthole-images-build-gate-etcdctl-utility
-        - airship-porthole-images-build-gate-mysqlclient-utility
-        - airship-porthole-images-build-gate-openstack-utility
-        - airship-porthole-images-build-gate-postgresql-utility
-        # disabled because this one was replaces by tox-py38 and tox-cover tests
-        # - airship-porthole-deploy-functional-tests
+        - airship-porthole-openstack-tox-py38
+        - airship-porthole-openstack-tox-cover
+        - airship-porthole-images-focal-build-gate-calicoctl-utility
+        - airship-porthole-images-focal-build-gate-ceph-utility
+        - airship-porthole-images-focal-build-gate-compute-utility
+        - airship-porthole-images-focal-build-gate-etcdctl-utility
+        - airship-porthole-images-focal-build-gate-mysqlclient-utility
+        - airship-porthole-images-focal-build-gate-openstack-utility
+        - airship-porthole-images-focal-build-gate-postgresql-utility
+        - airship-porthole-images-bionic-build-gate-calicoctl-utility
+        - airship-porthole-images-bionic-build-gate-ceph-utility
+        - airship-porthole-images-bionic-build-gate-compute-utility
+        - airship-porthole-images-bionic-build-gate-etcdctl-utility
+        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
+        - airship-porthole-images-bionic-build-gate-openstack-utility
+        - airship-porthole-images-bionic-build-gate-postgresql-utility
+        - airship-porthole-deploy-functional-unit-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
+        - airship-porthole-deploy-functional-feature-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
+
 
     post:
       jobs:
@@ -57,6 +76,14 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
+        - airship-porthole-images-bionic-publish-calicoctl-utility
+        - airship-porthole-images-bionic-publish-ceph-utility
+        - airship-porthole-images-bionic-publish-compute-utility
+        - airship-porthole-images-bionic-publish-etcdctl-utility
+        - airship-porthole-images-bionic-publish-mysqlclient-utility
+        - airship-porthole-images-bionic-publish-openstack-utility
+        - airship-porthole-images-bionic-publish-postgresql-utility
+
 
 - nodeset:
     name: airship-porthole-single-node
@@ -71,18 +98,24 @@
         label: ubuntu-focal
 
 - job:
-    name: airship-porthole-openstack-tox-py38-focal
+    name: airship-porthole-openstack-tox-py38
     parent: openstack-tox-py38
     description: Runs cover job on focal
     nodeset: airship-porthole-focal-single-node
     pre-run: tools/gate/playbooks/install-deps.yaml
+    timeout: 7200
+    vars:
+      distro_suffix: ubuntu_focal
 
 - job:
-    name: airship-porthole-openstack-tox-cover-focal
+    name: airship-porthole-openstack-tox-cover
     parent: openstack-tox-cover
     description: Runs cover job on focal
     nodeset: airship-porthole-focal-single-node
     pre-run: tools/gate/playbooks/install-deps.yaml
+    timeout: 7200
+    vars:
+      distro_suffix: ubuntu_focal
 
 - job:
     name: airship-porthole-images
@@ -100,6 +133,7 @@
         static:
           - latest
 
+
 - job:
     name: airship-porthole-linter
     description: |
@@ -110,18 +144,60 @@
 
 
 - job:
-    name: airship-porthole-deploy-functional-tests
+    name: airship-porthole-deploy-functional-unit-tests-ubuntu_focal
     description: |
        Deploys all UC's and Executes unit and feature tests.
-    run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
     nodeset: airship-porthole-focal-single-node
     timeout: 7200
-    pre-run:
-       - tools/gate/playbooks/osh-infra-upgrade-host.yaml
-    post-run:
-       - tools/gate/playbooks/make-unit-tests.yaml
-       - tools/gate/playbooks/make-feature-tests.yaml
+    run:  tools/gate/playbooks/make-unit-tests.yaml
     vars:
+      distro_suffix: ubuntu_focal
+      gate_scripts:
+         - ./tools/gate/deploy.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
+    name: airship-porthole-deploy-functional-feature-tests-ubuntu_focal
+    description: |
+       Deploys all UC's and Executesfeature tests.
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-focal-single-node
+    timeout: 7200
+    run: tools/gate/playbooks/make-feature-tests.yaml
+    vars:
+      distro_suffix: ubuntu_focal
+      gate_scripts:
+         - ./tools/gate/deploy.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
+    name: airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
+    description: |
+       Deploys all UC's and Executes unit  tests.
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-focal-single-node
+    timeout: 7200
+    run: tools/gate/playbooks/make-unit-tests.yaml
+    vars:
+      distro_suffix: ubuntu_bionic
+      gate_scripts:
+         - ./tools/gate/deploy.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+- job:
+    name: airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
+    description: |
+       Deploys all UC's and Executes feature tests.
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+    nodeset: airship-porthole-focal-single-node
+    timeout: 7200
+    run: tools/gate/playbooks/make-feature-tests.yaml
+    vars:
+      distro_suffix: ubuntu_bionic
       gate_scripts:
          - ./tools/gate/deploy.sh
       args:

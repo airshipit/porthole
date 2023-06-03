@@ -22,8 +22,12 @@
   tasks:
     - name: Install deps for tests
       shell: |
+        set -x
+        env
         ./tools/gate/deploy.sh
       args:
         chdir: "{{ zuul.project.src_dir }}"
         executable: /bin/bash
+      environment:
+        DISTRO: "{{ distro_suffix | default('') }}"
       become: True

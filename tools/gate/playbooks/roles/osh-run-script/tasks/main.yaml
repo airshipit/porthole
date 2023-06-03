@@ -25,3 +25,4 @@
     CONTAINER_DISTRO_NAME: "{{ osh_params.container_distro_name }}"
     CONTAINER_DISTRO_VERSION: "{{ osh_params.container_distro_version }}"
     FEATURE_GATES: "{{ osh_params.feature_gates | default('') }}"
+    DISTRO: "{{ distro_suffix | default('') }}"

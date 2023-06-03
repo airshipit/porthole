@@ -13,11 +13,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-build-gate-mysqlclient-utility
+    name: airship-porthole-images-focal-build-gate-mysqlclient-utility
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-mysqlclient-utility
-      distro_suffix: &distro_suffix ubuntu_focal
+      distro_suffix: ubuntu_focal
     files:
       - ^charts/mysqlclient-utility/.*$
       - ^images/mysqlclient-utility/.*$
@@ -29,10 +29,40 @@
     name: airship-porthole-images-publish-mysqlclient-utility
     parent: *parent
     secrets:
-      - quay_credentials
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
     vars:
       image_name: *image_name
-      distro_suffix: *distro_suffix
+      distro_suffix: ubuntu_focal
+      publish: true
+      tags:
+        dynamic:
+          commit: true
+
+- job:
+    name: airship-porthole-images-bionic-build-gate-mysqlclient-utility
+    parent: *parent
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
+    files:
+      - ^charts/mysqlclient-utility/.*$
+      - ^images/mysqlclient-utility/.*$
+      - ^Makefile$
+      - ^tools/.*$
+      - ^zuul.d/.*$
+
+- job:
+    name: airship-porthole-images-bionic-publish-mysqlclient-utility
+    parent: *parent
+    secrets:
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
       publish: true
       tags:
         dynamic:

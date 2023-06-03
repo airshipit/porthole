@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
 #    a copy of the License at
@@ -12,12 +11,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-set -xe
-namespace="utility"
-helm upgrade --install compute-utility ./artifacts/compute-utility.tgz --namespace=$namespace \
-    --set "images.tags.compute_utility=quay.io/airshipit/porthole-compute-utility:latest-${DISTRO}"
+set -x
 
-# Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
-cd "${OSH_INFRA_PATH}"
-./tools/deployment/common/wait-for-pods.sh $namespace
+env
+make images

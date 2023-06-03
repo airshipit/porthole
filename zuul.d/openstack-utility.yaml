@@ -13,11 +13,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-build-gate-openstack-utility
+    name: airship-porthole-images-focal-build-gate-openstack-utility
     parent: &parent airship-porthole-images
     vars:
       image_name: &image_name porthole-openstack-utility
-      distro_suffix: &distro_suffix ubuntu_focal
+      distro_suffix: ubuntu_focal
     files:
       - ^charts/openstack-utility/.*$
       - ^images/openstack-utility/.*$
@@ -29,10 +29,40 @@
     name: airship-porthole-images-publish-openstack-utility
     parent: *parent
     secrets:
-      - quay_credentials
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
     vars:
       image_name: *image_name
-      distro_suffix: *distro_suffix
+      distro_suffix: ubuntu_focal
+      publish: true
+      tags:
+        dynamic:
+          commit: true
+
+- job:
+    name: airship-porthole-images-bionic-build-gate-openstack-utility
+    parent: *parent
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
+    files:
+      - ^charts/openstack-utility/.*$
+      - ^images/openstack-utility/.*$
+      - ^Makefile$
+      - ^tools/.*$
+      - ^zuul.d/.*$
+
+- job:
+    name: airship-porthole-images-bionic-publish-openstack-utility
+    parent: *parent
+    secrets:
+      - name: quay_credentials
+        secret: quay_credentials
+        pass-to-parent: true
+    vars:
+      image_name: *image_name
+      distro_suffix: ubuntu_bionic
       publish: true
       tags:
         dynamic:

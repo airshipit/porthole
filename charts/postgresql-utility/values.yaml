@@ -20,7 +20,7 @@ release_group: null
 images:
   pull_policy: IfNotPresent
   tags:
-    postgresql_utility: 'quay.io/airshipit/porthole-postgresql-utility:latest-ubuntu_bionic'
+    postgresql_utility: 'quay.io/airshipit/porthole-postgresql-utility:latest-ubuntu_focal'
     image_repo_sync: docker.io/docker:18.09.02
   local_registry:
     active: false

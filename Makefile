@@ -139,7 +139,7 @@ unit_tests:
 feature_tests:
 	@echo "Run Feature Validation Testing"
 	./tools/run_avt.sh feature_tests
-	tox -e docs
+
 
 format:
 	@echo "Not implemented." >&2; exit 2
