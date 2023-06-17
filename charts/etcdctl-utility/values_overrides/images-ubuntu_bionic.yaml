@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    etcdctl_utility: quay.io/airshipit/porthole-etcdctl-utility:latest-ubuntu_bionic
+...

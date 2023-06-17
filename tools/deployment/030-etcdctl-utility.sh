@@ -13,8 +13,13 @@
 
 set -xe
 namespace="utility"
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY:="$(./tools/deployment/get-values-overrides.sh etcdctl-utility)"}
+
 helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz --namespace=$namespace \
-    --set "images.tags.etcdctl_utility=quay.io/airshipit/porthole-etcdctl-utility:latest-${DISTRO}"
+    ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY}
+
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

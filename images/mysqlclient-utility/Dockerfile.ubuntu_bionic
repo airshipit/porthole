@@ -36,6 +36,7 @@ RUN set -xe \
        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
+         munch \
          oslo.rootwrap==6.2.0 \
          python-openstackclient==5.4.0 \
          python-swiftclient==3.10.1 \
@@ -43,7 +44,7 @@ RUN set -xe \
     && apt-get clean -y \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
-    && curl --silent -L https://percona.com/get/percona-toolkit.tar.gz \
+    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/3.5.1/binary/tarball/percona-toolkit-3.5.1_x86_64.tar.gz \
        | tar -zC /usr/local/bin/ --strip-components=2 --wildcards -x "*/*/pt-show-grants" \
     && rm -rf \
       /tmp/* \

@@ -22,7 +22,7 @@ IMAGE_NAME        ?= $@
 IMAGE_TAG         ?= latest
 BUILD_DIR         := $(shell mktemp -d)
 HELM              ?= $(BUILD_DIR)/helm
-CHARTS            := $(patsubst charts/%/.,%,$(wildcard charts/*/.))
+CHARTS            := $(filter-out deps, $(patsubst charts/%/.,%,$(wildcard charts/*/.)))
 IMAGES            := $(addprefix porthole-,$(patsubst images/%/.,%,$(wildcard images/*/.)))
 PROXY             ?= http://proxy.foo.com:8000
 NO_PROXY          ?= localhost,127.0.0.1,.svc.cluster.local
@@ -125,6 +125,9 @@ clean:
 	rm -f charts/*.tgz
 	rm -f charts/*/requirements.lock
 	rm -rf charts/*/charts
+	rm -rf charts/deps/*
+	rm -rf .tox
+	rm -rf cover
 
 run_images:
 	@echo "Not implemented." >&2; exit 2

@@ -3,8 +3,15 @@ CURRENT_DIR="$(pwd)"
  : "${OSH_PATH:="../openstack-helm"}"
  : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 
-cd "${OSH_PATH}"
-bash -c "./tools/deployment/component/ceph/ceph.sh"
+# remove previous loop devices if any
+
+if [ -f /etc/systemd/system/local-fs.target.wants/loops-setup.service ]
+then
+  sudo systemctl stop loops-setup
+fi
+
+cd "${OSH_PATH}" || exit
+sudo bash -c "./tools/deployment/component/ceph/ceph.sh"
 
 namespace="utility"
 : ${OSH_EXTRA_HELM_ARGS:=""}
@@ -52,8 +59,12 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
 
 # Deploy Ceph-Utility
 cd ${CURRENT_DIR}
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(./tools/deployment/get-values-overrides.sh ceph-utility)"}
+
 helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace \
-    --set "images.tags.ceph_utility=quay.io/airshipit/porthole-ceph-utility:latest-${DISTRO}"
+    ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY}
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

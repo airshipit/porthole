@@ -35,7 +35,7 @@ export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../open
 : ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(./tools/deployment/common/get-values-overrides.sh mariadb)"}
 
 #NOTE: Lint and package chart
-make -C ${HELM_CHART_ROOT_PATH} mariadb
+make -C "${HELM_CHART_ROOT_PATH}" mariadb
 
 #NOTE: Deploy command
 : ${OSH_EXTRA_HELM_ARGS:=""}
@@ -50,12 +50,16 @@ helm upgrade --install mariadb ${HELM_CHART_ROOT_PATH}/mariadb \
 ./tools/deployment/common/wait-for-pods.sh openstack
 
 # Deploy mysqlclient-utility
-cd ${CURRENT_DIR}
+cd "${CURRENT_DIR}"
 
 namespace="utility"
+
+export HELM_CHART_ROOT_PATH="${PORTHOLE_PATH:="../porthole/charts"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY:="$(./tools/deployment/get-values-overrides.sh mysqlclient-utility)"}
+
 helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz --namespace=$namespace \
-    --set "images.tags.mysqlclient_utility=quay.io/airshipit/porthole-mysqlclient-utility:latest-${DISTRO}" \
-    --set "conf.mariadb_backup_restore.enabled_namespaces=openstack"
+    --set "conf.mariadb_backup_restore.enabled_namespaces=openstack" \
+    ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY}
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

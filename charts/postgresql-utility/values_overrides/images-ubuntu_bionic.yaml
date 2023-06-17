@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    postgresql_utility: quay.io/airshipit/porthole-postgresql-utility:latest-ubuntu_bionic
+...

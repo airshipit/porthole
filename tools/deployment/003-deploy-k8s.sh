@@ -2,10 +2,10 @@
 set -x
 
 CURRENT_DIR="$(pwd)"
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+: "${TREASUREMAP_PATH:="../treasuremap"}"
 
-cd "${OSH_INFRA_PATH}"
-bash -c "./tools/deployment/common/005-deploy-k8s.sh"
+cd "${TREASUREMAP_PATH}" || exit
+bash -c "./tools/deployment/airskiff/developer/010-deploy-k8s.sh"
 
 if [ -d /home/zuul ]
 then
@@ -13,3 +13,5 @@ then
     sudo chown -R zuul /home/zuul/.kube
 fi
 kubectl create namespace utility
+
+cd "${CURRENT_DIR}" || exit

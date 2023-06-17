@@ -14,8 +14,13 @@
 
 set -xe
 namespace="utility"
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY:="$(./tools/deployment/get-values-overrides.sh compute-utility)"}
+
 helm upgrade --install compute-utility ./artifacts/compute-utility.tgz --namespace=$namespace \
-    --set "images.tags.compute_utility=quay.io/airshipit/porthole-compute-utility:latest-${DISTRO}"
+    ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY}
+
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

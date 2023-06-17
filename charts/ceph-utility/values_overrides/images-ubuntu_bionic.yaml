@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    ceph_utility: quay.io/airshipit/porthole-ceph-utility:latest-ubuntu_bionic
+...

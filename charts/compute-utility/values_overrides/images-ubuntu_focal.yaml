@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    compute_utility: quay.io/airshipit/porthole-compute-utility:latest-ubuntu_focal
+...

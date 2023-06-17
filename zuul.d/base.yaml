@@ -35,10 +35,8 @@
         - airship-porthole-images-bionic-build-gate-mysqlclient-utility
         - airship-porthole-images-bionic-build-gate-openstack-utility
         - airship-porthole-images-bionic-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-unit-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
-        - airship-porthole-deploy-functional-feature-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
+        - airship-porthole-deploy-functional-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-tests-ubuntu_bionic
 
     gate:
       jobs:
@@ -61,10 +59,8 @@
         - airship-porthole-images-bionic-build-gate-mysqlclient-utility
         - airship-porthole-images-bionic-build-gate-openstack-utility
         - airship-porthole-images-bionic-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-unit-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
-        - airship-porthole-deploy-functional-feature-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
+        - airship-porthole-deploy-functional-tests-ubuntu_focal
+        - airship-porthole-deploy-functional-tests-ubuntu_bionic
 
 
     post:
@@ -102,26 +98,46 @@
     parent: openstack-tox-py38
     description: Runs cover job on focal
     nodeset: airship-porthole-focal-single-node
-    pre-run: tools/gate/playbooks/install-deps.yaml
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
     timeout: 7200
     vars:
       distro_suffix: ubuntu_focal
+      gate_scripts:
+        - ./tools/deployment/005-calicoctl-utility.sh
+        - ./tools/deployment/010-ceph-utility.sh
+        - ./tools/deployment/020-compute-utility.sh
+        - ./tools/deployment/030-etcdctl-utility.sh
+        - ./tools/deployment/040-mysqlclient-utility.sh
+        - ./tools/deployment/050-openstack-utility.sh
+        - ./tools/deployment/060-postgresql-utility.sh
+      args:
+        chdir: ../porthole
 
 - job:
     name: airship-porthole-openstack-tox-cover
     parent: openstack-tox-cover
     description: Runs cover job on focal
     nodeset: airship-porthole-focal-single-node
-    pre-run: tools/gate/playbooks/install-deps.yaml
+    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
     timeout: 7200
     vars:
       distro_suffix: ubuntu_focal
+      gate_scripts:
+        - ./tools/deployment/005-calicoctl-utility.sh
+        - ./tools/deployment/010-ceph-utility.sh
+        - ./tools/deployment/020-compute-utility.sh
+        - ./tools/deployment/030-etcdctl-utility.sh
+        - ./tools/deployment/040-mysqlclient-utility.sh
+        - ./tools/deployment/050-openstack-utility.sh
+        - ./tools/deployment/060-postgresql-utility.sh
+      args:
+        chdir: ../porthole
 
 - job:
     name: airship-porthole-images
     abstract: true
-    timeout: 1800
-    post-timeout: 1800
+    timeout: 7200
+    post-timeout: 7200
     run: tools/gate/playbooks/docker-image-build.yaml
     nodeset: airship-porthole-focal-single-node
     vars:
@@ -142,66 +158,58 @@
     timeout: 300
     nodeset: airship-porthole-focal-single-node
 
-
 - job:
-    name: airship-porthole-deploy-functional-unit-tests-ubuntu_focal
+    name: airship-porthole-deploy-functional-tests-ubuntu_focal
     description: |
-       Deploys all UC's and Executes unit and feature tests.
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+       Deploys all UC's and Executes functional tests on focal.
     nodeset: airship-porthole-focal-single-node
     timeout: 7200
-    run:  tools/gate/playbooks/make-unit-tests.yaml
+    run:
+      - tools/gate/playbooks/airship-porthole-gate-runner.yaml
+      - tools/gate/playbooks/make-functional-tests.yaml
     vars:
       distro_suffix: ubuntu_focal
       gate_scripts:
-         - ./tools/gate/deploy.sh
+        - ./tools/deployment/005-calicoctl-utility.sh
+        - ./tools/deployment/010-ceph-utility.sh
+        - ./tools/deployment/020-compute-utility.sh
+        - ./tools/deployment/030-etcdctl-utility.sh
+        - ./tools/deployment/040-mysqlclient-utility.sh
+        - ./tools/deployment/050-openstack-utility.sh
+        - ./tools/deployment/060-postgresql-utility.sh
+      osh_params:
+        openstack_release: yoga
+        container_distro_name: ubuntu
+        container_distro_version: focal
       args:
-        chdir: "{{ zuul.project.src_dir }}"
+        chdir: ../porthole
+
 
 - job:
-    name: airship-porthole-deploy-functional-feature-tests-ubuntu_focal
+    name: airship-porthole-deploy-functional-tests-ubuntu_bionic
     description: |
-       Deploys all UC's and Executesfeature tests.
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+       Deploys all UC's and Executes functions tests on bionic.
     nodeset: airship-porthole-focal-single-node
     timeout: 7200
-    run: tools/gate/playbooks/make-feature-tests.yaml
-    vars:
-      distro_suffix: ubuntu_focal
-      gate_scripts:
-         - ./tools/gate/deploy.sh
-      args:
-        chdir: "{{ zuul.project.src_dir }}"
-
-- job:
-    name: airship-porthole-deploy-functional-unit-tests-ubuntu_bionic
-    description: |
-       Deploys all UC's and Executes unit  tests.
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-    nodeset: airship-porthole-focal-single-node
-    timeout: 7200
-    run: tools/gate/playbooks/make-unit-tests.yaml
+    run:
+      - tools/gate/playbooks/airship-porthole-gate-runner.yaml
+      - tools/gate/playbooks/make-functional-tests.yaml
     vars:
       distro_suffix: ubuntu_bionic
       gate_scripts:
-         - ./tools/gate/deploy.sh
+        - ./tools/deployment/005-calicoctl-utility.sh
+        - ./tools/deployment/010-ceph-utility.sh
+        - ./tools/deployment/020-compute-utility.sh
+        - ./tools/deployment/030-etcdctl-utility.sh
+        - ./tools/deployment/040-mysqlclient-utility.sh
+        - ./tools/deployment/050-openstack-utility.sh
+        - ./tools/deployment/060-postgresql-utility.sh
+      osh_params:
+        openstack_release: yoga
+        container_distro_name: ubuntu
+        container_distro_version: bionic
       args:
-        chdir: "{{ zuul.project.src_dir }}"
-
-- job:
-    name: airship-porthole-deploy-functional-feature-tests-ubuntu_bionic
-    description: |
-       Deploys all UC's and Executes feature tests.
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-    nodeset: airship-porthole-focal-single-node
-    timeout: 7200
-    run: tools/gate/playbooks/make-feature-tests.yaml
-    vars:
-      distro_suffix: ubuntu_bionic
-      gate_scripts:
-         - ./tools/gate/deploy.sh
-      args:
-        chdir: "{{ zuul.project.src_dir }}"
+        chdir: ../porthole
 
 - secret:
     name: quay_credentials

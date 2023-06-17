@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    openstack_utility: quay.io/airshipit/porthole-openstack-utility:latest-ubuntu_focal
+...

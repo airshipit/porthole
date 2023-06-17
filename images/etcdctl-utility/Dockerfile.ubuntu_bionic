@@ -36,6 +36,7 @@ RUN set -xe \
        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
+        munch \
         oslo.rootwrap==6.2.0 \
         python-openstackclient==5.4.0 \
         python-swiftclient==3.10.1 \

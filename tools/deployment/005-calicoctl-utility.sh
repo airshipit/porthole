@@ -13,8 +13,12 @@
 
 set -xe
 namespace=utility
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_CALICOCTL_UTILITY:="$(./tools/deployment/get-values-overrides.sh calicoctl-utility)"}
+
 helm upgrade --install calicoctl-utility ./artifacts/calicoctl-utility.tgz --namespace=$namespace \
-    --set "images.tags.calicoctl_utility=quay.io/airshipit/porthole-calicoctl-utility:latest-${DISTRO}"
+    ${PORTHOLE_EXTRA_HELM_ARGS_CALICOCTL_UTILITY}
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"

@@ -19,6 +19,19 @@
     - clear-firewall
     - ensure-docker
   tasks:
+    - name: Install deps for tests
+      shell: |
+        set -x
+        ./tools/deployment/000-install-packages.sh
+        ./tools/deployment/002-build-charts.sh
+        ./tools/deployment/003-deploy-k8s.sh
+        ./tools/deployment/004-make-images.sh
+      args:
+        chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
+        executable: /bin/bash
+      environment:
+        DISTRO: "{{ distro_suffix | default('') }}"
+      become: True
     - name: Run gate scripts
       include_role:
         name: osh-run-script

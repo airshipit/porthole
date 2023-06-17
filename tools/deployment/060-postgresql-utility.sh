@@ -23,9 +23,14 @@ bash -c "./tools/deployment/common/020-ingress.sh"
 cd ${CURRENT_DIR}
 
 namespace="utility"
+
+export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
+: ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY:="$(./tools/deployment/get-values-overrides.sh postgresql-utility)"}
+
 helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz --namespace=$namespace \
-    --set "images.tags.postgresql_utility=quay.io/airshipit/porthole-postgresql-utility:latest-${DISTRO}" \
-    --set "conf.postgresql_backup_restore.enabled_namespaces=osh-infra"
+    --set "conf.postgresql_backup_restore.enabled_namespaces=osh-infra" \
+    ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY}
+
 
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
