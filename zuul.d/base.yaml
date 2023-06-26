@@ -148,7 +148,8 @@
           commit: false
         static:
           - latest
-
+      args:
+        chdir: ../porthole
 
 - job:
     name: airship-porthole-linter
@@ -157,6 +158,9 @@
     run: tools/gate/playbooks/zuul-linter.yaml
     timeout: 300
     nodeset: airship-porthole-focal-single-node
+    vars:
+      args:
+        chdir: ../porthole
 
 - job:
     name: airship-porthole-deploy-functional-tests-ubuntu_focal

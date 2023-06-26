@@ -15,6 +15,6 @@
     - name: Execute a Whitespace Linter check
       command: git grep -E -l " +$"
       args:
-        chdir: "{{ zuul.project.src_dir }}"
+        chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
       register: result
       failed_when: result.stdout != ""

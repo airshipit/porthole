@@ -63,7 +63,7 @@
       when: not publish
       block:
         - make:
-            chdir: "{{ zuul.project.src_dir }}"
+            chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
             target: "build"
             params:
               DISTRO_SUFFIX: "{{ distro_suffix }}"
@@ -90,7 +90,7 @@
             password: "{{ quay_credentials.password }}"
             registry_url: "https://quay.io/api/v1/"
         - make:
-            chdir: "{{ zuul.project.src_dir }}"
+            chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
             target: "build"
             params:
               COMMIT: "{{ zuul.newrev | default('') }}"

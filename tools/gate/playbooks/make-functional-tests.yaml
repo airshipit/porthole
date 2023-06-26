@@ -16,7 +16,7 @@
     - name: Execute the make target for unit testing
       block:
         - make:
-            chdir: "{{ zuul.project.src_dir }}"
+            chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
             target: unit_tests
           register: result
           failed_when: result.failed
@@ -26,7 +26,7 @@
     - name: Execute the make target for features testing
       block:
         - make:
-            chdir: "{{ zuul.project.src_dir }}"
+            chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
             target: feature_tests
           register: result
           failed_when: result.failed
