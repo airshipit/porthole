@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    calicoctl_utility: quay.io/airshipit/porthole-calicoctl-utility:latest-ubuntu_focal
+    calicoctl_utility: localhost:5000/porthole-calicoctl-utility:latest-ubuntu_focal
 ...

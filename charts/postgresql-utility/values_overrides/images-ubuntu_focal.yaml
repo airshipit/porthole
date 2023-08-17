@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    postgresql_utility: quay.io/airshipit/porthole-postgresql-utility:latest-ubuntu_focal
+    postgresql_utility: localhost:5000/porthole-postgresql-utility:latest-ubuntu_focal
 ...

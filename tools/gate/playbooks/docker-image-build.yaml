@@ -58,7 +58,6 @@
             executable: pip3
       become: True
 
-
     - name: Make images
       when: not publish
       block:

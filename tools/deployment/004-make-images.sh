@@ -13,5 +13,29 @@
 
 set -x
 
+
+ : "${DISTRO="ubuntu_focal"}"
+
 env
 make images
+
+docker rm registry --force || true
+docker run -d -p 5000:5000 --restart=always --name registry registry:2
+
+docker tag quay.io/airshipit/porthole-calicoctl-utility:latest-${DISTRO} localhost:5000/porthole-calicoctl-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-ceph-utility:latest-${DISTRO} localhost:5000/porthole-ceph-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-compute-utility:latest-${DISTRO} localhost:5000/porthole-compute-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-etcdctl-utility:latest-${DISTRO} localhost:5000/porthole-etcdctl-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-mysqlclient-utility:latest-${DISTRO} localhost:5000/porthole-mysqlclient-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-openstack-utility:latest-${DISTRO} localhost:5000/porthole-openstack-utility:latest-${DISTRO}
+docker tag quay.io/airshipit/porthole-postgresql-utility:latest-${DISTRO} localhost:5000/porthole-postgresql-utility:latest-${DISTRO}
+
+
+
+docker push localhost:5000/porthole-calicoctl-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-ceph-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-compute-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-etcdctl-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-mysqlclient-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-openstack-utility:latest-${DISTRO}
+docker push localhost:5000/porthole-postgresql-utility:latest-${DISTRO}

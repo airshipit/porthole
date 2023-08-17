@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    compute_utility: quay.io/airshipit/porthole-compute-utility:latest-ubuntu_bionic
+    compute_utility: localhost:5000/porthole-compute-utility:latest-ubuntu_bionic
 ...

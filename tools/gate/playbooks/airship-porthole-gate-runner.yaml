@@ -24,6 +24,16 @@
         set -x
         ./tools/deployment/000-install-packages.sh
         ./tools/deployment/002-build-charts.sh
+        sudo fdisk --list
+        df -h
+        sudo mkdir -p /opt/ext_vol
+        BIG_VOLUME=$(sudo fdisk -l 2>&1 | grep  -E 80G | grep Linux | awk '{print $1}')
+        if ! mount | grep "${BIG_VOLUME}"
+        then
+            sudo mkfs.ext4 "${BIG_VOLUME}"
+            sudo mount "${BIG_VOLUME}" /opt/ext_vol
+            df -h
+        fi
         ./tools/deployment/003-deploy-k8s.sh
         ./tools/deployment/004-make-images.sh
       args:
