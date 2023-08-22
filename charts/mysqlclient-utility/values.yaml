@@ -98,6 +98,21 @@ pod:
     mariadb-ondemand:
       ondemand-perms: runtime/default
       mariadb-ondemand: runtime/default
+  probes:
+    utility:
+      mysqlclient-utility:
+        readiness:
+          enabled: true
+          params:
+            periodSeconds: 15
+            timeoutSeconds: 10
+            initialDelaySeconds: 5
+        liveness:
+          enabled: true
+          params:
+            periodSeconds: 15
+            timeoutSeconds: 10
+            initialDelaySeconds: 5
   resources:
     enabled: false
     utility:

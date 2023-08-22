@@ -11,6 +11,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */}}
+
+{{- define "readinessProbeTemplate" }}
+exec:
+  command:
+  - cat
+  - /tmp/done
+{{- end }}
+
+{{- define "livenessProbeTemplate" }}
+exec:
+  command:
+  - utilscli
+{{- end }}
+
 {{- if .Values.manifests.deployment_utility }}
 {{- $envAll := . }}
 
@@ -78,21 +92,10 @@ spec:
 {{ tuple $envAll "compute_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.compute_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "compute" "container" "compute_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
+{{ dict "envAll" $envAll "component" "utility" "container" "compute-utility" "type" "readiness" "probeTemplate" (include "readinessProbeTemplate" $envAll | fromYaml) | include "helm-toolkit.snippets.kubernetes_probe" | indent 10 }}
+{{ dict "envAll" $envAll "component" "utility" "container" "compute-utility" "type" "liveness" "probeTemplate" (include "livenessProbeTemplate" $envAll | fromYaml) | include "helm-toolkit.snippets.kubernetes_probe" | indent 10 }}
           command:
             - /tmp/bootstrap.sh
-          readinessProbe:
-            exec:
-              command:
-              - cat
-              - /tmp/done
-            initialDelaySeconds: 5
-            periodSeconds: 15
-          livenessProbe:
-            exec:
-              command:
-              - utilscli
-            initialDelaySeconds: 5
-            periodSeconds: 15
           volumeMounts:
             - name: compute-utility-bin-utilscli
               mountPath: /tmp/bootstrap.sh

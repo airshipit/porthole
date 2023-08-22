@@ -11,6 +11,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */}}
+
+{{- define "readinessProbeTemplate" }}
+exec:
+  command:
+  - cat
+  - /tmp/done
+{{- end }}
+
+{{- define "livenessProbeTemplate" }}
+exec:
+  command:
+  - utilscli
+{{- end }}
+
 {{- if .Values.manifests.deployment_utility }}
 {{- $envAll := . }}
 
@@ -107,21 +121,10 @@ spec:
 {{ tuple $envAll "mysqlclient_utility" | include "helm-toolkit.snippets.image" | indent 10 }}
 {{ tuple $envAll $envAll.Values.pod.resources.mysql_utility | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mysqlclient" "container" "mysqlclient_utility" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
+{{ dict "envAll" $envAll "component" "utility" "container" "mysqlclient-utility" "type" "readiness" "probeTemplate" (include "readinessProbeTemplate" $envAll | fromYaml) | include "helm-toolkit.snippets.kubernetes_probe" | indent 10 }}
+{{ dict "envAll" $envAll "component" "utility" "container" "mysqlclient-utility" "type" "liveness" "probeTemplate" (include "livenessProbeTemplate" $envAll | fromYaml) | include "helm-toolkit.snippets.kubernetes_probe" | indent 10 }}
           command:
             - /tmp/bootstrap.sh
-          readinessProbe:
-            exec:
-              command:
-              - cat
-              - /tmp/done
-            initialDelaySeconds: 5
-            periodSeconds: 15
-          livenessProbe:
-            exec:
-              command:
-              - utilscli
-            initialDelaySeconds: 5
-            periodSeconds: 15
           env:
             - name: BACKUP_RESTORE_NAMESPACE_LIST
               value: {{ .Values.conf.mariadb_backup_restore.enabled_namespaces | quote }}
