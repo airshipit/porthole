@@ -28,15 +28,15 @@
         - airship-porthole-images-focal-build-gate-mysqlclient-utility
         - airship-porthole-images-focal-build-gate-openstack-utility
         - airship-porthole-images-focal-build-gate-postgresql-utility
-        - airship-porthole-images-bionic-build-gate-calicoctl-utility
-        - airship-porthole-images-bionic-build-gate-ceph-utility
-        - airship-porthole-images-bionic-build-gate-compute-utility
-        - airship-porthole-images-bionic-build-gate-etcdctl-utility
-        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
-        - airship-porthole-images-bionic-build-gate-openstack-utility
-        - airship-porthole-images-bionic-build-gate-postgresql-utility
         - airship-porthole-deploy-functional-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-tests-ubuntu_bionic
+#        - airship-porthole-images-bionic-build-gate-calicoctl-utility
+#        - airship-porthole-images-bionic-build-gate-ceph-utility
+#        - airship-porthole-images-bionic-build-gate-compute-utility
+#        - airship-porthole-images-bionic-build-gate-etcdctl-utility
+#        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
+#        - airship-porthole-images-bionic-build-gate-openstack-utility
+#        - airship-porthole-images-bionic-build-gate-postgresql-utility
+#        - airship-porthole-deploy-functional-tests-ubuntu_bionic
 
     gate:
       jobs:
@@ -52,15 +52,15 @@
         - airship-porthole-images-focal-build-gate-mysqlclient-utility
         - airship-porthole-images-focal-build-gate-openstack-utility
         - airship-porthole-images-focal-build-gate-postgresql-utility
-        - airship-porthole-images-bionic-build-gate-calicoctl-utility
-        - airship-porthole-images-bionic-build-gate-ceph-utility
-        - airship-porthole-images-bionic-build-gate-compute-utility
-        - airship-porthole-images-bionic-build-gate-etcdctl-utility
-        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
-        - airship-porthole-images-bionic-build-gate-openstack-utility
-        - airship-porthole-images-bionic-build-gate-postgresql-utility
         - airship-porthole-deploy-functional-tests-ubuntu_focal
-        - airship-porthole-deploy-functional-tests-ubuntu_bionic
+#        - airship-porthole-images-bionic-build-gate-calicoctl-utility
+#        - airship-porthole-images-bionic-build-gate-ceph-utility
+#        - airship-porthole-images-bionic-build-gate-compute-utility
+#        - airship-porthole-images-bionic-build-gate-etcdctl-utility
+#        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
+#        - airship-porthole-images-bionic-build-gate-openstack-utility
+#        - airship-porthole-images-bionic-build-gate-postgresql-utility
+#        - airship-porthole-deploy-functional-tests-ubuntu_bionic
 
 
     post:
@@ -72,13 +72,13 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-        - airship-porthole-images-bionic-publish-calicoctl-utility
-        - airship-porthole-images-bionic-publish-ceph-utility
-        - airship-porthole-images-bionic-publish-compute-utility
-        - airship-porthole-images-bionic-publish-etcdctl-utility
-        - airship-porthole-images-bionic-publish-mysqlclient-utility
-        - airship-porthole-images-bionic-publish-openstack-utility
-        - airship-porthole-images-bionic-publish-postgresql-utility
+#        - airship-porthole-images-bionic-publish-calicoctl-utility
+#        - airship-porthole-images-bionic-publish-ceph-utility
+#        - airship-porthole-images-bionic-publish-compute-utility
+#        - airship-porthole-images-bionic-publish-etcdctl-utility
+#        - airship-porthole-images-bionic-publish-mysqlclient-utility
+#        - airship-porthole-images-bionic-publish-openstack-utility
+#        - airship-porthole-images-bionic-publish-postgresql-utility
 
 
 - nodeset:

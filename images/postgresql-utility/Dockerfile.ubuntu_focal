@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.27.4
+ARG KUBE_VERSION=1.27.7
 
 RUN set -xe  \
     && export DEBIAN_FRONTEND=noninteractive \
@@ -31,7 +31,6 @@ RUN set -xe  \
         python3.8 \
         python3-pip  \
         jq \
-        rclone \
     && pip3 install --upgrade pip \
     && pip3 install \
         munch \
@@ -41,7 +40,10 @@ RUN set -xe  \
     && apt-get clean -y \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
+    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
+    && apt-get install -y --no-install-recommends /tmp/rclone.deb \
     && rm -rf \
+       /tmp/* \
        /var/cache/debconf/* \
        /var/lib/apt/lists/*
 
