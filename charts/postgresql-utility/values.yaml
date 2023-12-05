@@ -144,6 +144,8 @@ conf:
       psql: CommandFilter, psql, root
       kubectl: CommandFilter, kubectl, root
       dbutils: CommandFilter, dbutils, nobody
+  postgresql_ondemand:
+    ondemapd_pod_sleep_time: 3600
   postgresqlrootwrap:
     DEFAULT:
       # Configuration for postgresql-rootwrap

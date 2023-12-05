@@ -172,6 +172,8 @@ conf:
       mysql: CommandFilter, mysql, root
       kubectl: CommandFilter, kubectl, root
       dbutils: CommandFilter, dbutils, nobody
+  mariadb_ondemand:
+    ondemapd_pod_sleep_time: 3600
   mysqlclientrootwrapconf:
     DEFAULT:
       # Configuration for mysqlclient-rootwrap

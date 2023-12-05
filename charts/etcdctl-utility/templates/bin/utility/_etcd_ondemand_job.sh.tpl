@@ -56,7 +56,7 @@ spec:
 {{ dict "envAll" $envAll "application" "etcd_ondemand" "container" "etcd_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - /bin/sleep
-            - "1000000"
+            - "{{ .Values.conf.etcd_ondemand.ondemapd_pod_sleep_time }}"
           env:
             - name: ETCDCTL_API
               value: "{{ .Values.conf.etcd.etcdctl_api }}"

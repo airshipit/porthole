@@ -69,7 +69,7 @@ spec:
 {{ dict "envAll" $envAll "application" "postgresql_ondemand" "container" "postgresql_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
             - /bin/sleep
-            - "1000000"
+            - "{{ .Values.conf.postgresql_ondemand.ondemapd_pod_sleep_time }}"
           env:
             - name: POSTGRESQL_ADMIN_USER
               valueFrom:

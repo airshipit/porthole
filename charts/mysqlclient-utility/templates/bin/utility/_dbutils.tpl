@@ -92,19 +92,20 @@ function check_args() {
 function ensure_ondemand_pod_exists() {
 
   # Determine the status of the on demand pod if it exists
-  POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
+  POD_LISTING=$(kubectl get pod --selector application="$ONDEMAND_JOB",component=ondemand --no-headers --namespace "$NAMESPACE" 2>/dev/null)
+  unset STATUS
+  unset ONDEMAND_POD
   if [[ ! -z "$POD_LISTING" ]]; then
     ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
     if [[ "$STATUS" == "Terminating" ]]; then
-      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=30s
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s
       unset ONDEMAND_POD
-    elif [[ "$STATUS" != "Running" ]]; then
-      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=30s
+      unset STATUS
     fi
   fi
 
-  POD_LISTING=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB")
+  POD_LISTING=$(kubectl get pod --selector application="$ONDEMAND_JOB",component=ondemand --no-headers --namespace "$NAMESPACE" 2>/dev/null)
   if [[ ! -z "$POD_LISTING" ]]; then
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
     CONTAINERS=$(echo "$POD_LISTING" | awk '{print $2}')
@@ -117,9 +118,11 @@ function ensure_ondemand_pod_exists() {
         echo "ERROR: Failed to remove old on-demand pod. Exiting..."
         exit 1
       fi
+      unset ONDEMAND_POD
+      unset STATUS
     else
       # Pod is already running and ready
-      ONDEMAND_POD=$(kubectl get pod -n "$NAMESPACE" | grep "$ONDEMAND_JOB" | awk '{print $1}')
+      ONDEMAND_POD=$(kubectl get pod --selector application="$ONDEMAND_JOB",component=ondemand --no-headers --namespace "$NAMESPACE" | awk '{print $1}')
     fi
   fi
 
@@ -133,18 +136,37 @@ function ensure_ondemand_pod_exists() {
       exit 1
     fi
 
-    # waiting for ondemand pod to be created
-    RETRIES=10
-    until kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB"  | grep ondemand; do
+    # waiting for ondemand job to be created
+    RETRIES=30
+    until kubectl get job -n "$NAMESPACE" --no-headers  | grep "$ONDEMAND_JOB"; do
       RETRIES=$((RETRIES-1))
       if [ ${RETRIES} -ge 1 ]; then
-        echo "ONDEMAND_POD is being created... Waiting for 10 seconds... Retries left ${RETRIES}..."
+        echo "ONDEMAND_JOB is being created... Waiting for 10 seconds... Retries left ${RETRIES}..."
         sleep 10s
       else
-        echo "ERROR: Failed to create a new on-demand pod. Exiting..."
+        echo "ERROR: Failed to create a new on-demand job. Exiting..."
         exit 1
       fi
     done
+
+  # Determine the status of the on demand pod if it exists
+  POD_LISTING=$(kubectl get pod --selector application="$ONDEMAND_JOB",component=ondemand --no-headers --namespace "$NAMESPACE")
+  unset STATUS
+  unset ONDEMAND_POD
+  if [[ ! -z "$POD_LISTING" ]]; then
+    ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
+    STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
+    if [[ "$STATUS" == "Terminating" ]]; then
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s
+      unset ONDEMAND_POD
+    elif [[ "$STATUS" != "Running" ]]; then
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s
+    elif [[ "$STATUS" != "Pending" ]]; then
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s
+    fi
+  fi
+
+
 
     ONDEMAND_POD=$(kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB" -o json | jq -r .items[].metadata.name)
     if [[ -z "$ONDEMAND_POD" ]]; then
@@ -206,7 +228,7 @@ function setup_namespace() {
   return 0
 }
 
-# Params: <namespace> <job>
+# Params: [namespace] <job>
 function remove_job() {
 
   NAMESPACE=$1
@@ -218,9 +240,14 @@ function remove_job() {
     echo "Removing on-demand job $NAMESPACE $JOB"
     ONDEMAND_POD=$(kubectl get pod -n "$NAMESPACE" | grep "$JOB" | awk '{print $1}')
     kubectl delete job --ignore-not-found -n "$NAMESPACE" "$JOB"
-    kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" pod/"${ONDEMAND_POD}" &>/dev/null
+    kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" job/"${JOB}"
     if [[ $? -ne 0 ]]; then
       echo "ERROR: could not destroy the $NAMESPACE $JOB job. Exiting..."
+      exit 1
+    fi
+    kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" pod/"${ONDEMAND_POD}"
+    if [[ $? -ne 0 ]]; then
+      echo "ERROR: could not destroy the $NAMESPACE $ONDEMAND_POD pod. Exiting..."
       exit 1
     fi
   fi
@@ -285,7 +312,7 @@ function do_backup() {
     COMMAND="/tmp/backup_mariadb.sh ${BACKUP_ARGS[${DB_LOC}]}"
   fi
 
-  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- ${COMMAND}
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c "${ONDEMAND_JOB}" -- ${COMMAND}
 
   unlock
 }
@@ -304,7 +331,7 @@ function do_list_archives() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_archives "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh list_archives "$LOCATION"
 }
 
 # Params: [-rp] <archive>
@@ -336,7 +363,7 @@ function do_list_databases() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_databases "$ARCHIVE" "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh list_databases "$ARCHIVE" "$LOCATION"
 }
 
 # Params: [-rp] <archive> <database>
@@ -370,7 +397,7 @@ function do_list_tables() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_tables "$ARCHIVE" "$DATABASE" "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh list_tables "$ARCHIVE" "$DATABASE" "$LOCATION"
 }
 
 # Params: [-rp] <archive> <database> <table>
@@ -404,7 +431,7 @@ function do_list_rows() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_rows "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh list_rows "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
 # Params: [-rp] <archive> <database> <table>
@@ -438,7 +465,7 @@ function do_list_schema() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh list_schema "$ARCHIVE" "$DATABASE" "$TABLE" "$LOCATION"
 }
 
 # Params: [-rp] <archive>
@@ -470,7 +497,7 @@ function do_delete_archive() {
   ensure_ondemand_pod_exists
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh delete_archive "${ARCHIVE}" "${LOCATION}"
+  kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh delete_archive "${ARCHIVE}" "${LOCATION}"
 }
 
 # Params: [-p] <namespace>
@@ -838,7 +865,7 @@ function do_restore() {
   lock 300
 
   # Execute the command in the on-demand pod
-  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -- /tmp/restore_mariadb.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
+  kubectl exec -i -n "$NAMESPACE" "$ONDEMAND_POD" -c "${ONDEMAND_JOB}" -- /tmp/restore_mariadb.sh restore "$ARCHIVE" "$DATABASE" "$LOCATION"
 
   unlock
 }

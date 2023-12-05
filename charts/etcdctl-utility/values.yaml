@@ -142,6 +142,8 @@ conf:
       dbutils: CommandFilter, dbutils, nobody
       etcdctl: CommandFilter, etcdctl, root
       kubectl: CommandFilter, kubectl, root
+  etcd_ondemand:
+    ondemapd_pod_sleep_time: 3600
   etcdctlrootwrapconf:
     DEFAULT:
       # Configuration for etcdctl-rootwrap

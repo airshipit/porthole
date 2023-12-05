@@ -92,11 +92,9 @@ spec:
           image: ${MYSQLCLIENT_UTILTIY_IMAGE_NAME}
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.mariadb_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "mariadb_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
-          command: ["/bin/sh"]
-          args:
-            - -c
-            - >-
-                /bin/sleep "1000000"
+          command:
+            - /bin/sleep
+            - "{{ .Values.conf.mariadb_ondemand.ondemapd_pod_sleep_time }}"
           env:
             - name: MARIADB_BACKUP_BASE_DIR
               valueFrom:
@@ -246,7 +244,10 @@ if $TLS_ENABLED; then
             - name: MYSQL_HISTFILE
               value: /dev/null
           command:
-            - /tmp/start_verification_server.sh
+            - /bin/sh
+          args:
+            - -c
+            - ( /tmp/start_verification_server.sh )& /bin/sleep {{ .Values.conf.mariadb_ondemand.ondemapd_pod_sleep_time }}
           volumeMounts:
             - name: pod-tmp
               mountPath: /tmp
