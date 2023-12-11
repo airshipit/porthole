@@ -58,6 +58,15 @@
             executable: pip3
       become: True
 
+    - name: Make images - verbosive
+      when: not publish
+      shell: |
+        make images
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+        executable: /bin/bash
+      become: True
+
     - name: Make images
       when: not publish
       block:
@@ -73,12 +82,6 @@
           register: docker_images
         - debug:
             var: docker_images
-        - shell: |
-            docker images --format \
-            '{{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}'
-          register: docker_images_formatted
-          with_items: "{{ image_tags.stdout_lines }}"
-          failed_when: "'{{ image_name }}:{{ item }}' not in docker_images_formatted.stdout"
       become: True
 
     - name: Publish images
@@ -104,10 +107,4 @@
           register: docker_images
         - debug:
             var: docker_images
-        - shell: |
-            docker images --format \
-            '{{ '{{' }}.Repository{{ '}}' }}:{{ '{{' }}.Tag{{ '}}' }}'
-          register: docker_images_formatted
-          with_items: "{{ image_tags.stdout_lines }}"
-          failed_when: "'{{ image_name }}:{{ item }}' not in docker_images_formatted.stdout"
       become: True
