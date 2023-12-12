@@ -130,6 +130,31 @@ spec:
                 secretKeyRef:
                   key: REMOTE_BACKUP_SEND_DELAY_MAX
                   name: ${POSTGRESQL_CONF_SECRET}
+            - name: THROTTLE_BACKUPS_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  key: THROTTLE_BACKUPS_ENABLED
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: THROTTLE_LIMIT
+              valueFrom:
+                secretKeyRef:
+                  key: THROTTLE_LIMIT
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: THROTTLE_LOCK_EXPIRE_AFTER
+              valueFrom:
+                secretKeyRef:
+                  key: THROTTLE_LOCK_EXPIRE_AFTER
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: THROTTLE_RETRY_AFTER
+              valueFrom:
+                secretKeyRef:
+                  key: THROTTLE_RETRY_AFTER
+                  name: ${POSTGRESQL_CONF_SECRET}
+            - name: THROTTLE_CONTAINER_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: THROTTLE_CONTAINER_NAME
+                  name: ${POSTGRESQL_CONF_SECRET}
 EOF
 
 if $POSTGRESQL_REMOTE_BACKUP_ENABLED; then
