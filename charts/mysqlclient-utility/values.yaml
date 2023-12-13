@@ -57,10 +57,6 @@ pod:
           runAsUser: 65534
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
-        mariadb_verify_server:
-          runAsUser: 65534
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
   mounts:
     mysqlclient:
       container:

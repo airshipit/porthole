@@ -9,16 +9,10 @@ if [[ $MARIADB_POD_NAMESPACE == "" ]]; then
 fi
 
 export MARIADB_CONF_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.conf_secret }}
-export MARIADB_IMAGE_NAME=$(kubectl get cronjob -n ${MARIADB_POD_NAMESPACE} mariadb-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep mariadb)
 export MYSQLCLIENT_UTILTIY_IMAGE_NAME=$(kubectl get cronjob -n ${MARIADB_POD_NAMESPACE} mariadb-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep mysqlclient-utility)
 export MARIADB_BACKUP_BASE_PATH=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.BACKUP_BASE_PATH | base64 -d)
 MARIADB_REMOTE_BACKUP_ENABLED=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.REMOTE_BACKUP_ENABLED | base64 -d)
 export MARIADB_REMOTE_BACKUP_ENABLED=$(echo $MARIADB_REMOTE_BACKUP_ENABLED | sed 's/"//g')
-
-if [[ $MARIADB_IMAGE_NAME == "" ]]; then
-  echo "Cannot find the utility image for populating MARIADB_IMAGE_NAME variable."
-  exit 1
-fi
 
 if [[ $MYSQLCLIENT_UTILTIY_IMAGE_NAME == "" ]]; then
   echo "Cannot find the utility image for populating MYSQLCLIENT_UTILTIY_IMAGE_NAME variable."
@@ -50,7 +44,7 @@ spec:
     metadata:
       annotations:
         {{ tuple $envAll | include "helm-toolkit.snippets.release_uuid" }}
-{{ dict "envAll" $envAll "podName" "mariadb-ondemand" "containerNames" (list "ondemand-perms" "mariadb-verify-server" "mariadb-ondemand" ) | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
+{{ dict "envAll" $envAll "podName" "mariadb-ondemand" "containerNames" (list "ondemand-perms" "mariadb-ondemand" ) | include "helm-toolkit.snippets.kubernetes_mandatory_access_control_annotation" | indent 8 }}
       labels:
 {{ tuple $envAll "mariadb-ondemand" "ondemand" | include "helm-toolkit.snippets.kubernetes_metadata_labels" | indent 8 }}
     spec:
@@ -93,8 +87,10 @@ spec:
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.mariadb_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "mariadb_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
-            - /bin/sleep
-            - "{{ .Values.conf.mariadb_ondemand.ondemapd_pod_sleep_time }}"
+            - /bin/sh
+          args:
+            - -c
+            - ( /tmp/start_verification_server.sh ) & /bin/sleep {{ .Values.conf.mariadb_ondemand.ondemapd_pod_sleep_time }}
           env:
             - name: MARIADB_BACKUP_BASE_DIR
               valueFrom:
@@ -233,42 +229,17 @@ if $TLS_ENABLED; then
               mountPath: /etc/mysql/certs/ca.crt
               subPath: ca.crt
               readOnly: true
-{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
-{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
-{{- end }}
-        - name: mariadb-verify-server
-          image: ${MARIADB_IMAGE_NAME}
-{{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "mariadb_verify_server" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
-{{ tuple $envAll $envAll.Values.pod.resources.mariadb_verify_server | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
-          env:
-            - name: MYSQL_HISTFILE
-              value: /dev/null
-          command:
-            - /bin/sh
-          args:
-            - -c
-            - ( /tmp/start_verification_server.sh )& /bin/sleep {{ .Values.conf.mariadb_ondemand.ondemapd_pod_sleep_time }}
-          volumeMounts:
-            - name: pod-tmp
-              mountPath: /tmp
-            - name: var-run
-              mountPath: /var/run/mysqld
-            - name: mycnfd
-              mountPath: /etc/mysql/conf.d
-            - name: mariadb-etc
-              mountPath: /etc/mysql/my.cnf
-              subPath: my.cnf
-              readOnly: true
-            - name: mariadb-secrets
-              mountPath: /etc/mysql/admin_user.cnf
-              subPath: admin_user.cnf
-              readOnly: true
             - name: mysql-data
               mountPath: /var/lib/mysql
             - name: mariadb-bin
               mountPath: /tmp/start_verification_server.sh
               subPath: start_verification_server.sh
               readOnly: true
+            - name: var-run
+              mountPath: /run/mysqld
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: pod-tmp
           emptyDir: {}
@@ -328,39 +299,17 @@ else
               mountPath: /etc/mysql/admin_user.cnf
               subPath: admin_user.cnf
               readOnly: true
-{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
-{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
-{{- end }}
-        - name: mariadb-verify-server
-          image: ${MARIADB_IMAGE_NAME}
-{{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "mariadb_verify_server" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
-{{ tuple $envAll $envAll.Values.pod.resources.mariadb_verify_server | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
-          env:
-            - name: MYSQL_HISTFILE
-              value: /dev/null
-          command:
-            - /tmp/start_verification_server.sh
-          volumeMounts:
-            - name: pod-tmp
-              mountPath: /tmp
-            - name: var-run
-              mountPath: /var/run/mysqld
-            - name: mycnfd
-              mountPath: /etc/mysql/conf.d
-            - name: mariadb-etc
-              mountPath: /etc/mysql/my.cnf
-              subPath: my.cnf
-              readOnly: true
-            - name: mariadb-secrets
-              mountPath: /etc/mysql/admin_user.cnf
-              subPath: admin_user.cnf
-              readOnly: true
             - name: mysql-data
               mountPath: /var/lib/mysql
             - name: mariadb-bin
               mountPath: /tmp/start_verification_server.sh
               subPath: start_verification_server.sh
               readOnly: true
+            - name: var-run
+              mountPath: /run/mysqld
+{{- if .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts }}
+{{ .Values.pod.mounts.mariadb_ondemand.container.mariadb_ondemand.volumeMounts | toYaml | indent 12 }}
+{{- end }}
       volumes:
         - name: pod-tmp
           emptyDir: {}
