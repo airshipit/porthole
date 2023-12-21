@@ -8,44 +8,43 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.28.4
+ARG KUBE_VERSION=1.28.5
 
-RUN set -xe  \
+RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
-    && sed -i '/nobody/d' /etc/passwd  \
+    && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
-    && apt-get install -y wget curl \
-        apt-transport-https ca-certificates gnupg \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt focal-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get install --no-install-recommends -y curl ca-certificates gnupg \
+    && echo "deb https://apt.postgresql.org/pub/repos/apt focal-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && curl -o /etc/apt/trusted.gpg.d/postgresql_release_signing_key.asc 'https://www.postgresql.org/media/keys/ACCC4CF8.asc' \
     && apt-get update \
-    && apt-get install -y \
-        bash \
-        moreutils \
-        rsyslog \
-        screen \
-        sudo \
-        postgresql-client \
-        postgresql-common \
-        python3.8 \
-        python3-pip  \
-        jq \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        munch \
-        oslo.rootwrap==6.3.1 \
-        python-openstackclient==5.8.0 \
-        python-swiftclient==3.13.1 \
-    && apt-get clean -y \
+    && apt-get install --no-install-recommends -y \
+         bash \
+         moreutils \
+         rsyslog \
+         screen \
+         sudo \
+         postgresql-client \
+         postgresql-common \
+         python3.8 \
+         python3-pip \
+         jq \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
+         munch \
+         oslo.rootwrap==6.3.1 \
+         python-openstackclient==5.8.0 \
+         python-swiftclient==3.13.1 \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
     && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
     && apt-get install -y --no-install-recommends /tmp/rclone.deb \
+    && apt-get clean -y \
     && rm -rf \
-       /tmp/* \
-       /var/cache/debconf/* \
-       /var/lib/apt/lists/*
+         /tmp/* \
+         /var/cache/debconf/* \
+         /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

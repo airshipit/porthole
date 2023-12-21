@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.28.4
+ARG KUBE_VERSION=1.28.5
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -16,36 +16,32 @@ RUN set -xe \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
-    && apt-get install -y apt-transport-https \
-       bash \
-       ca-certificates \
-       openvswitch-switch \
-       curl \
-       gnupg \
-       hexedit \
-       iperf \
-       iproute2 \
-       jq \
-       moreutils \
-       radosgw \
-       rsyslog \
-       s3cmd \
-       rsync \
-       sudo \
-       wget \
-       xz-utils \
-       python3.8 \
-       python3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install \
+    && apt-get install -y --no-install-recommends \
+         bash \
+         ca-certificates \
+         openvswitch-switch \
+         curl \
+         gnupg \
+         hexedit \
+         iperf \
+         iproute2 \
+         jq \
+         moreutils \
+         radosgw \
+         rsyslog \
+         s3cmd \
+         rsync \
+         sudo \
+         xz-utils \
+         python3.8 \
+         python3-pip \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
          oslo.rootwrap==6.3.1 \
-    && apt-get remove --purge -y wget apt-transport-https \
-    && apt-get autoremove -y \
-    && apt-get clean \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
-    && rm -rf \
-       /var/lib/apt/lists/*
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

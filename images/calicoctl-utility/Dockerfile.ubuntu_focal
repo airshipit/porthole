@@ -23,16 +23,16 @@ RUN set -xe \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-       bash \
-       locales \
-       moreutils \
-       sudo \
-       socat \
-       python3.8 \
-       python3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        oslo.rootwrap==6.3.1 \
+         bash \
+         locales \
+         moreutils \
+         sudo \
+         socat \
+         python3.8 \
+         python3-pip \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
+         oslo.rootwrap==6.3.1 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 

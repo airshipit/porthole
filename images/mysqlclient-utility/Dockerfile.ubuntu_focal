@@ -8,53 +8,53 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.28.4
+ARG KUBE_VERSION=1.28.5
+ARG MARIADB_VERSION=10.6
+ARG PERCONA_TOOLKIT_VERSION=3.5.5
 
 RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
     && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update \
-    && apt-get install -y \
-        wget curl \
-        apt-transport-https ca-certificates gnupg \
+    && apt-get install -y --no-install-recommends curl apt-transport-https ca-certificates gnupg \
     && curl -LsS -O https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-    && bash mariadb_repo_setup --mariadb-server-version=10.6 \
-    && apt-get update  \
-    && apt-get upgrade -y \
-    && apt-get install -y \
-       bash \
-       sudo \
-       rsyslog \
-       pwgen \
-       curl \
-       libdbi-perl \
-       libdbd-mysql-perl \
-       moreutils \
-       mariadb-client \
-       mariadb-server \
-       python3.8 \
-       python3-pip \
-       jq \
-    && pip3 install --upgrade pip \
-    && pip3 install \
+    && bash mariadb_repo_setup --mariadb-server-version=${MARIADB_VERSION} \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+         bash \
+         sudo \
+         rsyslog \
+         pwgen \
+         curl \
+         libdbi-perl \
+         libdbd-mysql-perl \
+         moreutils \
+         mariadb-client \
+         mariadb-server \
+         python3.8 \
+         python3-pip \
+         jq \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
          munch \
          oslo.rootwrap==6.3.1 \
          python-openstackclient==5.8.0 \
          python-swiftclient==3.13.1 \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
-    && apt-get clean -y \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
-    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/3.5.1/binary/tarball/percona-toolkit-3.5.1_x86_64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
+    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/${PERCONA_TOOLKIT_VERSION}/binary/tarball/percona-toolkit-${PERCONA_TOOLKIT_VERSION}_$(arch).tar.gz \
        | tar -zC /usr/local/bin/ --strip-components=2 --wildcards -x "*/*/pt-show-grants" \
-    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb  \
+    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
     && apt-get install -y --no-install-recommends /tmp/rclone.deb \
+    && apt-get purge --autoremove -y apt-transport-https \
+    && apt-get clean -y \
     && rm -rf \
-      /tmp/* \
-      /var/cache/debconf/* \
-      /var/lib/apt/lists/* \
-      /var/tmp/*
+         /tmp/* \
+         /var/cache/debconf/* \
+         /var/lib/apt/lists/* \
+         /var/tmp/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

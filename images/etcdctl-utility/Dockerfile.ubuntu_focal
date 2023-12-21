@@ -9,40 +9,39 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 ARG ETCDCTL_VERSION=v3.5.11
-ARG KUBE_VERSION=1.28.4
+ARG KUBE_VERSION=1.28.5
 
 ENV GOOGLE_URL=https://storage.googleapis.com/etcd
 ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
 ENV DOWNLOAD_URL=${GITHUB_URL}
 
 RUN set -xe \
-    && export DEBIAN_FRONTEND=noninteractive  \
-    && sed -i '/nobody/d' /etc/passwd  \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && sed -i '/nobody/d' /etc/passwd \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
-    && apt-get install -y \
-       wget curl \
-       locales \
-       apt-transport-https \
-       ca-certificates \
-       gnupg \
-       bash \
-       moreutils \
-       sudo \
-       rsyslog \
-       python3.8 \
-       python3-pip \
-       jq \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        munch \
-        oslo.rootwrap==6.3.1 \
-        python-openstackclient==5.8.0 \
-        python-swiftclient==3.13.1 \
+    && apt-get install -y --no-install-recommends \
+         curl \
+         locales \
+         ca-certificates \
+         gnupg \
+         bash \
+         moreutils \
+         sudo \
+         rsyslog \
+         python3.8 \
+         python3-pip \
+         jq \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
+         munch \
+         oslo.rootwrap==6.3.1 \
+         python-openstackclient==5.8.0 \
+         python-swiftclient==3.13.1 \
     && curl --silent -L  "${DOWNLOAD_URL}/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
-     |  tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl"  \
+       | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-    | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl"  \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
     && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
     && apt-get install -y --no-install-recommends /tmp/rclone.deb \
     && apt-get clean -y \
