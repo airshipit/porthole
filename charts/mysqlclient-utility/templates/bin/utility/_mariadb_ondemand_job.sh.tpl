@@ -9,15 +9,11 @@ if [[ $MARIADB_POD_NAMESPACE == "" ]]; then
 fi
 
 export MARIADB_CONF_SECRET={{ $envAll.Values.conf.mariadb_backup_restore.secrets.conf_secret }}
-export MYSQLCLIENT_UTILTIY_IMAGE_NAME=$(kubectl get cronjob -n ${MARIADB_POD_NAMESPACE} mariadb-backup -o yaml -o jsonpath="{range .spec.jobTemplate.spec.template.spec.containers[*]}{.image}{'\n'}{end}" | grep mysqlclient-utility)
+export MYSQLCLIENT_UTILITY_IMAGE_NAME={{ $envAll.Values.images.tags.mysqlclient_utility }}
 export MARIADB_BACKUP_BASE_PATH=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.BACKUP_BASE_PATH | base64 -d)
 MARIADB_REMOTE_BACKUP_ENABLED=$(kubectl get secret -n ${MARIADB_POD_NAMESPACE} ${MARIADB_CONF_SECRET} -o json | jq -r .data.REMOTE_BACKUP_ENABLED | base64 -d)
 export MARIADB_REMOTE_BACKUP_ENABLED=$(echo $MARIADB_REMOTE_BACKUP_ENABLED | sed 's/"//g')
 
-if [[ $MYSQLCLIENT_UTILTIY_IMAGE_NAME == "" ]]; then
-  echo "Cannot find the utility image for populating MYSQLCLIENT_UTILTIY_IMAGE_NAME variable."
-  exit 1
-fi
 
 export TMP_FILE=$(mktemp -p /tmp)
 
@@ -54,7 +50,7 @@ spec:
         {{ .Values.labels.utility.node_selector_key }}: {{ .Values.labels.utility.node_selector_value }}
       initContainers:
         - name: ondemand-perms
-          image: ${MYSQLCLIENT_UTILTIY_IMAGE_NAME}
+          image: ${MYSQLCLIENT_UTILITY_IMAGE_NAME}
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.mariadb_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "ondemand_perms" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
@@ -68,7 +64,7 @@ spec:
             - mountPath: ${MARIADB_BACKUP_BASE_PATH}
               name: mariadb-backup-dir
         - name: verify-perms
-          image: ${MYSQLCLIENT_UTILTIY_IMAGE_NAME}
+          image: ${MYSQLCLIENT_UTILITY_IMAGE_NAME}
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.mariadb_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "verify_perms" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
@@ -83,7 +79,7 @@ spec:
               name: mysql-data
       containers:
         - name: mariadb-ondemand
-          image: ${MYSQLCLIENT_UTILTIY_IMAGE_NAME}
+          image: ${MYSQLCLIENT_UTILITY_IMAGE_NAME}
 {{ tuple $envAll $envAll.Values.pod.resources.jobs.mariadb_ondemand | include "helm-toolkit.snippets.kubernetes_resources" | indent 10 }}
 {{ dict "envAll" $envAll "application" "mariadb_ondemand" "container" "mariadb_ondemand" | include "helm-toolkit.snippets.kubernetes_container_security_context" | indent 10 }}
           command:
