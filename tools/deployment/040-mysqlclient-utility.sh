@@ -26,9 +26,13 @@ secrets:
   mariadb:
     backup_restore: mariadb-backup-restore
 manifests:
-    cron_job_mariadb_backup: true
-    secret_backup_restore: true
-    pvc_backup: true
+  cron_job_mariadb_backup: true
+  secret_backup_restore: true
+  pvc_backup: true
+volume:
+  class_name: standard
+  backup:
+    class_name: standard
 EOF
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"

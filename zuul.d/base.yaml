@@ -163,16 +163,17 @@
         chdir: ../porthole
 
 - job:
-    name: airship-porthole-deploy-functional-tests-ubuntu_focal
-    description: |
-       Deploys all UC's and Executes functional tests on focal.
+    name: airship-porthole-deploy-functional-tests
+    abstract: true
+    description: Deploys all UC's and Executes functional tests
     nodeset: airship-porthole-focal-single-node
     timeout: 7200
     run:
       - tools/gate/playbooks/airship-porthole-gate-runner.yaml
       - tools/gate/playbooks/make-functional-tests.yaml
+    post-run:
+      - tools/gate/playbooks/airship-porthole-collect-logs.yaml
     vars:
-      distro_suffix: ubuntu_focal
       gate_scripts:
         - ./tools/deployment/005-calicoctl-utility.sh
         - ./tools/deployment/010-ceph-utility.sh
@@ -181,39 +182,29 @@
         - ./tools/deployment/040-mysqlclient-utility.sh
         - ./tools/deployment/050-openstack-utility.sh
         - ./tools/deployment/060-postgresql-utility.sh
+      args:
+        chdir: ../porthole
+
+- job:
+    name: airship-porthole-deploy-functional-tests-ubuntu_focal
+    parent: airship-porthole-deploy-functional-tests
+    vars:
+      distro_suffix: ubuntu_focal
       osh_params:
         openstack_release: yoga
         container_distro_name: ubuntu
         container_distro_version: focal
-      args:
-        chdir: ../porthole
-
 
 - job:
     name: airship-porthole-deploy-functional-tests-ubuntu_bionic
-    description: |
-       Deploys all UC's and Executes functions tests on bionic.
-    nodeset: airship-porthole-focal-single-node
-    timeout: 7200
-    run:
-      - tools/gate/playbooks/airship-porthole-gate-runner.yaml
-      - tools/gate/playbooks/make-functional-tests.yaml
+    parent: airship-porthole-deploy-functional-tests
     vars:
       distro_suffix: ubuntu_bionic
-      gate_scripts:
-        - ./tools/deployment/005-calicoctl-utility.sh
-        - ./tools/deployment/010-ceph-utility.sh
-        - ./tools/deployment/020-compute-utility.sh
-        - ./tools/deployment/030-etcdctl-utility.sh
-        - ./tools/deployment/040-mysqlclient-utility.sh
-        - ./tools/deployment/050-openstack-utility.sh
-        - ./tools/deployment/060-postgresql-utility.sh
       osh_params:
         openstack_release: yoga
         container_distro_name: ubuntu
         container_distro_version: bionic
-      args:
-        chdir: ../porthole
+
 
 - secret:
     name: quay_credentials

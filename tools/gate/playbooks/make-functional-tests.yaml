@@ -32,6 +32,3 @@
           failed_when: result.failed
         - debug:
             var: result
-
-- name: Include collecting running logs
-  import_playbook: airship-porthole-collect-logs.yaml

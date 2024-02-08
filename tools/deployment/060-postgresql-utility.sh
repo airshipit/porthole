@@ -17,7 +17,29 @@ CURRENT_DIR="$(pwd)"
 
 # Deploy postgresql server
 cd "${OSH_INFRA_PATH}"
-bash -c "./tools/deployment/common/postgresql.sh"
+# bash -c "./tools/deployment/common/postgresql.sh"
+
+#NOTE: Lint and package chart
+make postgresql
+
+#NOTE: Deploy command
+: ${OSH_INFRA_EXTRA_HELM_ARGS:=""}
+: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(./tools/deployment/common/get-values-overrides.sh postgresql)"}
+
+helm upgrade --install postgresql ./postgresql \
+    --namespace=osh-infra \
+    --set monitoring.prometheus.enabled=true \
+    --set storage.pvc.size=1Gi \
+    --set storage.pvc.enabled=true \
+    --set pod.replicas.server=1 \
+    --set storage.pvc.class_name=standard \
+    --set storage.archive_pvc.class_name=standard \
+    ${OSH_INFRA_EXTRA_HELM_ARGS} \
+    ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL}
+
+#NOTE: Wait for deploy
+./tools/deployment/common/wait-for-pods.sh osh-infra
+
 bash -c "./tools/deployment/common/020-ingress.sh"
 # Deploy postgresql-utility
 cd ${CURRENT_DIR}
