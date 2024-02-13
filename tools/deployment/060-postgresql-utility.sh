@@ -32,8 +32,6 @@ helm upgrade --install postgresql ./postgresql \
     --set storage.pvc.size=1Gi \
     --set storage.pvc.enabled=true \
     --set pod.replicas.server=1 \
-    --set storage.pvc.class_name=standard \
-    --set storage.archive_pvc.class_name=standard \
     ${OSH_INFRA_EXTRA_HELM_ARGS} \
     ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL}
 

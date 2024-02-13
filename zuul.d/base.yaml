@@ -19,8 +19,8 @@
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py38
-        - airship-porthole-openstack-tox-cover
+        # - airship-porthole-openstack-tox-py38
+        # - airship-porthole-openstack-tox-cover
         - airship-porthole-images-focal-build-gate-calicoctl-utility
         - airship-porthole-images-focal-build-gate-ceph-utility
         - airship-porthole-images-focal-build-gate-compute-utility
@@ -28,23 +28,20 @@
         - airship-porthole-images-focal-build-gate-mysqlclient-utility
         - airship-porthole-images-focal-build-gate-openstack-utility
         - airship-porthole-images-focal-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-tests-ubuntu_focal
-#        - airship-porthole-images-bionic-build-gate-calicoctl-utility
-#        - airship-porthole-images-bionic-build-gate-ceph-utility
-#        - airship-porthole-images-bionic-build-gate-compute-utility
-#        - airship-porthole-images-bionic-build-gate-etcdctl-utility
-#        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
-#        - airship-porthole-images-bionic-build-gate-openstack-utility
-#        - airship-porthole-images-bionic-build-gate-postgresql-utility
-#        - airship-porthole-deploy-functional-tests-ubuntu_bionic
+        # - airship-porthole-deploy-functional-tests-ubuntu_focal
+        - airship-porthole-openstack-tox-py38-kubeadm
+        - airship-porthole-openstack-tox-cover-kubeadm
+        - airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
+
 
     gate:
       jobs:
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py38
-        - airship-porthole-openstack-tox-cover
+        - airship-porthole-openstack-tox-py38-kubeadm
+        - airship-porthole-openstack-tox-cover-kubeadm
+        - airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
         - airship-porthole-images-focal-build-gate-calicoctl-utility
         - airship-porthole-images-focal-build-gate-ceph-utility
         - airship-porthole-images-focal-build-gate-compute-utility
@@ -52,15 +49,7 @@
         - airship-porthole-images-focal-build-gate-mysqlclient-utility
         - airship-porthole-images-focal-build-gate-openstack-utility
         - airship-porthole-images-focal-build-gate-postgresql-utility
-        - airship-porthole-deploy-functional-tests-ubuntu_focal
-#        - airship-porthole-images-bionic-build-gate-calicoctl-utility
-#        - airship-porthole-images-bionic-build-gate-ceph-utility
-#        - airship-porthole-images-bionic-build-gate-compute-utility
-#        - airship-porthole-images-bionic-build-gate-etcdctl-utility
-#        - airship-porthole-images-bionic-build-gate-mysqlclient-utility
-#        - airship-porthole-images-bionic-build-gate-openstack-utility
-#        - airship-porthole-images-bionic-build-gate-postgresql-utility
-#        - airship-porthole-deploy-functional-tests-ubuntu_bionic
+
 
 
     post:
@@ -72,13 +61,6 @@
         - airship-porthole-images-publish-mysqlclient-utility
         - airship-porthole-images-publish-openstack-utility
         - airship-porthole-images-publish-postgresql-utility
-#        - airship-porthole-images-bionic-publish-calicoctl-utility
-#        - airship-porthole-images-bionic-publish-ceph-utility
-#        - airship-porthole-images-bionic-publish-compute-utility
-#        - airship-porthole-images-bionic-publish-etcdctl-utility
-#        - airship-porthole-images-bionic-publish-mysqlclient-utility
-#        - airship-porthole-images-bionic-publish-openstack-utility
-#        - airship-porthole-images-bionic-publish-postgresql-utility
 
 
 - nodeset:
@@ -93,36 +75,69 @@
       - name: primary
         label: ubuntu-focal
 
-- job:
-    name: airship-porthole-openstack-tox-py38
-    parent: openstack-tox-py38
-    description: Runs cover job on focal
-    nodeset: airship-porthole-focal-single-node
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-    timeout: 7200
-    vars:
-      distro_suffix: ubuntu_focal
-      gate_scripts:
-        - ./tools/deployment/005-calicoctl-utility.sh
-        - ./tools/deployment/010-ceph-utility.sh
-        - ./tools/deployment/020-compute-utility.sh
-        - ./tools/deployment/030-etcdctl-utility.sh
-        - ./tools/deployment/040-mysqlclient-utility.sh
-        - ./tools/deployment/050-openstack-utility.sh
-        - ./tools/deployment/060-postgresql-utility.sh
-      args:
-        chdir: ../porthole
 
 - job:
-    name: airship-porthole-openstack-tox-cover
-    parent: openstack-tox-cover
-    description: Runs cover job on focal
-    nodeset: airship-porthole-focal-single-node
-    pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-    timeout: 7200
+    name: airship-porthole-openstack-tox-py38-kubeadm
+    parent: openstack-tox-py38
+    nodeset: treasuremap-airskiff-1node-ubuntu_focal
+    roles:
+      - zuul: openstack/openstack-helm-infra
+      - zuul: zuul/zuul-jobs
+    required-projects:
+      - name: openstack/openstack-helm
+      - name: openstack/openstack-helm-infra
+      - name: airship/treasuremap
+        override-checkout: v1.9
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^site/seaworthy/.*$
+      - ^site/airsloop/.*$
+      - ^site/aiab/.*$
+    timeout: 10800
+    pre-run:
+      - tools/gate/playbooks/prepare-hosts.yaml
+      - tools/gate/playbooks/mount-volumes.yaml
+      - tools/gate/playbooks/deploy-env.yaml
+      - tools/gate/playbooks/airship-run-scripts.yaml
+    post-run:
+      - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
+      extra_volume:
+        size: 80G
+        type: Linux
+        mount_point: /opt/ext_vol
+      docker:
+        root_path: "/opt/ext_vol/docker"
+      containerd:
+        root_path: "/opt/ext_vol/containerd"
+      kubeadm:
+        pod_network_cidr: "10.244.0.0/24"
+        service_cidr: "10.96.0.0/16"
+      loopback_setup: true
+      loopback_device: /dev/loop100
+      loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
+      ceph_osd_data_device: /dev/loop100
+      kube_version: "1.28.4-1.1"
+      calico_version: "v3.27.0"
+      coredns_version: "v1.11.1"
+      helm_version: "v3.13.2"
+      yq_version: "v4.6.0"
+      crictl_version: "v1.26.1"
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_relative_path: ../../openstack/openstack-helm
+      gate_scripts_relative_path: .
+      run_helm_tests: "no"
       distro_suffix: ubuntu_focal
+      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz
+      HTK_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_INFRA_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_COMMIT: 2d9457e34ca4200ed631466bd87569b0214c92e7
       gate_scripts:
+        - ./tools/deployment/002-build-charts.sh
+        - ./tools/deployment/003-prepare-k8s.sh
+        - ./tools/deployment/004-make-images.sh
         - ./tools/deployment/005-calicoctl-utility.sh
         - ./tools/deployment/010-ceph-utility.sh
         - ./tools/deployment/020-compute-utility.sh
@@ -130,8 +145,119 @@
         - ./tools/deployment/040-mysqlclient-utility.sh
         - ./tools/deployment/050-openstack-utility.sh
         - ./tools/deployment/060-postgresql-utility.sh
-      args:
-        chdir: ../porthole
+
+
+# - job:
+#     name: airship-porthole-openstack-tox-py38
+#     parent: openstack-tox-py38
+#     description: Runs cover job on focal
+#     nodeset: airship-porthole-focal-single-node
+#     pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+#     timeout: 7200
+#     vars:
+#       distro_suffix: ubuntu_focal
+#       gate_scripts:
+#         - ./tools/deployment/005-calicoctl-utility.sh
+#         - ./tools/deployment/010-ceph-utility.sh
+#         - ./tools/deployment/020-compute-utility.sh
+#         - ./tools/deployment/030-etcdctl-utility.sh
+#         - ./tools/deployment/040-mysqlclient-utility.sh
+#         - ./tools/deployment/050-openstack-utility.sh
+#         - ./tools/deployment/060-postgresql-utility.sh
+#       args:
+#         chdir: ../porthole
+
+- job:
+    name: airship-porthole-openstack-tox-cover-kubeadm
+    parent: openstack-tox-cover
+    nodeset: treasuremap-airskiff-1node-ubuntu_focal
+    roles:
+      - zuul: openstack/openstack-helm-infra
+      - zuul: zuul/zuul-jobs
+    required-projects:
+      - name: openstack/openstack-helm
+      - name: openstack/openstack-helm-infra
+      - name: airship/treasuremap
+        override-checkout: v1.9
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^site/seaworthy/.*$
+      - ^site/airsloop/.*$
+      - ^site/aiab/.*$
+    timeout: 10800
+    pre-run:
+      - tools/gate/playbooks/prepare-hosts.yaml
+      - tools/gate/playbooks/mount-volumes.yaml
+      - tools/gate/playbooks/deploy-env.yaml
+      - tools/gate/playbooks/airship-run-scripts.yaml
+    post-run:
+      - tools/gate/playbooks/osh-infra-collect-logs.yaml
+    vars:
+      extra_volume:
+        size: 80G
+        type: Linux
+        mount_point: /opt/ext_vol
+      docker:
+        root_path: "/opt/ext_vol/docker"
+      containerd:
+        root_path: "/opt/ext_vol/containerd"
+      kubeadm:
+        pod_network_cidr: "10.244.0.0/24"
+        service_cidr: "10.96.0.0/16"
+      loopback_setup: true
+      loopback_device: /dev/loop100
+      loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
+      ceph_osd_data_device: /dev/loop100
+      kube_version: "1.28.4-1.1"
+      calico_version: "v3.27.0"
+      coredns_version: "v1.11.1"
+      helm_version: "v3.13.2"
+      yq_version: "v4.6.0"
+      crictl_version: "v1.26.1"
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_relative_path: ../../openstack/openstack-helm
+      gate_scripts_relative_path: .
+      run_helm_tests: "no"
+      distro_suffix: ubuntu_focal
+      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz
+      HTK_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_INFRA_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_COMMIT: 2d9457e34ca4200ed631466bd87569b0214c92e7
+      gate_scripts:
+        - ./tools/deployment/002-build-charts.sh
+        - ./tools/deployment/003-prepare-k8s.sh
+        - ./tools/deployment/004-make-images.sh
+        - ./tools/deployment/005-calicoctl-utility.sh
+        - ./tools/deployment/010-ceph-utility.sh
+        - ./tools/deployment/020-compute-utility.sh
+        - ./tools/deployment/030-etcdctl-utility.sh
+        - ./tools/deployment/040-mysqlclient-utility.sh
+        - ./tools/deployment/050-openstack-utility.sh
+        - ./tools/deployment/060-postgresql-utility.sh
+
+
+
+# - job:
+#     name: airship-porthole-openstack-tox-cover
+#     parent: openstack-tox-cover
+#     description: Runs cover job on focal
+#     nodeset: airship-porthole-focal-single-node
+#     pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
+#     timeout: 7200
+#     vars:
+#       distro_suffix: ubuntu_focal
+#       gate_scripts:
+#         - ./tools/deployment/005-calicoctl-utility.sh
+#         - ./tools/deployment/010-ceph-utility.sh
+#         - ./tools/deployment/020-compute-utility.sh
+#         - ./tools/deployment/030-etcdctl-utility.sh
+#         - ./tools/deployment/040-mysqlclient-utility.sh
+#         - ./tools/deployment/050-openstack-utility.sh
+#         - ./tools/deployment/060-postgresql-utility.sh
+#       args:
+#         chdir: ../porthole
 
 - job:
     name: airship-porthole-images
@@ -139,7 +265,7 @@
     timeout: 7200
     post-timeout: 7200
     run: tools/gate/playbooks/docker-image-build.yaml
-    nodeset: airship-porthole-focal-single-node
+    nodeset: treasuremap-airskiff-1node-ubuntu_focal
     vars:
       publish: false
       tags:
@@ -157,24 +283,74 @@
       Lints files for trailing whitespace
     run: tools/gate/playbooks/zuul-linter.yaml
     timeout: 300
-    nodeset: airship-porthole-focal-single-node
+    nodeset: treasuremap-airskiff-1node-ubuntu_focal
     vars:
       args:
         chdir: ../porthole
 
 - job:
-    name: airship-porthole-deploy-functional-tests
+    name:  airship-porthole-deploy-functional-tests-kubeadm
     abstract: true
     description: Deploys all UC's and Executes functional tests
-    nodeset: airship-porthole-focal-single-node
-    timeout: 7200
-    run:
-      - tools/gate/playbooks/airship-porthole-gate-runner.yaml
-      - tools/gate/playbooks/make-functional-tests.yaml
+    nodeset: treasuremap-airskiff-1node-ubuntu_focal
+    roles:
+      - zuul: openstack/openstack-helm-infra
+      - zuul: zuul/zuul-jobs
+    required-projects:
+      - name: openstack/openstack-helm
+      - name: openstack/openstack-helm-infra
+      - name: airship/treasuremap
+        override-checkout: v1.9
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^site/seaworthy/.*$
+      - ^site/airsloop/.*$
+      - ^site/aiab/.*$
+    timeout: 10800
+    pre-run:
+      - tools/gate/playbooks/prepare-hosts.yaml
+      - tools/gate/playbooks/mount-volumes.yaml
+      - tools/gate/playbooks/deploy-env.yaml
+      - tools/gate/playbooks/airship-run-scripts.yaml
     post-run:
-      - tools/gate/playbooks/airship-porthole-collect-logs.yaml
+      - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
+      extra_volume:
+        size: 80G
+        type: Linux
+        mount_point: /opt/ext_vol
+      docker:
+        root_path: "/opt/ext_vol/docker"
+      containerd:
+        root_path: "/opt/ext_vol/containerd"
+      kubeadm:
+        pod_network_cidr: "10.244.0.0/24"
+        service_cidr: "10.96.0.0/16"
+      loopback_setup: true
+      loopback_device: /dev/loop100
+      loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
+      ceph_osd_data_device: /dev/loop100
+      kube_version: "1.28.4-1.1"
+      calico_version: "v3.27.0"
+      coredns_version: "v1.11.1"
+      helm_version: "v3.13.2"
+      yq_version: "v4.6.0"
+      crictl_version: "v1.26.1"
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_relative_path: ../../openstack/openstack-helm
+      gate_scripts_relative_path: .
+      run_helm_tests: "no"
+      distro_suffix: ubuntu_focal
+      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz
+      HTK_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_INFRA_COMMIT: cfff60ec10a6c386f38db79bb9f59a552c2b032f
+      OSH_COMMIT: 2d9457e34ca4200ed631466bd87569b0214c92e7
       gate_scripts:
+        - ./tools/deployment/002-build-charts.sh
+        - ./tools/deployment/003-prepare-k8s.sh
+        - ./tools/deployment/004-make-images.sh
         - ./tools/deployment/005-calicoctl-utility.sh
         - ./tools/deployment/010-ceph-utility.sh
         - ./tools/deployment/020-compute-utility.sh
@@ -182,28 +358,53 @@
         - ./tools/deployment/040-mysqlclient-utility.sh
         - ./tools/deployment/050-openstack-utility.sh
         - ./tools/deployment/060-postgresql-utility.sh
-      args:
-        chdir: ../porthole
 
 - job:
-    name: airship-porthole-deploy-functional-tests-ubuntu_focal
-    parent: airship-porthole-deploy-functional-tests
+    name: airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
+    parent: airship-porthole-deploy-functional-tests-kubeadm
+    run: tools/gate/playbooks/make-functional-tests.yaml
     vars:
+      args:
+        chdir: ../porthole
       distro_suffix: ubuntu_focal
       osh_params:
         openstack_release: yoga
         container_distro_name: ubuntu
         container_distro_version: focal
 
-- job:
-    name: airship-porthole-deploy-functional-tests-ubuntu_bionic
-    parent: airship-porthole-deploy-functional-tests
-    vars:
-      distro_suffix: ubuntu_bionic
-      osh_params:
-        openstack_release: yoga
-        container_distro_name: ubuntu
-        container_distro_version: bionic
+
+# - job:
+#     name: airship-porthole-deploy-functional-tests
+#     abstract: true
+#     description: Deploys all UC's and Executes functional tests
+#     nodeset: airship-porthole-focal-single-node
+#     timeout: 7200
+#     run:
+#       - tools/gate/playbooks/airship-porthole-gate-runner.yaml
+#       - tools/gate/playbooks/make-functional-tests.yaml
+#     post-run:
+#       - tools/gate/playbooks/airship-porthole-collect-logs.yaml
+#     vars:
+#       gate_scripts:
+#         - ./tools/deployment/005-calicoctl-utility.sh
+#         - ./tools/deployment/010-ceph-utility.sh
+#         - ./tools/deployment/020-compute-utility.sh
+#         - ./tools/deployment/030-etcdctl-utility.sh
+#         - ./tools/deployment/040-mysqlclient-utility.sh
+#         - ./tools/deployment/050-openstack-utility.sh
+#         - ./tools/deployment/060-postgresql-utility.sh
+#       args:
+#         chdir: ../porthole
+
+# - job:
+#     name: airship-porthole-deploy-functional-tests-ubuntu_focal
+#     parent: airship-porthole-deploy-functional-tests
+#     vars:
+#       distro_suffix: ubuntu_focal
+#       osh_params:
+#         openstack_release: yoga
+#         container_distro_name: ubuntu
+#         container_distro_version: focal
 
 
 - secret:

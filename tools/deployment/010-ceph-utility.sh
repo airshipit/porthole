@@ -3,15 +3,9 @@ CURRENT_DIR="$(pwd)"
  : "${OSH_PATH:="../openstack-helm"}"
  : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 
-# remove previous loop devices if any
 
-if [ -f /etc/systemd/system/local-fs.target.wants/loops-setup.service ]
-then
-  sudo systemctl stop loops-setup
-fi
-
-cd "${OSH_PATH}" || exit
-sudo bash -c "./tools/deployment/component/ceph/ceph.sh"
+cd "${OSH_INFRA_PATH}" || exit
+.//tools/deployment/ceph/ceph.sh
 
 namespace="utility"
 : ${OSH_EXTRA_HELM_ARGS:=""}
