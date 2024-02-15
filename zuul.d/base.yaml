@@ -312,8 +312,10 @@
     pre-run:
       - tools/gate/playbooks/prepare-hosts.yaml
       - tools/gate/playbooks/mount-volumes.yaml
+    run:
       - tools/gate/playbooks/deploy-env.yaml
       - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/make-functional-tests.yaml
     post-run:
       - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
@@ -340,7 +342,7 @@
       crictl_version: "v1.26.1"
       zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
       zuul_osh_relative_path: ../../openstack/openstack-helm
-      gate_scripts_relative_path: .
+      gate_scripts_relative_path: ../porthole
       run_helm_tests: "no"
       distro_suffix: ubuntu_focal
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz
@@ -362,15 +364,14 @@
 - job:
     name: airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
     parent: airship-porthole-deploy-functional-tests-kubeadm
-    run: tools/gate/playbooks/make-functional-tests.yaml
     vars:
-      args:
-        chdir: ../porthole
       distro_suffix: ubuntu_focal
       osh_params:
         openstack_release: yoga
         container_distro_name: ubuntu
         container_distro_version: focal
+      args:
+        chdir: ../porthole
 
 
 # - job:
