@@ -4,10 +4,18 @@
 
 # When modifying this file `tox -e freeze-req` must be run to regenerate the requirements-frozen.txt.
 kubeconfig
-kubernetes==26.1.0
-oslo.config<=8.7.1
-oslo.log<=4.6.0
+kubernetes==29.0.0
 pbr<=5.5.1
 requests==2.23.0
 chardet>=3.0.2,<3.1.0
 urllib3>=1.21.1,<=1.25
+
+# Openstack Antelope 2023.1
+# https://releases.openstack.org/antelope/index.html
+
+oslo.config==9.1.1
+oslo.context==5.1.1
+oslo.i18n==6.0.0
+oslo.log==5.2.0
+oslo.serialization==5.1.1
+oslo.utils==6.1.0

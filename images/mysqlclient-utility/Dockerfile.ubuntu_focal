@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.29.0
+ARG KUBE_VERSION=1.29.2
 ARG MARIADB_VERSION=10.6
 ARG PERCONA_TOOLKIT_VERSION=3.5.5
 
@@ -38,9 +38,9 @@ RUN set -xe \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
          munch \
-         oslo.rootwrap==6.3.1 \
-         python-openstackclient==5.8.0 \
-         python-swiftclient==3.13.1 \
+         oslo.rootwrap==7.0.1 \
+         python-openstackclient==6.2.0 \
+         python-swiftclient==4.2.0 \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \

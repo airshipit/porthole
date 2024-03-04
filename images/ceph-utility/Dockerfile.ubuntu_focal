@@ -8,13 +8,13 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-# Quincy 17.2.6
-ARG CEPH_RELEASE=quincy
-ARG CEPH_RELEASE_TAG=17.2.6-1focal
-ARG KUBE_VERSION=1.29.0
+# Reef 18.2.1
+ARG CEPH_RELEASE=reef
+ARG CEPH_RELEASE_TAG=18.2.1-1focal
+ARG KUBE_VERSION=1.29.2
 
-ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-quincy/
-ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-quincy/release.asc
+ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-reef/
+ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-reef/release.asc
 
 ADD ${CEPH_KEY} /etc/apt/ceph-${CEPH_RELEASE}.key
 RUN set -xe \
@@ -48,7 +48,7 @@ RUN set -xe \
          python3-pip \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
-         oslo.rootwrap==6.3.1 \
+         oslo.rootwrap==7.0.1 \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
     && apt-get purge --autoremove -y apt-transport-https \

@@ -23,13 +23,13 @@ RUN set -xe \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
          munch \
-         oslo.rootwrap==6.3.1 \
-         python-openstackclient==5.8.0 \
-         python-glanceclient==3.6.0 \
-         python-novaclient==17.7.0 \
-         python-neutronclient==7.8.0 \
-         python-cinderclient==8.3.0 \
-         python-heatclient==2.5.1 \
+         oslo.rootwrap==7.0.1 \
+         python-openstackclient==6.2.0 \
+         python-glanceclient==4.3.0 \
+         python-novaclient==18.3.0 \
+         python-neutronclient==9.0.0 \
+         python-cinderclient==9.3.0 \
+         python-heatclient==3.2.0 \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 

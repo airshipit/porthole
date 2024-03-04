@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 ARG ETCDCTL_VERSION=v3.5.11
-ARG KUBE_VERSION=1.29.0
+ARG KUBE_VERSION=1.29.2
 
 ENV GOOGLE_URL=https://storage.googleapis.com/etcd
 ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
@@ -35,9 +35,9 @@ RUN set -xe \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
          munch \
-         oslo.rootwrap==6.3.1 \
-         python-openstackclient==5.8.0 \
-         python-swiftclient==3.13.1 \
+         oslo.rootwrap==7.0.1 \
+         python-openstackclient==6.2.0 \
+         python-swiftclient==4.2.0 \
     && curl --silent -L  "${DOWNLOAD_URL}/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
        | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
