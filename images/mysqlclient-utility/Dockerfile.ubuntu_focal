@@ -10,7 +10,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 ARG KUBE_VERSION=1.29.2
 ARG MARIADB_VERSION=10.6
-ARG PERCONA_TOOLKIT_VERSION=3.5.5
+ARG PERCONA_TOOLKIT_VERSION=3.5.7
 
 RUN set -xe \
     && export DEBIAN_FRONTEND=noninteractive \
