@@ -38,7 +38,7 @@ helm upgrade --install postgresql ./postgresql \
 #NOTE: Wait for deploy
 ./tools/deployment/common/wait-for-pods.sh osh-infra
 
-bash -c "./tools/deployment/common/020-ingress.sh"
+bash -c "./tools/deployment/common/ingress.sh"
 # Deploy postgresql-utility
 cd ${CURRENT_DIR}
 

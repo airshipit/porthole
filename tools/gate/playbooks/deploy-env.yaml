@@ -18,7 +18,8 @@
   roles:
     - ensure-python
     - ensure-pip
-    - ensure-tox
+    - role: ensure-tox
+      become: false
     - clear-firewall
     - deploy-apparmor
     - deploy-selenium
@@ -31,6 +32,6 @@
             name: packaging
             version: 23.1
             executable: pip3
-      become: True
+      become: true
 
 ...
