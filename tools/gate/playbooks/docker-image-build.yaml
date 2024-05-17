@@ -61,10 +61,13 @@
     - name: Make images - verbosive
       when: not publish
       shell: |
-        make images
+        make build
       args:
         chdir: "{{ zuul.project.src_dir }}"
         executable: /bin/bash
+      environment:
+        DISTRO_SUFFIX: "{{ distro_suffix }}"
+        IMAGE_NAME: "{{ image_name }}"
       become: True
 
     - name: Make images

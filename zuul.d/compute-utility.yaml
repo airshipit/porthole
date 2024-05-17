@@ -1,3 +1,4 @@
+---
 # Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-focal-build-gate-compute-utility
-    parent: &parent airship-porthole-images
+    name: airship-porthole-images-build-compute-utility
+    parent: airship-porthole-images
+    abstract: true
     vars:
-      image_name: &image_name porthole-compute-utility
-      distro_suffix: ubuntu_focal
+      image_name: porthole-compute-utility
     files:
       - ^charts/compute-utility/.*$
       - ^images/compute-utility/.*$
@@ -27,43 +28,55 @@
 
 - job:
     name: airship-porthole-images-publish-compute-utility
-    parent: *parent
-    secrets:
+    parent: airship-porthole-images
+    abstract: true
+    secrets: &secrets
       - name: quay_credentials
         secret: quay_credentials
         pass-to-parent: true
     vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_focal
+      image_name: porthole-compute-utility
       publish: true
       tags:
         dynamic:
           commit: true
 
 - job:
-    name: airship-porthole-images-bionic-build-gate-compute-utility
-    parent: *parent
+    name: airship-porthole-images-jammy-build-compute-utility
+    parent: airship-porthole-images-build-compute-utility
     vars:
-      image_name: *image_name
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-jammy-publish-compute-utility
+    parent: airship-porthole-images-publish-compute-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-focal-build-compute-utility
+    parent: airship-porthole-images-build-compute-utility
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-focal-publish-compute-utility
+    parent: airship-porthole-images-publish-compute-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-bionic-build-compute-utility
+    parent: airship-porthole-images-build-compute-utility
+    vars:
       distro_suffix: ubuntu_bionic
-    files:
-      - ^charts/compute-utility/.*$
-      - ^images/compute-utility/.*$
-      - ^Makefile$
-      - ^tools/.*$
-      - ^zuul.d/.*$
 
 - job:
     name: airship-porthole-images-bionic-publish-compute-utility
-    parent: *parent
-    secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
+    parent: airship-porthole-images-publish-compute-utility
+    secrets: *secrets
     vars:
-      image_name: *image_name
       distro_suffix: ubuntu_bionic
-      publish: true
-      tags:
-        dynamic:
-          commit: true
+...

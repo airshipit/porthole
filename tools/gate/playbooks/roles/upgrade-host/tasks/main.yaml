@@ -23,7 +23,7 @@
       vars:
         packages:
           deb:
-            - linux-generic-hwe-20.04
+            - 'linux-generic-hwe-{{ ansible_distribution_version }}'
     - name: Reboot Host following kernel upgrade
       shell: sleep 2 && reboot
       become: yes

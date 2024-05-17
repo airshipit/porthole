@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    postgresql_utility: localhost:5000/porthole-postgresql-utility:latest-ubuntu_jammy
+...

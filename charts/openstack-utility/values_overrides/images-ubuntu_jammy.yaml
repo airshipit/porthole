@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    openstack_utility: localhost:5000/porthole-openstack-utility:latest-ubuntu_jammy
+...

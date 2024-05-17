@@ -20,6 +20,7 @@
   args:
     chdir: "{{ zuul.project.src_dir }}/{{ gate_scripts_relative_path }}"
   environment:
+    DISTRO: "{{ distro_suffix | default('') }}"
     CEPH_OSD_DATA_DEVICE: "{{ ceph_osd_data_device }}"
     POD_NETWORK_CIDR: "{{ kubeadm.pod_network_cidr }}"
     zuul_site_mirror_fqdn: "{{ zuul_site_mirror_fqdn }}"

@@ -1,3 +1,4 @@
+---
 # Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,57 +14,69 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-focal-build-gate-etcdctl-utility
-    parent: &parent airship-porthole-images
+    name: airship-porthole-images-build-etcdctl-utility
+    parent: airship-porthole-images
+    abstract: true
     vars:
-      image_name: &image_name porthole-etcdctl-utility
-      distro_suffix: ubuntu_focal
+      image_name: porthole-etcdctl-utility
     files:
-      - ^images/etcdctl-utility/.*$
       - ^charts/etcdctl-utility/.*$
+      - ^images/etcdctl-utility/.*$
       - ^Makefile$
       - ^tools/.*$
       - ^zuul.d/.*$
 
 - job:
     name: airship-porthole-images-publish-etcdctl-utility
-    parent: *parent
-    secrets:
+    parent: airship-porthole-images
+    abstract: true
+    secrets: &secrets
       - name: quay_credentials
         secret: quay_credentials
         pass-to-parent: true
     vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_focal
+      image_name: porthole-etcdctl-utility
       publish: true
       tags:
         dynamic:
           commit: true
 
 - job:
-    name: airship-porthole-images-bionic-build-gate-etcdctl-utility
-    parent: *parent
+    name: airship-porthole-images-jammy-build-etcdctl-utility
+    parent: airship-porthole-images-build-etcdctl-utility
     vars:
-      image_name: *image_name
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-jammy-publish-etcdctl-utility
+    parent: airship-porthole-images-publish-etcdctl-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-focal-build-etcdctl-utility
+    parent: airship-porthole-images-build-etcdctl-utility
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-focal-publish-etcdctl-utility
+    parent: airship-porthole-images-publish-etcdctl-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-bionic-build-etcdctl-utility
+    parent: airship-porthole-images-build-etcdctl-utility
+    vars:
       distro_suffix: ubuntu_bionic
-    files:
-      - ^images/etcdctl-utility/.*$
-      - ^charts/etcdctl-utility/.*$
-      - ^Makefile$
-      - ^tools/.*$
-      - ^zuul.d/.*$
 
 - job:
     name: airship-porthole-images-bionic-publish-etcdctl-utility
-    parent: *parent
-    secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
+    parent: airship-porthole-images-publish-etcdctl-utility
+    secrets: *secrets
     vars:
-      image_name: *image_name
       distro_suffix: ubuntu_bionic
-      publish: true
-      tags:
-        dynamic:
-          commit: true
+...

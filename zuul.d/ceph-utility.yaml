@@ -1,3 +1,4 @@
+---
 # Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-focal-build-gate-ceph-utility
-    parent: &parent airship-porthole-images
+    name: airship-porthole-images-build-ceph-utility
+    parent: airship-porthole-images
+    abstract: true
     vars:
-      image_name: &image_name porthole-ceph-utility
-      distro_suffix: ubuntu_focal
+      image_name: porthole-ceph-utility
     files:
       - ^charts/ceph-utility/.*$
       - ^images/ceph-utility/.*$
@@ -27,44 +28,55 @@
 
 - job:
     name: airship-porthole-images-publish-ceph-utility
-    parent: *parent
-    secrets:
+    parent: airship-porthole-images
+    abstract: true
+    secrets: &secrets
       - name: quay_credentials
         secret: quay_credentials
         pass-to-parent: true
     vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_focal
+      image_name: porthole-ceph-utility
       publish: true
       tags:
         dynamic:
           commit: true
 
 - job:
-    name: airship-porthole-images-bionic-build-gate-ceph-utility
-    parent: *parent
+    name: airship-porthole-images-jammy-build-ceph-utility
+    parent: airship-porthole-images-build-ceph-utility
     vars:
-      image_name: *image_name
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-jammy-publish-ceph-utility
+    parent: airship-porthole-images-publish-ceph-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-focal-build-ceph-utility
+    parent: airship-porthole-images-build-ceph-utility
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-focal-publish-ceph-utility
+    parent: airship-porthole-images-publish-ceph-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-bionic-build-ceph-utility
+    parent: airship-porthole-images-build-ceph-utility
+    vars:
       distro_suffix: ubuntu_bionic
-    files:
-      - ^charts/ceph-utility/.*$
-      - ^images/ceph-utility/.*$
-      - ^Makefile$
-      - ^tools/.*$
-      - ^zuul.d/.*$
 
 - job:
     name: airship-porthole-images-bionic-publish-ceph-utility
-    parent: *parent
-    secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
+    parent: airship-porthole-images-publish-ceph-utility
+    secrets: *secrets
     vars:
-      image_name: *image_name
       distro_suffix: ubuntu_bionic
-      publish: true
-      tags:
-        dynamic:
-          commit: true
-
+...

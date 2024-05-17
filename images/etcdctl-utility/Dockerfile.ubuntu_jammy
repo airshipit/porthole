@@ -1,0 +1,60 @@
+ARG FROM=docker.io/ubuntu:jammy
+FROM ${FROM}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+ARG ETCDCTL_VERSION=v3.5.13
+ARG KUBE_VERSION=1.29.5
+
+ENV GOOGLE_URL=https://storage.googleapis.com/etcd
+ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
+ENV DOWNLOAD_URL=${GITHUB_URL}
+
+RUN set -xe \
+    && export DEBIAN_FRONTEND=noninteractive \
+    && sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+         curl \
+         jq \
+         locales \
+         ca-certificates \
+         gnupg \
+         bash \
+         moreutils \
+         sudo \
+         rsyslog \
+         python3.10 \
+         python3-pip \
+         python3-netifaces \
+         orphan-sysvinit-scripts \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
+         munch \
+         oslo.rootwrap==7.0.1 \
+         python-openstackclient==6.2.0 \
+         python-swiftclient==4.2.0 \
+    && curl --silent -L  "${DOWNLOAD_URL}/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
+       | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
+    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
+    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
+    && apt-get install -y --no-install-recommends /tmp/rclone.deb \
+    && apt-get clean -y \
+    && rm -rf \
+       /tmp/* \
+       /var/lib/apt/lists/*
+
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+
+CMD ["/bin/bash"]

@@ -1,3 +1,4 @@
+---
 # Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +14,11 @@
 # limitations under the License.
 
 - job:
-    name: airship-porthole-images-focal-build-gate-openstack-utility
-    parent: &parent airship-porthole-images
+    name: airship-porthole-images-build-openstack-utility
+    parent: airship-porthole-images
+    abstract: true
     vars:
-      image_name: &image_name porthole-openstack-utility
-      distro_suffix: ubuntu_focal
+      image_name: porthole-openstack-utility
     files:
       - ^charts/openstack-utility/.*$
       - ^images/openstack-utility/.*$
@@ -27,43 +28,55 @@
 
 - job:
     name: airship-porthole-images-publish-openstack-utility
-    parent: *parent
-    secrets:
+    parent: airship-porthole-images
+    abstract: true
+    secrets: &secrets
       - name: quay_credentials
         secret: quay_credentials
         pass-to-parent: true
     vars:
-      image_name: *image_name
-      distro_suffix: ubuntu_focal
+      image_name: porthole-openstack-utility
       publish: true
       tags:
         dynamic:
           commit: true
 
 - job:
-    name: airship-porthole-images-bionic-build-gate-openstack-utility
-    parent: *parent
+    name: airship-porthole-images-jammy-build-openstack-utility
+    parent: airship-porthole-images-build-openstack-utility
     vars:
-      image_name: *image_name
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-jammy-publish-openstack-utility
+    parent: airship-porthole-images-publish-openstack-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_jammy
+
+- job:
+    name: airship-porthole-images-focal-build-openstack-utility
+    parent: airship-porthole-images-build-openstack-utility
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-focal-publish-openstack-utility
+    parent: airship-porthole-images-publish-openstack-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_focal
+
+- job:
+    name: airship-porthole-images-bionic-build-openstack-utility
+    parent: airship-porthole-images-build-openstack-utility
+    vars:
       distro_suffix: ubuntu_bionic
-    files:
-      - ^charts/openstack-utility/.*$
-      - ^images/openstack-utility/.*$
-      - ^Makefile$
-      - ^tools/.*$
-      - ^zuul.d/.*$
 
 - job:
     name: airship-porthole-images-bionic-publish-openstack-utility
-    parent: *parent
-    secrets:
-      - name: quay_credentials
-        secret: quay_credentials
-        pass-to-parent: true
+    parent: airship-porthole-images-publish-openstack-utility
+    secrets: *secrets
     vars:
-      image_name: *image_name
       distro_suffix: ubuntu_bionic
-      publish: true
-      tags:
-        dynamic:
-          commit: true
+...

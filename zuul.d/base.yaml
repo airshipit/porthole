@@ -1,3 +1,4 @@
+---
 # Copyright 2019 AT&T Intellectual Property.  All other rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 - project:
     check:
@@ -21,17 +21,25 @@
         - openstack-tox-docs
         # - airship-porthole-openstack-tox-py38
         # - airship-porthole-openstack-tox-cover
-        - airship-porthole-images-focal-build-gate-calicoctl-utility
-        - airship-porthole-images-focal-build-gate-ceph-utility
-        - airship-porthole-images-focal-build-gate-compute-utility
-        - airship-porthole-images-focal-build-gate-etcdctl-utility
-        - airship-porthole-images-focal-build-gate-mysqlclient-utility
-        - airship-porthole-images-focal-build-gate-openstack-utility
-        - airship-porthole-images-focal-build-gate-postgresql-utility
+        - airship-porthole-images-focal-build-calicoctl-utility
+        - airship-porthole-images-focal-build-ceph-utility
+        - airship-porthole-images-focal-build-compute-utility
+        - airship-porthole-images-focal-build-etcdctl-utility
+        - airship-porthole-images-focal-build-mysqlclient-utility
+        - airship-porthole-images-focal-build-openstack-utility
+        - airship-porthole-images-focal-build-postgresql-utility
+        - airship-porthole-images-jammy-build-calicoctl-utility
+        - airship-porthole-images-jammy-build-ceph-utility
+        - airship-porthole-images-jammy-build-compute-utility
+        - airship-porthole-images-jammy-build-etcdctl-utility
+        - airship-porthole-images-jammy-build-mysqlclient-utility
+        - airship-porthole-images-jammy-build-openstack-utility
+        - airship-porthole-images-jammy-build-postgresql-utility
         # - airship-porthole-deploy-functional-tests-ubuntu_focal
         - airship-porthole-openstack-tox-py38-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
         - airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
+        - airship-porthole-deploy-functional-tests-ubuntu_jammy-kubeadm
 
 
     gate:
@@ -41,26 +49,39 @@
         - openstack-tox-docs
         - airship-porthole-openstack-tox-py38-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
-        - airship-porthole-deploy-functional-tests-ubuntu_focal-kubeadm
-        - airship-porthole-images-focal-build-gate-calicoctl-utility
-        - airship-porthole-images-focal-build-gate-ceph-utility
-        - airship-porthole-images-focal-build-gate-compute-utility
-        - airship-porthole-images-focal-build-gate-etcdctl-utility
-        - airship-porthole-images-focal-build-gate-mysqlclient-utility
-        - airship-porthole-images-focal-build-gate-openstack-utility
-        - airship-porthole-images-focal-build-gate-postgresql-utility
+        - airship-porthole-images-focal-build-calicoctl-utility
+        - airship-porthole-images-focal-build-ceph-utility
+        - airship-porthole-images-focal-build-compute-utility
+        - airship-porthole-images-focal-build-etcdctl-utility
+        - airship-porthole-images-focal-build-mysqlclient-utility
+        - airship-porthole-images-focal-build-openstack-utility
+        - airship-porthole-images-focal-build-postgresql-utility
+        - airship-porthole-images-jammy-build-calicoctl-utility
+        - airship-porthole-images-jammy-build-ceph-utility
+        - airship-porthole-images-jammy-build-compute-utility
+        - airship-porthole-images-jammy-build-etcdctl-utility
+        - airship-porthole-images-jammy-build-mysqlclient-utility
+        - airship-porthole-images-jammy-build-openstack-utility
+        - airship-porthole-images-jammy-build-postgresql-utility
 
 
 
     post:
       jobs:
-        - airship-porthole-images-publish-calicoctl-utility
-        - airship-porthole-images-publish-ceph-utility
-        - airship-porthole-images-publish-compute-utility
-        - airship-porthole-images-publish-etcdctl-utility
-        - airship-porthole-images-publish-mysqlclient-utility
-        - airship-porthole-images-publish-openstack-utility
-        - airship-porthole-images-publish-postgresql-utility
+        - airship-porthole-images-focal-publish-calicoctl-utility
+        - airship-porthole-images-focal-publish-ceph-utility
+        - airship-porthole-images-focal-publish-compute-utility
+        - airship-porthole-images-focal-publish-etcdctl-utility
+        - airship-porthole-images-focal-publish-mysqlclient-utility
+        - airship-porthole-images-focal-publish-openstack-utility
+        - airship-porthole-images-focal-publish-postgresql-utility
+        - airship-porthole-images-jammy-publish-calicoctl-utility
+        - airship-porthole-images-jammy-publish-ceph-utility
+        - airship-porthole-images-jammy-publish-compute-utility
+        - airship-porthole-images-jammy-publish-etcdctl-utility
+        - airship-porthole-images-jammy-publish-mysqlclient-utility
+        - airship-porthole-images-jammy-publish-openstack-utility
+        - airship-porthole-images-jammy-publish-postgresql-utility
 
 
 - nodeset:
@@ -382,6 +403,17 @@
       args:
         chdir: ../porthole
 
+- job:
+    name: airship-porthole-deploy-functional-tests-ubuntu_jammy-kubeadm
+    parent: airship-porthole-deploy-functional-tests-kubeadm
+    vars:
+      distro_suffix: ubuntu_jammy
+      osh_params:
+        openstack_release: "2023.2"
+        container_distro_name: ubuntu
+        container_distro_version: jammy
+      args:
+        chdir: ../porthole
 
 # - job:
 #     name: airship-porthole-deploy-functional-tests
@@ -442,3 +474,4 @@
           JXcwlGoK6kvXmYaG2c7yEiH2xNtTzVTai10fsalubQWR4FTmJA5LU9+HatHBa46XLy4gS
           vMHs2uJudmxhqLIhs5Er248FVjfxw7le5dPun3ir4J7Mjgypu5y8eLCMZAFIwpeqlJrVU
           uih8ByaTlSEh6FBzle7Hb330RjSztC4pX6xiNAmtkpxhF2rEEFS66B/ixwCphQ=
+...
