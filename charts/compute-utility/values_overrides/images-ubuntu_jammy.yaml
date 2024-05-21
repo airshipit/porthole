@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    compute_utility: localhost:5000/porthole-compute-utility:latest-ubuntu_jammy
+    compute_utility: localhost:5000/airshipit/porthole-compute-utility:latest-ubuntu_jammy
 ...

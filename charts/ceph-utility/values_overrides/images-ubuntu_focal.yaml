@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    ceph_utility: localhost:5000/porthole-ceph-utility:latest-ubuntu_focal
+    ceph_utility: localhost:5000/airshipit/porthole-ceph-utility:latest-ubuntu_focal
 ...

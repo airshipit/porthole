@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    calicoctl_utility: localhost:5000/porthole-calicoctl-utility:latest-ubuntu_jammy
+    calicoctl_utility: localhost:5000/airshipit/porthole-calicoctl-utility:latest-ubuntu_jammy
 ...

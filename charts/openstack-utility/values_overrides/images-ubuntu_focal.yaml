@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    openstack_utility: localhost:5000/porthole-openstack-utility:latest-ubuntu_focal
+    openstack_utility: localhost:5000/airshipit/porthole-openstack-utility:latest-ubuntu_focal
 ...

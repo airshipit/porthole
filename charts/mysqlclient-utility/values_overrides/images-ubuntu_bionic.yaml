@@ -1,5 +1,5 @@
 ---
 images:
   tags:
-    mysqlclient_utility: localhost:5000/porthole-mysqlclient-utility:latest-ubuntu_bionic
+    mysqlclient_utility: localhost:5000/airshipit/porthole-mysqlclient-utility:latest-ubuntu_bionic
 ...
