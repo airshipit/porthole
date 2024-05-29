@@ -5,7 +5,13 @@ CURRENT_DIR="$(pwd)"
 
 
 cd "${OSH_INFRA_PATH}" || exit
-.//tools/deployment/ceph/ceph.sh
+
+# Lint and package ceph charts
+for CHART in ceph-mon ceph-osd ceph-client ceph-provisioners; do
+  make "${CHART}"
+done
+
+./tools/deployment/ceph/ceph.sh
 
 namespace="utility"
 : ${OSH_EXTRA_HELM_ARGS:=""}
