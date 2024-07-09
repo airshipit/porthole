@@ -99,7 +99,7 @@ function ensure_ondemand_pod_exists() {
     ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
     if [[ "$STATUS" == "Terminating" ]]; then
-      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s 2>/dev/null
       unset ONDEMAND_POD
       unset STATUS
     fi
@@ -129,6 +129,8 @@ function ensure_ondemand_pod_exists() {
   # If we reached this point with no ONDEMAND_POD, then we need to create
   #   a new on-demand job.
   if [[ -z "$ONDEMAND_POD" ]]; then
+    echo "Cleaning up any remainings of previous runs..."
+    do_cleanup "$ONDEMAND_JOB" "$NAMESPACE"
     echo "Creating new on-demand job in the $NAMESPACE namespace..."
     /tmp/pg-ondemand-job.sh "$NAMESPACE"
     if [[ $? -ne 0 ]]; then
@@ -157,24 +159,24 @@ function ensure_ondemand_pod_exists() {
     ONDEMAND_POD=$(echo "$POD_LISTING" | awk '{print $1}')
     STATUS=$(echo "$POD_LISTING" | awk '{print $3}')
     if [[ "$STATUS" == "Terminating" ]]; then
-      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s
+      kubectl wait -n "$NAMESPACE" --for=delete pod/"$ONDEMAND_POD" --timeout=300s 2>/dev/null
       unset ONDEMAND_POD
     elif [[ "$STATUS" != "Running" ]]; then
-      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s 2>/dev/null
     elif [[ "$STATUS" != "Pending" ]]; then
-      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s
+      kubectl wait -n "$NAMESPACE" --for condition=ready pod/"$ONDEMAND_POD" --timeout=300s 2>/dev/null
     fi
   fi
 
 
 
-    ONDEMAND_POD=$(kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB" -o json | jq -r .items[].metadata.name)
+    ONDEMAND_POD=$(kubectl get pods -n "$NAMESPACE" --selector=job-name="$ONDEMAND_JOB" -o json  2>/dev/null| jq -r .items[].metadata.name)
     if [[ -z "$ONDEMAND_POD" ]]; then
       echo "ERROR: Failed to obtain the ONDEMAND_POD name."
       exit 1
     fi
 
-    kubectl wait --for condition=ready --timeout=300s -n "$NAMESPACE" "pod/${ONDEMAND_POD}"
+    kubectl wait --for condition=ready --timeout=300s -n "$NAMESPACE" "pod/${ONDEMAND_POD}"  2>/dev/null
     if [[ $? -ne 0 ]]; then
       echo "ERROR: Failed to create a new on-demand pod. Exiting..."
       exit 1
@@ -234,20 +236,25 @@ function remove_job() {
   JOB=$2
 
   # Cleanup the last attempted job if there is one, wait for the pod to be deleted.
-  kubectl get job -n "$NAMESPACE" "$JOB"
+  kubectl get job -n "$NAMESPACE" "$JOB" 2>/dev/null
   if [[ $? -eq 0 ]]; then
     echo "Removing on-demand job $NAMESPACE $JOB"
-    ONDEMAND_POD=$(kubectl get pod -n "$NAMESPACE" | grep "$JOB" | awk '{print $1}')
-    kubectl delete job --ignore-not-found -n "$NAMESPACE" "$JOB"
-    kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" job/"${JOB}"
-    if [[ $? -ne 0 ]]; then
-      echo "ERROR: could not destroy the $NAMESPACE $JOB job. Exiting..."
-      exit 1
+    ONDEMAND_JOB=$(kubectl get job -n "$NAMESPACE" | grep "$JOB" | awk '{print $1}')
+    if [[ ! -z ${ONDEMAND_JOB} ]]; then
+      kubectl delete job --ignore-not-found -n "$NAMESPACE" "$JOB"
+      kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" job/"${JOB}" 2>/dev/null
+      if [[ $? -ne 0 ]]; then
+        echo "ERROR: could not destroy the $NAMESPACE $JOB job. Exiting..."
+        exit 1
+      fi
     fi
-    kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" pod/"${ONDEMAND_POD}"
-    if [[ $? -ne 0 ]]; then
-      echo "ERROR: could not destroy the $NAMESPACE $ONDEMAND_POD pod. Exiting..."
-      exit 1
+    ONDEMAND_POD=$(kubectl get pod -n "$NAMESPACE" | grep "$JOB" | awk '{print $1}')
+    if [[ ! -z ${ONDEMAND_POD} ]]; then
+      kubectl wait --for=delete --timeout=300s -n "$NAMESPACE" pod/"${ONDEMAND_POD}"  2>/dev/null
+      if [[ $? -ne 0 ]]; then
+        echo "ERROR: could not destroy the $NAMESPACE $ONDEMAND_POD pod. Exiting..."
+        exit 1
+      fi
     fi
   fi
 }
