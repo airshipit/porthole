@@ -10,11 +10,11 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 
 # Reef 18.2.1
 ARG CEPH_RELEASE=reef
-ARG CEPH_RELEASE_TAG=18.2.1-1jammy
-ARG KUBE_VERSION=1.29.5
+ARG CEPH_RELEASE_TAG=18.2.2-1~jammy
+ARG KUBE_VERSION=1.29.3
 
-ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-reef/
-ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-reef/release.asc
+ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph/debian-18.2.2.patch1/jammy/
+ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph/debian-18.2.2.patch1/jammy/release.asc
 
 ADD ${CEPH_KEY} /etc/apt/ceph-${CEPH_RELEASE}.key
 RUN set -xe \
