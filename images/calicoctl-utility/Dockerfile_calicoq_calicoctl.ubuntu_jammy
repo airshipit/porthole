@@ -29,17 +29,17 @@ RUN set -xe \
     && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get -y upgrade \
     && apt-get install -y --no-install-recommends \
-       bash \
-       locales \
-       moreutils \
-       sudo \
-       socat \
-       python3.10 \
-       python3-pip \
-    && pip3 install --upgrade pip \
-    && pip3 install \
-        oslo.rootwrap==7.0.1 \
-    && apt-get clean -y \
+         bash \
+         curl \
+         locales \
+         moreutils \
+         sudo \
+         socat \
+         python3.10 \
+         python3-pip \
+    && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
+    && pip3 install --no-cache-dir \
+         oslo.rootwrap==7.0.1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \

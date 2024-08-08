@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.29.5
+ARG KUBE_VERSION=1.29.7
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -36,12 +36,11 @@ RUN set -xe \
          python3.10 \
          python3-pip \
          orphan-sysvinit-scripts \
-    && pip3 install --no-cache-dir --upgrade pip \
+    && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
-        oslo.rootwrap==7.0.1 \
+         oslo.rootwrap==7.0.1 \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
-    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \

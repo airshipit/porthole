@@ -24,16 +24,16 @@ RUN set -xe \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
          bash \
+         curl \
          locales \
          moreutils \
          sudo \
          socat \
          python3.10 \
          python3-pip \
-    && pip3 install --no-cache-dir --upgrade pip \
+    && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
-        oslo.rootwrap==7.0.1 \
-    && apt-get clean -y \
+         oslo.rootwrap==7.0.1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
