@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 # Reef 18.2.2
 ARG CEPH_RELEASE=reef
 ARG CEPH_RELEASE_TAG=18.2.2-1~jammy
-ARG KUBE_VERSION=1.29.7
+ARG KUBE_VERSION=1.31.0
 
 ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph/debian-18.2.2.patch1/jammy/
 ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph/debian-18.2.2.patch1/jammy/release.asc

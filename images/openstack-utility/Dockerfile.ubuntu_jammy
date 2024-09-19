@@ -26,6 +26,7 @@ RUN set -xe \
     && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
          munch \
+         simplejson \
          oslo.rootwrap==7.0.1 \
          python-openstackclient==6.2.0 \
          python-glanceclient==4.3.0 \
@@ -33,6 +34,7 @@ RUN set -xe \
          python-neutronclient==9.0.0 \
          python-cinderclient==9.3.0 \
          python-heatclient==3.2.0 \
+         python-swiftclient==4.2.0 \
          osc-placement \
     && rm -rf /var/lib/apt/lists/*
 
