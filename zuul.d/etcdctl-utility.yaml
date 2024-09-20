@@ -54,29 +54,4 @@
     vars:
       distro_suffix: ubuntu_jammy
 
-- job:
-    name: airship-porthole-images-focal-build-etcdctl-utility
-    parent: airship-porthole-images-build-etcdctl-utility
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-focal-publish-etcdctl-utility
-    parent: airship-porthole-images-publish-etcdctl-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-bionic-build-etcdctl-utility
-    parent: airship-porthole-images-build-etcdctl-utility
-    vars:
-      distro_suffix: ubuntu_bionic
-
-- job:
-    name: airship-porthole-images-bionic-publish-etcdctl-utility
-    parent: airship-porthole-images-publish-etcdctl-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_bionic
 ...

@@ -54,29 +54,4 @@
     vars:
       distro_suffix: ubuntu_jammy
 
-- job:
-    name: airship-porthole-images-focal-build-mysqlclient-utility
-    parent: airship-porthole-images-build-mysqlclient-utility
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-focal-publish-mysqlclient-utility
-    parent: airship-porthole-images-publish-mysqlclient-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-bionic-build-mysqlclient-utility
-    parent: airship-porthole-images-build-mysqlclient-utility
-    vars:
-      distro_suffix: ubuntu_bionic
-
-- job:
-    name: airship-porthole-images-bionic-publish-mysqlclient-utility
-    parent: airship-porthole-images-publish-mysqlclient-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_bionic
 ...

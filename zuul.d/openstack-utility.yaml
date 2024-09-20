@@ -54,29 +54,4 @@
     vars:
       distro_suffix: ubuntu_jammy
 
-- job:
-    name: airship-porthole-images-focal-build-openstack-utility
-    parent: airship-porthole-images-build-openstack-utility
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-focal-publish-openstack-utility
-    parent: airship-porthole-images-publish-openstack-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-bionic-build-openstack-utility
-    parent: airship-porthole-images-build-openstack-utility
-    vars:
-      distro_suffix: ubuntu_bionic
-
-- job:
-    name: airship-porthole-images-bionic-publish-openstack-utility
-    parent: airship-porthole-images-publish-openstack-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_bionic
 ...

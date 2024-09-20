@@ -54,29 +54,4 @@
     vars:
       distro_suffix: ubuntu_jammy
 
-- job:
-    name: airship-porthole-images-focal-build-ceph-utility
-    parent: airship-porthole-images-build-ceph-utility
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-focal-publish-ceph-utility
-    parent: airship-porthole-images-publish-ceph-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_focal
-
-- job:
-    name: airship-porthole-images-bionic-build-ceph-utility
-    parent: airship-porthole-images-build-ceph-utility
-    vars:
-      distro_suffix: ubuntu_bionic
-
-- job:
-    name: airship-porthole-images-bionic-publish-ceph-utility
-    parent: airship-porthole-images-publish-ceph-utility
-    secrets: *secrets
-    vars:
-      distro_suffix: ubuntu_bionic
 ...

@@ -4,11 +4,17 @@
 
 # When modifying this file `tox -e freeze-req` must be run to regenerate the requirements-frozen.txt.
 kubeconfig
-kubernetes==29.0.0
-pbr<=5.5.1
-requests==2.23.0
-chardet>=3.0.2,<3.1.0
-urllib3>=1.21.1,<=1.25
+kubernetes
+pbr
+requests
+chardet
+urllib3
+# kubeconfig
+# kubernetes==29.0.0
+# pbr<=5.5.1
+# requests==2.23.0
+# chardet>=3.0.2,<3.1.0
+# urllib3>=1.21.1,<=1.25
 
 # Openstack Antelope 2023.1
 # https://releases.openstack.org/antelope/index.html

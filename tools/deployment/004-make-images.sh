@@ -14,7 +14,7 @@
 set -x
 
 
-: "${DISTRO:="ubuntu_focal"}"
+: "${DISTRO:="ubuntu_jammy"}"
 
 env
 

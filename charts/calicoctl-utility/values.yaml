@@ -17,7 +17,7 @@
 
 images:
   tags:
-    calicoctl_utility: 'quay.io/airshipit/porthole-calicoctl-utility:latest-ubuntu_focal'
+    calicoctl_utility: 'quay.io/airshipit/porthole-calicoctl-utility:latest-ubuntu_jammy'
     image_repo_sync: docker.io/docker:18.09.02
   pull_policy: IfNotPresent
   local_registry:
