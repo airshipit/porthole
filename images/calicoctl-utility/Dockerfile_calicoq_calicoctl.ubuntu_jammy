@@ -1,4 +1,4 @@
-ARG FROM=docker.io/ubuntu:jammy
+ARG FROM=quay.io/airshipit/ubuntu:jammy
 ARG DOCKER_REGISTRY=quay.io
 ARG CALICOCTL_IMAGE_PREFIX=tigera/calicoctl
 ARG CALICOCTL_VERSION=v3.28.1

@@ -27,6 +27,7 @@ node = os.uname().nodename
 
 
 class TestComputeUtilityContainer(TestBase):
+
     @classmethod
     def setUpClass(cls):
         cls.deployment_name = cls._get_deployment_name("compute-utility")
@@ -105,9 +106,10 @@ class TestComputeUtilityContainer(TestBase):
                                 f"is not having expected apparmor profile set")
         self.assertEqual(0, len(failures), failures)
 
-    @patch('kube_utility_container.services.utility_container_client.'
-           'UtilityContainerClient._get_utility_container',
-           side_effect=KubePodNotFoundException('utility'))
+    @patch(
+        'kube_utility_container.services.utility_container_client.'
+        'UtilityContainerClient._get_utility_container',
+        side_effect=KubePodNotFoundException('utility'))
     def test_exec_cmd_no_compute_utility_pods_returned(self, mock_list_pods):
         mock_list_pods.return_value = []
         utility_container_client = UtilityContainerClient()

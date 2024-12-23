@@ -109,19 +109,17 @@ class UtilityContainerClient(object):
             raise KubeEnvVarException(kube_server_key)
 
         if os.environ.get(region_key) is not None:
-            conf.set_cluster(
-                name=os.environ.get(region_key),
-                server=server,
-                insecure_skip_tls_verify=True)
+            conf.set_cluster(name=os.environ.get(region_key),
+                             server=server,
+                             insecure_skip_tls_verify=True)
         else:
             raise KubeEnvVarException(region_key)
         username_key = 'OS_USERNAME'
         if os.environ.get(username_key) is not None:
-            conf.set_context(
-                name='context_uc',
-                user=os.environ.get(username_key),
-                namespace='utility',
-                cluster=os.environ.get(region_key))
+            conf.set_context(name='context_uc',
+                             user=os.environ.get(username_key),
+                             namespace='utility',
+                             cluster=os.environ.get(region_key))
         else:
             raise KubeEnvVarException(username_key)
         conf.use_context('context_uc')
@@ -158,8 +156,8 @@ class UtilityContainerClient(object):
             # Get the selectors from the deployment object returned.
             selector_dict = deployment[0].spec.selector.match_labels
             # Convert the selector dictionary to a string object.
-            selectors = ', '.join(
-                "{!s}={!s}".format(k, v) for (k, v) in selector_dict.items())
+            selectors = ', '.join("{!s}={!s}".format(k, v)
+                                  for (k, v) in selector_dict.items())
             return selectors
         else:
             raise KubeDeploymentNotFoundException(

@@ -21,6 +21,7 @@ from kube_utility_container.services.dataloader import \
 
 
 class TestBase(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
         cls.client = UtilityContainerClient()

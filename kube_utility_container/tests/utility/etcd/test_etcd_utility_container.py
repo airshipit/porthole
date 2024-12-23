@@ -25,6 +25,7 @@ from kube_utility_container.tests.utility.base import TestBase
 
 
 class TestEtcdUtilityContainer(TestBase):
+
     @classmethod
     def setUpClass(cls):
         cls.deployment_name = cls._get_deployment_name("etcdctl-utility")
@@ -100,9 +101,10 @@ class TestEtcdUtilityContainer(TestBase):
         self.assertNotEqual(0, len(latest_pod_logs),
                             "Not able to get the latest logs")
 
-    @patch('kube_utility_container.services.utility_container_client.'
-           'UtilityContainerClient._get_utility_container',
-           side_effect=KubePodNotFoundException('utility'))
+    @patch(
+        'kube_utility_container.services.utility_container_client.'
+        'UtilityContainerClient._get_utility_container',
+        side_effect=KubePodNotFoundException('utility'))
     def test_exec_cmd_no_etcdctl_utility_pods_returned(self, mock_list_pods):
         mock_list_pods.return_value = []
         utility_container_client = UtilityContainerClient()

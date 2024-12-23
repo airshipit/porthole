@@ -1,4 +1,4 @@
-ARG FROM=docker.io/ubuntu:jammy
+ARG FROM=quay.io/airshipit/ubuntu:jammy
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -27,15 +27,15 @@ RUN set -xe \
     && pip3 install --no-cache-dir \
          munch \
          simplejson \
-         oslo.rootwrap==7.0.1 \
-         python-openstackclient==6.2.0 \
-         python-glanceclient==4.3.0 \
-         python-novaclient==18.3.0 \
-         python-neutronclient==9.0.0 \
-         python-cinderclient==9.3.0 \
-         python-heatclient==3.2.0 \
-         python-swiftclient==4.2.0 \
-         osc-placement \
+         oslo.rootwrap==7.2.0 \
+         python-openstackclient==6.6.1 \
+         python-swiftclient==4.5.0 \
+         python-glanceclient==4.5.0 \
+         python-novaclient==18.6.0 \
+         python-neutronclient==11.2.0 \
+         python-cinderclient==9.5.0 \
+         python-heatclient==3.5.0 \
+         osc-placement==4.3.0 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
