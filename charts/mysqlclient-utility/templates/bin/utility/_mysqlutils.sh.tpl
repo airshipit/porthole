@@ -13,7 +13,7 @@ function show_databases() {
   DB_ARGS="SHOW DATABASES;"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[2]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <database> <pod_name>
@@ -25,7 +25,7 @@ function show_tables() {
   DB_ARGS="USE ${SHOW_ARGS[2]};SHOW TABLES;"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[3]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[3]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <database> <table> <pod_name>
@@ -37,7 +37,7 @@ function show_rows() {
   DB_ARGS="USE ${SHOW_ARGS[2]};SELECT * FROM ${SHOW_ARGS[3]};"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[4]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[4]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <database> <table> <pod_name>
@@ -49,7 +49,7 @@ function show_schema() {
   DB_ARGS="USE ${SHOW_ARGS[2]};DESC ${SHOW_ARGS[3]};"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[4]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[4]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <pod_name>
@@ -60,7 +60,7 @@ function sql_prompt() {
   MYSQL_CMD=$(database_cmd)
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[2]}" -- ${MYSQL_CMD}
+  kubectl exec -it -n "${SHOW_ARGS[1]}" "${SHOW_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD}
 }
 
 # Params: <namespace> <table> <pod_name>
@@ -77,7 +77,7 @@ function create_table() {
     ( id int(11) NOT NULL AUTO_INCREMENT, name varchar(255) NOT NULL, user_id int(11) DEFAULT 0, PRIMARY KEY (id) );"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${CREATE_ARGS[1]}" "${CREATE_ARGS[3]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${CREATE_ARGS[1]}" "${CREATE_ARGS[3]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <table> <pod_name>
@@ -95,7 +95,7 @@ function create_row() {
     ;UNLOCK TABLES;"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${CREATE_ARGS[1]}" "${CREATE_ARGS[3]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${CREATE_ARGS[1]}" "${CREATE_ARGS[3]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <pod_name>
@@ -111,13 +111,13 @@ function create_user_grants() {
   if [[ -n ${TEST_DB_USER} ]]; then
     MYSQL_CMD=$(database_cmd)
     DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
-    USERS=$(kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
+    USERS=$(kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
     if [[ ${USERS} -eq 1 ]]; then
       DB_CMD="GRANT ALL PRIVILEGES ON ${TEST_DB_NAME}.* TO '${TEST_DB_USER}'@'%'; \
               FLUSH PRIVILEGES;"
 
       # Execute the command in the on-demand pod
-      kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+      kubectl exec -it -n "${CREATE_GRANTS_ARGS[1]}" "${CREATE_GRANTS_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}"
     else
       echo "Test user does not exist in namespace ${NAMESPACE}."
     fi
@@ -150,7 +150,7 @@ function query_user() {
     #    | test_user      |
     #    +----------------+
     #    1 row in set (0.00 sec)
-    USERS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep ${TEST_DB_USER} | wc -l)
+    USERS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep ${TEST_DB_USER} | wc -l)
     if [[ ${USERS} -ne 1 ]]; then
       # There should only be one user
       echo "${TEST_DB_USER} does not exist"
@@ -169,7 +169,7 @@ function query_user() {
     #    | GRANT ALL PRIVILEGES ON `test`.* TO 'test_user'@'%'                                                           |
     #    +---------------------------------------------------------------------------------------------------------------+
     #    2 rows in set (0.00 sec)
-    GRANTS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep "GRANT.*${TEST_DB_USER}" | wc -l)
+    GRANTS=$(kubectl exec -it -n "${QUERY_ARGS[1]}" "${QUERY_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}" | grep "GRANT.*${TEST_DB_USER}" | wc -l)
     if [[ ${GRANTS} -ne 2 ]]; then
       # There should only be 2 GRANT statements for this user
       echo "${TEST_DB_USER} does not have the correct grants"
@@ -194,13 +194,13 @@ function delete_user_grants() {
   if [[ -n ${TEST_DB_USER} ]]; then
     MYSQL_CMD=$(database_cmd)
     DB_CMD="SELECT user FROM mysql.user WHERE user='${TEST_DB_USER}';"
-    USERS=$(kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
+    USERS=$(kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}" 2>/dev/null | grep ${TEST_DB_USER} | wc -l)
     if [[ ${USERS} -eq 1 ]]; then
       DB_CMD="REVOKE ALL PRIVILEGES ON ${TEST_DB_NAME}.* FROM '${TEST_DB_USER}'@'%'; \
               FLUSH PRIVILEGES;"
 
       # Execute the command in the on-demand pod
-      kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -- ${MYSQL_CMD} --execute="${DB_CMD}"
+      kubectl exec -it -n "${DELETE_GRANTS_ARGS[1]}" "${DELETE_GRANTS_ARGS[2]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="${DB_CMD}"
     else
       echo "Test user does not exist in namespace ${NAMESPACE}."
     fi
@@ -222,7 +222,7 @@ function delete_row() {
   DB_ARGS="USE $TEST_DB_NAME;DELETE FROM ${DELETE_ARGS[2]} WHERE ${DELETE_ARGS[3]} = '${DELETE_ARGS[4]}';"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${DELETE_ARGS[1]}" "${DELETE_ARGS[5]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${DELETE_ARGS[1]}" "${DELETE_ARGS[5]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <tablename> <pod_name>
@@ -237,7 +237,7 @@ function delete_table() {
   DB_ARGS="USE $TEST_DB_NAME;DROP TABLE IF EXISTS ${DELETE_ARGS[2]};"
 
   # Execute the command in the on-demand pod
-  kubectl exec -it -n "${DELETE_ARGS[1]}" "${DELETE_ARGS[3]}" -- ${MYSQL_CMD} --execute="$DB_ARGS"
+  kubectl exec -it -n "${DELETE_ARGS[1]}" "${DELETE_ARGS[3]}" -c mariadb-ondemand -- ${MYSQL_CMD} --execute="$DB_ARGS"
 }
 
 # Params: <namespace> <ondemand_pod>
@@ -249,13 +249,13 @@ function delete_backups() {
   NAMESPACE=${DELETE_ARGS[1]}
   ONDEMAND_POD=${DELETE_ARGS[2]}
 
-  LOCAL_LIST=$(kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh list_archives | grep ${TEST_DB_NAME})
+  LOCAL_LIST=$(kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c mariadb-ondemand -- /tmp/restore_mariadb.sh list_archives | grep ${TEST_DB_NAME})
   if [[ $? -ne 0 ]]; then
     echo "Could not retrieve the list of local test archives."
     # Don't return at this point - best effort to delete all we can
   else
     for ARCHIVE in ${LOCAL_LIST}; do
-      kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh delete_archive ${ARCHIVE}
+      kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c mariadb-ondemand -- /tmp/restore_mariadb.sh delete_archive ${ARCHIVE}
       if [[ $? -ne 0 ]]; then
         echo "Could not delete local test archive ${ARCHIVE}"
       else
@@ -264,12 +264,12 @@ function delete_backups() {
     done
   fi
 
-  REMOTE_LIST=$(kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh list_archives remote | grep ${TEST_DB_NAME})
+  REMOTE_LIST=$(kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c mariadb-ondemand -- /tmp/restore_mariadb.sh list_archives remote | grep ${TEST_DB_NAME})
   if [[ $? -ne 0 ]]; then
     echo "Could not retrieve the list of remote test archives."
   else
     for ARCHIVE in ${REMOTE_LIST}; do
-      kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -- /tmp/restore_mariadb.sh delete_archive ${ARCHIVE} remote
+      kubectl exec -i -n "${NAMESPACE}" "${ONDEMAND_POD}" -c mariadb-ondemand -- /tmp/restore_mariadb.sh delete_archive ${ARCHIVE} remote
       if [[ $? -ne 0 ]]; then
         echo "Could not delete remote test archive ${ARCHIVE}"
       else
