@@ -30,7 +30,7 @@ RUN set -xe \
          screen \
          sudo \
          jq \
-         postgresql-client \
+         postgresql-client-14 \
          postgresql-common \
          python3.10 \
          python3-pip \
