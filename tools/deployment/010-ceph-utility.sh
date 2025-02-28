@@ -54,7 +54,7 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
   --namespace=$namespace \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
-  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(./tools/deployment/common/get-values-overrides.sh  ceph-provisioners)} \
+  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(helm osh get-values-overrides  ceph-provisioners)} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
 # Deploy Ceph-Utility
@@ -69,4 +69,4 @@ helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$na
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
-./tools/deployment/common/wait-for-pods.sh $namespace
+helm osh wait-for-pods $namespace

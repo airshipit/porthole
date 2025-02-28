@@ -15,7 +15,7 @@ set -xe
 namespace=utility
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_CALICOCTL_UTILITY:="$(./tools/deployment/get-values-overrides.sh calicoctl-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_CALICOCTL_UTILITY:="$(helm osh get-values-overrides calicoctl-utility)"}
 
 helm upgrade --install calicoctl-utility ./artifacts/calicoctl-utility.tgz --namespace=$namespace \
     ${PORTHOLE_EXTRA_HELM_ARGS_CALICOCTL_UTILITY}
@@ -23,4 +23,4 @@ helm upgrade --install calicoctl-utility ./artifacts/calicoctl-utility.tgz --nam
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
-./tools/deployment/common/wait-for-pods.sh $namespace
+helm osh wait-for-pods $namespace

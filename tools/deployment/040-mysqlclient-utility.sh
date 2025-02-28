@@ -32,7 +32,7 @@ manifests:
 EOF
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
-: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(./tools/deployment/common/get-values-overrides.sh mariadb)"}
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides mariadb)"}
 
 #NOTE: Lint and package chart
 make -C "${HELM_CHART_ROOT_PATH}" mariadb
@@ -47,7 +47,7 @@ helm upgrade --install mariadb ${HELM_CHART_ROOT_PATH}/mariadb \
     ${OSH_EXTRA_HELM_ARGS_MARIADB}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh openstack
+helm osh wait-for-pods openstack
 
 # Deploy mysqlclient-utility
 cd "${CURRENT_DIR}"
@@ -64,4 +64,4 @@ helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz -
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
-./tools/deployment/common/wait-for-pods.sh $namespace
+helm osh wait-for-pods $namespace

@@ -24,7 +24,7 @@ make postgresql
 
 #NOTE: Deploy command
 : ${OSH_INFRA_EXTRA_HELM_ARGS:=""}
-: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(./tools/deployment/common/get-values-overrides.sh postgresql)"}
+: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides postgresql)"}
 
 helm upgrade --install postgresql ./postgresql \
     --namespace=osh-infra \
@@ -36,7 +36,7 @@ helm upgrade --install postgresql ./postgresql \
     ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL}
 
 #NOTE: Wait for deploy
-./tools/deployment/common/wait-for-pods.sh osh-infra
+helm osh wait-for-pods osh-infra
 
 bash -c "./tools/deployment/common/ingress.sh"
 # Deploy postgresql-utility
@@ -55,4 +55,4 @@ helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz --n
 # Wait for Deployment
 : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
 cd "${OSH_INFRA_PATH}"
-./tools/deployment/common/wait-for-pods.sh $namespace
+helm osh wait-for-pods $namespace
