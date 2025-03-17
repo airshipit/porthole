@@ -15,7 +15,7 @@ set -xe
 namespace="utility"
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY:="$(./tools/deployment/get-values-overrides.sh etcdctl-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY:="$(helm osh get-values-overrides -c etcdctl-utility)"}
 
 helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz --namespace=$namespace \
     ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY}

@@ -16,7 +16,7 @@ set -xe
 namespace="utility"
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY:="$(./tools/deployment/get-values-overrides.sh compute-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY:="$(helm osh get-values-overrides -c compute-utility)"}
 
 helm upgrade --install compute-utility ./artifacts/compute-utility.tgz --namespace=$namespace \
     ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY}

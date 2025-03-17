@@ -46,6 +46,10 @@
     parent: airship-porthole-images-build-postgresql-utility
     vars:
       distro_suffix: ubuntu_jammy
+      ingress_setup: true
+      ingress_openstack_setup: false
+      ingress_ceph_setup: false
+      ingress_osh_infra_setup: true
 
 - job:
     name: airship-porthole-images-jammy-publish-postgresql-utility

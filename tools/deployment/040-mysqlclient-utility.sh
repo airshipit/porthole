@@ -32,10 +32,10 @@ manifests:
 EOF
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${OSH_INFRA_PATH:="../openstack-helm-infra"}"}"
-: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides mariadb)"}
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides -c mariadb)"}
 
 #NOTE: Lint and package chart
-make -C "${HELM_CHART_ROOT_PATH}" mariadb
+make -C "${HELM_CHART_ROOT_PATH}" mariadb SKIP_CHANGELOG=1
 
 #NOTE: Deploy command
 : ${OSH_EXTRA_HELM_ARGS:=""}
@@ -55,7 +55,7 @@ cd "${CURRENT_DIR}"
 namespace="utility"
 
 export HELM_CHART_ROOT_PATH="${PORTHOLE_PATH:="../porthole/charts"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY:="$(./tools/deployment/get-values-overrides.sh mysqlclient-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY:="$(helm osh get-values-overrides -c mysqlclient-utility)"}
 
 helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz --namespace=$namespace \
     --set "conf.mariadb_backup_restore.enabled_namespaces=openstack" \

@@ -20,11 +20,11 @@ cd "${OSH_INFRA_PATH}"
 # bash -c "./tools/deployment/common/postgresql.sh"
 
 #NOTE: Lint and package chart
-make postgresql
+make postgresql SKIP_CHANGELOG=1
 
 #NOTE: Deploy command
 : ${OSH_INFRA_EXTRA_HELM_ARGS:=""}
-: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides postgresql)"}
+: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides -c postgresql)"}
 
 helm upgrade --install postgresql ./postgresql \
     --namespace=osh-infra \
@@ -38,14 +38,13 @@ helm upgrade --install postgresql ./postgresql \
 #NOTE: Wait for deploy
 helm osh wait-for-pods osh-infra
 
-bash -c "./tools/deployment/common/ingress.sh"
 # Deploy postgresql-utility
 cd ${CURRENT_DIR}
 
 namespace="utility"
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY:="$(./tools/deployment/get-values-overrides.sh postgresql-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY:="$(./tools/deployment/get-values-overrides.sh -c postgresql-utility)"}
 
 helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz --namespace=$namespace \
     --set "conf.postgresql_backup_restore.enabled_namespaces=osh-infra" \

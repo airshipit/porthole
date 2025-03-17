@@ -24,7 +24,7 @@ RUN set -xe \
          gnupg \
          curl \
     && curl -LsS -O https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
-    && bash mariadb_repo_setup --mariadb-server-version=${MARIADB_VERSION} \
+    && bash mariadb_repo_setup --mariadb-server-version=${MARIADB_VERSION} --mariadb-maxscale-version=6  \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
          bash \
@@ -51,7 +51,7 @@ RUN set -xe \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
-    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/${PERCONA_TOOLKIT_VERSION}/binary/tarball/percona-toolkit-${PERCONA_TOOLKIT_VERSION}_$(arch).tar.gz \
+    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/${PERCONA_TOOLKIT_VERSION}/binary/tarball/percona-toolkit-${PERCONA_TOOLKIT_VERSION}_x86_64.tar.gz \
        | tar -zC /usr/local/bin/ --strip-components=2 --wildcards -x "*/*/pt-show-grants" \
     && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
     && apt-get install -y --no-install-recommends /tmp/rclone.deb \

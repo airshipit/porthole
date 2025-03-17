@@ -15,7 +15,7 @@ set -xe
 namespace="utility"
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY:="$(./tools/deployment/get-values-overrides.sh openstack-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY:="$(helm osh get-values-overrides -c openstack-utility)"}
 
 helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz --namespace=$namespace \
     ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY}

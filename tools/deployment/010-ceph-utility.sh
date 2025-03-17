@@ -54,14 +54,14 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
   --namespace=$namespace \
   --values=/tmp/ceph-utility-config.yaml \
   ${OSH_EXTRA_HELM_ARGS} \
-  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(helm osh get-values-overrides  ceph-provisioners)} \
+  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(helm osh get-values-overrides -c ceph-provisioners)} \
   ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
 # Deploy Ceph-Utility
 cd ${CURRENT_DIR}
 
 export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(./tools/deployment/get-values-overrides.sh ceph-utility)"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(helm osh get-values-overrides -c ceph-utility)"}
 
 helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace \
     ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY}
