@@ -311,7 +311,7 @@
         chdir: ../porthole
 
 - job:
-    name:  airship-porthole-deploy-functional-tests-kubeadm
+    name: airship-porthole-deploy-functional-tests-kubeadm
     abstract: true
     description: Deploys all UC's and Executes functional tests
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy

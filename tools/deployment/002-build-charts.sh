@@ -7,7 +7,7 @@ cd "${PORTHOLE_PATH}" || exit
 
 mkdir -p artifacts
 
-make all
+make all || { echo "[!] Failed to build Helm charts. Aborting..."; exit 1; }
 
 cd charts || exit
 for i in $(find  . -maxdepth 1  -name "*.tgz"  -print | sed -e 's/\-[0-9.]*\.tgz//'| cut -d / -f 2 | sort)

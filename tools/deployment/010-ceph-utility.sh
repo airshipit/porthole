@@ -1,23 +1,37 @@
 #!/bin/bash
-CURRENT_DIR="$(pwd)"
- : "${OSH_PATH:="../openstack-helm"}"
- : "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
 
+set -xe
+
+CURRENT_DIR="$(pwd)"
+
+# NOTE: Define variables
+: ${OSH_PATH:="../openstack-helm"}
+: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
+: ${NAMESPACE:=utility}
 
 cd "${OSH_INFRA_PATH}" || exit
 
-# Lint and package ceph charts
+# NOTE: Lint and package ceph helm charts
 for CHART in ceph-mon ceph-osd ceph-client ceph-provisioners; do
-  make "${CHART}"
+  make "${CHART}" SKIP_CHANGELOG=1
 done
 
 ./tools/deployment/ceph/ceph.sh
 
-namespace="utility"
-: ${OSH_EXTRA_HELM_ARGS:=""}
-
 cd "${OSH_INFRA_PATH}"
-#Deploy Ceph-provisioners
+
 tee /tmp/ceph-utility-config.yaml <<EOF
 endpoints:
   identity:
@@ -50,23 +64,33 @@ pod:
       init: runtime/default
 EOF
 
-helm upgrade --install ceph-utility-config ./ceph-provisioners \
-  --namespace=$namespace \
-  --values=/tmp/ceph-utility-config.yaml \
-  ${OSH_EXTRA_HELM_ARGS} \
-  ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:-$(helm osh get-values-overrides -c ceph-provisioners)} \
-  ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
+: ${OSH_EXTRA_HELM_ARGS:=""}
+: ${OSH_INFRA_VALUES_OVERRIDES_PATH:="../openstack-helm-infra/values_overrides"}
+: ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_INFRA_VALUES_OVERRIDES_PATH} -c ceph-provisioners ${FEATURES})"}
 
-# Deploy Ceph-Utility
+# NOTE: Deploy ceph-provisioners helm chart
+helm upgrade --install ceph-utility-config ./ceph-provisioners \
+             --namespace=${NAMESPACE} \
+             --values=/tmp/ceph-utility-config.yaml \
+             ${OSH_EXTRA_HELM_ARGS} \
+             ${OSH_INFRA_EXTRA_HELM_ARGS_CEPH_DEPLOY} \
+             ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
+
+# NOTE: Wait for deploy
+helm osh wait-for-pods ${NAMESPACE}
+
 cd ${CURRENT_DIR}
 
-export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(helm osh get-values-overrides -c ceph-utility)"}
+# NOTE: Define variables
+: ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
+: ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c ceph-utility ${FEATURES})"}
 
-helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz --namespace=$namespace \
-    ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY}
+# NOTE: Deploy ceph-utility helm chart
+helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz \
+             --namespace=${NAMESPACE} \
+             ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY}
 
-# Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
-cd "${OSH_INFRA_PATH}"
-helm osh wait-for-pods $namespace
+# NOTE: Wait for deploy
+helm osh wait-for-pods ${NAMESPACE}
+

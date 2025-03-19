@@ -12,16 +12,18 @@
 #    under the License.
 
 set -xe
-namespace="utility"
 
-export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY:="$(helm osh get-values-overrides -c etcdctl-utility)"}
+# NOTE: Define variables
+: ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
+: ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c etcdctl-utility ${FEATURES})"}
+: ${NAMESPACE:=utility}
 
-helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz --namespace=$namespace \
-    ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY}
+# NOTE: Deploy etcdctl-utility helm chart
+helm upgrade --install etcdctl-utility ./artifacts/etcdctl-utility.tgz \
+             --namespace=${NAMESPACE} \
+             ${PORTHOLE_EXTRA_HELM_ARGS_ETCDCTL_UTILITY}
 
+# NOTE: Wait for deploy
+helm osh wait-for-pods ${NAMESPACE}
 
-# Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
-cd "${OSH_INFRA_PATH}"
-helm osh wait-for-pods $namespace

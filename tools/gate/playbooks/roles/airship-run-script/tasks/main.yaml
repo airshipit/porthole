@@ -38,4 +38,5 @@
     OSH_INFRA_COMMIT: "{{ OSH_INFRA_COMMIT | default('cfff60ec10a6c386f38db79bb9f59a552c2b032f') }}"
     OSH_COMMIT: "{{ OSH_COMMIT | default('2d9457e34ca4200ed631466bd87569b0214c92e7') }}"
     COREDNS_VERSION: "{{ coredns_version | default('v1.11.1') }}"
+    FEATURES: "images {{ osh_params.feature_gates | default('') | regex_replace(',', ' ')  }} {{ osh_params.openstack_release | default('') }} {{ osh_params.container_distro_name | default('') }}_{{ osh_params.container_distro_version | default('') }} {{ osh_params.container_distro_name | default('') }}"
 ...

@@ -12,15 +12,18 @@
 #    under the License.
 
 set -xe
-namespace="utility"
 
-export HELM_CHART_ROOT_PATH="${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}"
-: ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY:="$(helm osh get-values-overrides -c openstack-utility)"}
+# NOTE: Define variables
+: ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
+: ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c openstack-utility ${FEATURES})"}
+: ${NAMESPACE:=utility}
 
-helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz --namespace=$namespace \
-    ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY}
+# NOTE: Deploy openstack-utility helm chart
+helm upgrade --install openstack-utility ./artifacts/openstack-utility.tgz \
+             --namespace=${NAMESPACE} \
+             ${PORTHOLE_EXTRA_HELM_ARGS_OPENSTACK_UTILITY}
 
-# Wait for Deployment
-: "${OSH_INFRA_PATH:="../openstack-helm-infra"}"
-cd "${OSH_INFRA_PATH}"
-helm osh wait-for-pods $namespace
+# NOTE: Wait for deploy
+helm osh wait-for-pods ${NAMESPACE}
+
