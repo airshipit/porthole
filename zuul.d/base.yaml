@@ -79,11 +79,11 @@
     parent: openstack-tox-py310
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     roles:
-      - zuul: openstack/openstack-helm-infra
+      - zuul: airship/kubernetes-entrypoint
+      - zuul: openstack/openstack-helm
       - zuul: zuul/zuul-jobs
     required-projects:
       - name: openstack/openstack-helm
-      - name: openstack/openstack-helm-infra
       - name: openstack/openstack-helm-plugin
       - name: airship/treasuremap
         override-checkout: v1.9
@@ -103,6 +103,7 @@
     post-run:
       - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
+      treasuremap_ref: v1.9
       extra_volume:
         size: 80G
         type: Linux
@@ -119,8 +120,8 @@
       loopback_device: /dev/loop100
       loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
       ceph_osd_data_device: /dev/loop100
-      kube_version_repo: "v1.31"
-      kube_version: "1.31.3-1.1"
+      kube_version_repo: "v1.32"
+      kube_version: "1.32.1-1.1"
       calico_setup: true
       calico_version: "v3.27.4"
       cilium_setup: false
@@ -132,7 +133,7 @@
       helm_version: "v3.14.0"
       crictl_version: "v1.30.1"
       zuul_osh_relative_path: ../../openstack/openstack-helm
-      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
       gate_scripts_relative_path: .
       run_helm_tests: "no"
@@ -141,9 +142,9 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_INFRA_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_COMMIT: 450f355bc7dd68c449700c8c5f3ff89d45103474
+      HTK_COMMIT: master
+      OSH_INFRA_COMMIT: master
+      OSH_COMMIT: master
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -156,37 +157,17 @@
         - ./tools/deployment/050-openstack-utility.sh
         - ./tools/deployment/060-postgresql-utility.sh
 
-
-# - job:
-#     name: airship-porthole-openstack-tox-py310
-#     parent: openstack-tox-py310
-#     description: Runs cover job on jammy
-#     nodeset: airship-porthole-jammy-single-node
-#     pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-#     timeout: 7200
-#     vars:
-#       distro_suffix: ubuntu_jammy
-#       gate_scripts:
-#         - ./tools/deployment/005-calicoctl-utility.sh
-#         - ./tools/deployment/010-ceph-utility.sh
-#         - ./tools/deployment/020-compute-utility.sh
-#         - ./tools/deployment/030-etcdctl-utility.sh
-#         - ./tools/deployment/040-mysqlclient-utility.sh
-#         - ./tools/deployment/050-openstack-utility.sh
-#         - ./tools/deployment/060-postgresql-utility.sh
-#       args:
-#         chdir: ../porthole
 
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
     parent: openstack-tox-cover
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     roles:
-      - zuul: openstack/openstack-helm-infra
+      - zuul: airship/kubernetes-entrypoint
+      - zuul: openstack/openstack-helm
       - zuul: zuul/zuul-jobs
     required-projects:
       - name: openstack/openstack-helm
-      - name: openstack/openstack-helm-infra
       - name: openstack/openstack-helm-plugin
       - name: airship/treasuremap
         override-checkout: v1.9
@@ -206,6 +187,7 @@
     post-run:
       - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
+      treasuremap_ref: v1.9
       extra_volume:
         size: 80G
         type: Linux
@@ -222,8 +204,8 @@
       loopback_device: /dev/loop100
       loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
       ceph_osd_data_device: /dev/loop100
-      kube_version_repo: "v1.31"
-      kube_version: "1.31.3-1.1"
+      kube_version_repo: "v1.32"
+      kube_version: "1.32.1-1.1"
       calico_setup: true
       calico_version: "v3.27.4"
       cilium_setup: false
@@ -235,7 +217,7 @@
       helm_version: "v3.14.0"
       crictl_version: "v1.30.1"
       zuul_osh_relative_path: ../../openstack/openstack-helm
-      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
       gate_scripts_relative_path: .
       run_helm_tests: "no"
@@ -244,9 +226,9 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_INFRA_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_COMMIT: 450f355bc7dd68c449700c8c5f3ff89d45103474
+      HTK_COMMIT: master
+      OSH_INFRA_COMMIT: master
+      OSH_COMMIT: master
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -260,26 +242,6 @@
         - ./tools/deployment/060-postgresql-utility.sh
 
 
-
-# - job:
-#     name: airship-porthole-openstack-tox-cover
-#     parent: openstack-tox-cover
-#     description: Runs cover job on jammy
-#     nodeset: airship-porthole-jammy-single-node
-#     pre-run: tools/gate/playbooks/airship-porthole-gate-runner.yaml
-#     timeout: 7200
-#     vars:
-#       distro_suffix: ubuntu_jammy
-#       gate_scripts:
-#         - ./tools/deployment/005-calicoctl-utility.sh
-#         - ./tools/deployment/010-ceph-utility.sh
-#         - ./tools/deployment/020-compute-utility.sh
-#         - ./tools/deployment/030-etcdctl-utility.sh
-#         - ./tools/deployment/040-mysqlclient-utility.sh
-#         - ./tools/deployment/050-openstack-utility.sh
-#         - ./tools/deployment/060-postgresql-utility.sh
-#       args:
-#         chdir: ../porthole
 
 - job:
     name: airship-porthole-images
@@ -316,11 +278,11 @@
     description: Deploys all UC's and Executes functional tests
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     roles:
-      - zuul: openstack/openstack-helm-infra
+      - zuul: airship/kubernetes-entrypoint
+      - zuul: openstack/openstack-helm
       - zuul: zuul/zuul-jobs
     required-projects:
       - name: openstack/openstack-helm
-      - name: openstack/openstack-helm-infra
       - name: openstack/openstack-helm-plugin
       - name: airship/treasuremap
         override-checkout: v1.9
@@ -342,6 +304,7 @@
     post-run:
       - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
+      treasuremap_ref: v1.9
       extra_volume:
         size: 80G
         type: Linux
@@ -358,8 +321,8 @@
       loopback_device: /dev/loop100
       loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
       ceph_osd_data_device: /dev/loop100
-      kube_version_repo: "v1.31"
-      kube_version: "1.31.3-1.1"
+      kube_version_repo: "v1.32"
+      kube_version: "1.32.1-1.1"
       calico_setup: true
       calico_version: "v3.27.4"
       cilium_setup: false
@@ -371,7 +334,7 @@
       helm_version: "v3.14.0"
       crictl_version: "v1.30.1"
       zuul_osh_relative_path: ../../openstack/openstack-helm
-      zuul_osh_infra_relative_path: ../../openstack/openstack-helm-infra
+      zuul_osh_infra_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
       gate_scripts_relative_path: .
       run_helm_tests: "no"
@@ -380,9 +343,9 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_INFRA_COMMIT: 3a4fb2185dec899a2f77e6ff46a04947ac89cd6c
-      OSH_COMMIT: 450f355bc7dd68c449700c8c5f3ff89d45103474
+      HTK_COMMIT: master
+      OSH_INFRA_COMMIT: master
+      OSH_COMMIT: master
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -418,39 +381,6 @@
         container_distro_version: jammy
       args:
         chdir: ../porthole
-
-# - job:
-#     name: airship-porthole-deploy-functional-tests
-#     abstract: true
-#     description: Deploys all UC's and Executes functional tests
-#     nodeset: airship-porthole-jammy-single-node
-#     timeout: 7200
-#     run:
-#       - tools/gate/playbooks/airship-porthole-gate-runner.yaml
-#       - tools/gate/playbooks/make-functional-tests.yaml
-#     post-run:
-#       - tools/gate/playbooks/airship-porthole-collect-logs.yaml
-#     vars:
-#       gate_scripts:
-#         - ./tools/deployment/005-calicoctl-utility.sh
-#         - ./tools/deployment/010-ceph-utility.sh
-#         - ./tools/deployment/020-compute-utility.sh
-#         - ./tools/deployment/030-etcdctl-utility.sh
-#         - ./tools/deployment/040-mysqlclient-utility.sh
-#         - ./tools/deployment/050-openstack-utility.sh
-#         - ./tools/deployment/060-postgresql-utility.sh
-#       args:
-#         chdir: ../porthole
-
-# - job:
-#     name: airship-porthole-deploy-functional-tests-ubuntu_jammy
-#     parent: airship-porthole-deploy-functional-tests
-#     vars:
-#       distro_suffix: ubuntu_jammy
-#       osh_params:
-#         openstack_release: antelope
-#         container_distro_name: ubuntu
-#         container_distro_version: jammy
 
 
 - secret:
