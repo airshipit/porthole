@@ -142,9 +142,8 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: master
-      OSH_INFRA_COMMIT: master
-      OSH_COMMIT: master
+      HTK_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
+      OSH_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -226,9 +225,8 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: master
-      OSH_INFRA_COMMIT: master
-      OSH_COMMIT: master
+      HTK_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
+      OSH_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -343,9 +341,8 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
       HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz
-      HTK_COMMIT: master
-      OSH_INFRA_COMMIT: master
-      OSH_COMMIT: master
+      HTK_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
+      OSH_COMMIT: 49c117443391cec75e0bd52bb4a9d033325927ad
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
