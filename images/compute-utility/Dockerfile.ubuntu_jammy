@@ -39,8 +39,8 @@ RUN set -xe \
     && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
          oslo.rootwrap==7.2.0 \
-    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
-       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
+    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-node-linux-amd64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kube*" \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
