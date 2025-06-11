@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.32.2
+ARG KUBE_VERSION=1.33.1
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -50,7 +50,8 @@ RUN set -xe \
     && rm -rf \
          /tmp/* \
          /var/cache/debconf/* \
-         /var/lib/apt/lists/*
+         /var/lib/apt/lists/* \
+         /etc/ssl/private/ssl-cert-snakeoil.*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
