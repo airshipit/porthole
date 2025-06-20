@@ -22,6 +22,7 @@
         - airship-porthole-images-jammy-build-calicoctl-utility
         - airship-porthole-images-jammy-build-ceph-utility
         - airship-porthole-images-jammy-build-compute-utility
+        - airship-porthole-images-jammy-build-kubeadm-utility
         - airship-porthole-images-jammy-build-etcdctl-utility
         - airship-porthole-images-jammy-build-mysqlclient-utility
         - airship-porthole-images-jammy-build-openstack-utility
@@ -43,6 +44,7 @@
         - airship-porthole-images-jammy-build-calicoctl-utility
         - airship-porthole-images-jammy-build-ceph-utility
         - airship-porthole-images-jammy-build-compute-utility
+        - airship-porthole-images-jammy-build-kubeadm-utility
         - airship-porthole-images-jammy-build-etcdctl-utility
         - airship-porthole-images-jammy-build-mysqlclient-utility
         - airship-porthole-images-jammy-build-openstack-utility
@@ -55,6 +57,7 @@
         - airship-porthole-images-jammy-publish-calicoctl-utility
         - airship-porthole-images-jammy-publish-ceph-utility
         - airship-porthole-images-jammy-publish-compute-utility
+        - airship-porthole-images-jammy-publish-kubeadm-utility
         - airship-porthole-images-jammy-publish-etcdctl-utility
         - airship-porthole-images-jammy-publish-mysqlclient-utility
         - airship-porthole-images-jammy-publish-openstack-utility
