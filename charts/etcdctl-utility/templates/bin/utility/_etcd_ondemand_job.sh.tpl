@@ -146,43 +146,24 @@ EOF
 
 if $ETCD_REMOTE_BACKUP_ENABLED; then
   export ETCD_RGW_SECRET={{ $envAll.Values.conf.etcd_backup_restore.secrets.kube_system.rgw_secret }}
-  cat >> $TMP_FILE << EOF
-            - name: OS_AUTH_URL
+
+  # Get the list of keys and their values from the secret
+  SECRET_DATA=$(kubectl get secret $ETCD_RGW_SECRET -n $ETCD_POD_NAMESPACE -o jsonpath="{.data}")
+
+  # Iterate over each key
+  for KEY_NAME in $(echo $SECRET_DATA | jq -r 'keys[]'); do
+    KEY_VALUE=$(echo $SECRET_DATA | jq -r --arg key "$KEY_NAME" '.[$key]')
+    if [ -n "$KEY_VALUE" ]; then
+      cat >> $TMP_FILE << EOF
+            - name: ${KEY_NAME}
               valueFrom:
                 secretKeyRef:
                   name: ${ETCD_RGW_SECRET}
-                  key: OS_AUTH_URL
-            - name: OS_REGION_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_REGION_NAME
-            - name: OS_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_USERNAME
-            - name: OS_PROJECT_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_PROJECT_NAME
-            - name: OS_USER_DOMAIN_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_USER_DOMAIN_NAME
-            - name: OS_PROJECT_DOMAIN_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_PROJECT_DOMAIN_NAME
-            - name: OS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: ${ETCD_RGW_SECRET}
-                  key: OS_PASSWORD
+                  key: ${KEY_NAME}
 EOF
+    fi
+  done
+
 fi
 
 cat >> $TMP_FILE << EOF
