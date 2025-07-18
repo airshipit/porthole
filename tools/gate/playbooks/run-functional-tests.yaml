@@ -10,7 +10,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- hosts: primary
+- name: Run functional tests on primary host
+  hosts: primary
   tasks:
 
     - name: Execute the make target for unit testing
