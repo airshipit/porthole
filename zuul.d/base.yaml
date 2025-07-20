@@ -62,6 +62,7 @@
         - airship-porthole-images-jammy-publish-openstack-utility
         - airship-porthole-images-jammy-publish-postgresql-utility
 
+
 - job:
     name: airship-porthole-images
     abstract: true
@@ -199,6 +200,7 @@
         container_distro_name: ubuntu
         container_distro_version: jammy
     irrelevant-files: *irrelevant-files
+
 - job:
     name: airship-porthole-openstack-tox-py310-kubeadm
     parent: porthole-base
@@ -209,7 +211,6 @@
       args:
         chdir: ../porthole
     irrelevant-files: *irrelevant-files
-
 
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
