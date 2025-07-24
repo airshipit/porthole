@@ -16,8 +16,7 @@ set -xe
 CURRENT_DIR="$(pwd)"
 
 # NOTE: Define variables
-: ${OSH_PATH:="../openstack-helm"}
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
+: ${OSH_PATH:="../../openstack/openstack-helm"}
 
 tee /tmp/mariadb-server-config.yaml <<EOF
 conf:
@@ -32,14 +31,14 @@ manifests:
   pvc_backup: true
 EOF
 
-cd "${OSH_INFRA_PATH}" || exit
+cd "${OSH_PATH}" || exit
 
 # NOTE: Lint and package mariadb helm chart
 make mariadb SKIP_CHANGELOG=1
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
-: ${OSH_INFRA_VALUES_OVERRIDES_PATH:="../openstack-helm-infra/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides -p ${OSH_INFRA_VALUES_OVERRIDES_PATH} -c mariadb ${FEATURES})"}
+: ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c mariadb ${FEATURES})"}
 
 # NOTE: Deploy mariadb helm chart
 helm upgrade --install mariadb ./mariadb \

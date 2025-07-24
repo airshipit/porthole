@@ -28,8 +28,8 @@ make ceph-adapter-rook SKIP_CHANGELOG=1
 ./tools/deployment/ceph/ceph-rook.sh
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
-: ${OSH_VALUES_OVERRIDES_PATH:="../openstack-helm/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-rook-adapter ${FEATURES})"}
+: ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
+: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-adapter-rook ${FEATURES})"}
 
 # NOTE: Deploy ceph-adapter-rook helm chart
 helm upgrade --install ceph-utility-config ./ceph-adapter-rook \

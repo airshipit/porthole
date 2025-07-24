@@ -16,17 +16,16 @@ set -xe
 CURRENT_DIR="$(pwd)"
 
 # NOTE: Define variables
-: ${OSH_PATH:="../openstack-helm"}
-: ${OSH_INFRA_PATH:="../openstack-helm-infra"}
+: ${OSH_PATH:="../../openstack/openstack-helm"}
 
-cd "${OSH_INFRA_PATH}" || exit
+cd "${OSH_PATH}" || exit
 
 # NOTE: Lint and package postgresql helm chart
 make postgresql SKIP_CHANGELOG=1
 
-: ${OSH_INFRA_EXTRA_HELM_ARGS:=""}
-: ${OSH_INFRA_VALUES_OVERRIDES_PATH:="../openstack-helm-infra/values_overrides"}
-: ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides -p ${OSH_INFRA_VALUES_OVERRIDES_PATH} -c postgresql ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS:=""}
+: ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
+: ${OSH_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c postgresql ${FEATURES})"}
 
 # NOTE: Deploy postgresql helm chart
 helm upgrade --install postgresql ./postgresql \
@@ -35,8 +34,8 @@ helm upgrade --install postgresql ./postgresql \
              --set storage.pvc.size=1Gi \
              --set storage.pvc.enabled=true \
              --set pod.replicas.server=1 \
-             ${OSH_INFRA_EXTRA_HELM_ARGS} \
-             ${OSH_INFRA_EXTRA_HELM_ARGS_POSTGRESQL}
+             ${OSH_EXTRA_HELM_ARGS} \
+             ${OSH_EXTRA_HELM_ARGS_POSTGRESQL}
 
 # NOTE: Wait for deploy
 helm osh wait-for-pods osh-infra

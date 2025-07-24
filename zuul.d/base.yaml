@@ -29,9 +29,8 @@
         - airship-porthole-images-jammy-build-postgresql-utility
         - airship-porthole-openstack-tox-py310-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
-        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-caracal
+        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2024-1
         - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2023-2
-
 
     gate:
       jobs:
@@ -48,8 +47,6 @@
         - airship-porthole-images-jammy-build-mysqlclient-utility
         - airship-porthole-images-jammy-build-openstack-utility
         - airship-porthole-images-jammy-build-postgresql-utility
-
-
 
     post:
       jobs:
@@ -93,15 +90,10 @@
         chdir: ../porthole
 
 - job:
-    name: porthole-base
+    name: porthole-infra-deploy
+    parent: treasuremap-airskiff-infra-deploy-base
     abstract: true
-    roles:
-      - zuul: airship/kubernetes-entrypoint
-      - zuul: openstack/openstack-helm
-      - zuul: zuul/zuul-jobs
     required-projects:
-      - name: openstack/openstack-helm
-      - name: openstack/openstack-helm-plugin
       - name: airship/treasuremap
         override-checkout: v1.9
     irrelevant-files: &irrelevant-files
@@ -110,57 +102,13 @@
       - ^etc/.*$
       - ^releasenotes/.*$
       - ^setup.cfg$
-      - ^deckhand/tests/unit/.*$
-    timeout: 10800
-    pre-run:
-      - tools/gate/playbooks/prepare-hosts.yaml
-      - tools/gate/playbooks/mount-volumes.yaml
-      - tools/gate/playbooks/deploy-env.yaml
-      - tools/gate/playbooks/airship-run-scripts.yaml
-    post-run:
-      - tools/gate/playbooks/osh-infra-collect-logs.yaml
     vars:
-      overlay_network_setup: true
-      extra_volume:
-        size: 80G
-        type: Linux
-        mount_point: /opt/ext_vol
-      docker:
-        root_path: "/opt/ext_vol/docker"
-      containerd:
-        root_path: "/opt/ext_vol/containerd"
-      kubeadm:
-        pod_network_cidr: "10.244.0.0/16"
-        service_cidr: "10.96.0.0/16"
-      osh_plugin_repo: "{{ zuul.project.src_dir }}/../../openstack/openstack-helm-plugin"
-      loopback_setup: true
-      loopback_device: /dev/loop100
-      loopback_image: "/opt/ext_vol/openstack-helm/ceph-loop.img"
-      ceph_osd_data_device: /dev/loop100
-      kube_version_repo: "v1.32"
-      kube_version: "1.32.5-1.1"
-      calico_setup: true
-      calico_version: "v3.30.1"
-      cilium_setup: false
-      cilium_version: "1.17.4"
-      flannel_setup: false
-      flannel_version: v0.26.7
-      metallb_setup: true
-      metallb_version: "0.14.9"
-      coredns_resolver_setup: false
-      ingress_setup: true
-      helm_version: "v3.18.1"
-      crictl_version: "v1.33.0"
-      run_helm_tests: "no"
-      openstack_provider_gateway_setup: true
+      args:
+        chdir: ../../airship/porthole
       zuul_osh_relative_path: ../../openstack/openstack-helm
-      zuul_osh_infra_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
-      gate_scripts_relative_path: .
+      gate_scripts_relative_path: ../../airship/porthole
       distro_suffix: ubuntu_jammy
-      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v3.18.4-linux-amd64.tar.gz
-      HTK_COMMIT: 80041dfbb5c22aa67dcd8dfa3332a943aa0d366c
-      OSH_COMMIT: 80041dfbb5c22aa67dcd8dfa3332a943aa0d366c
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -174,54 +122,54 @@
         - ./tools/deployment/060-postgresql-utility.sh
 
 - job:
-    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-caracal
-    parent: porthole-base
+    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2024-1
+    parent: porthole-infra-deploy
     nodeset: porthole-5nodes-ubuntu_jammy
-    run: tools/gate/playbooks/run-functional-tests.yaml
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      args:
-        chdir: ../porthole
       osh_params:
-        openstack_release: caracal
+        openstack_release: "2024.1"
         container_distro_name: ubuntu
         container_distro_version: jammy
-    irrelevant-files: *irrelevant-files
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2023-2
-    parent: porthole-base
+    parent: porthole-infra-deploy
     nodeset: porthole-5nodes-ubuntu_jammy
-    run: tools/gate/playbooks/run-functional-tests.yaml
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      args:
-        chdir: ../porthole
       osh_params:
         openstack_release: "2023.2"
         container_distro_name: ubuntu
         container_distro_version: jammy
-    irrelevant-files: *irrelevant-files
 
 - job:
     name: airship-porthole-openstack-tox-py310-kubeadm
-    parent: porthole-base
+    parent: porthole-infra-deploy
     nodeset: porthole-5nodes-ubuntu_jammy
-    run: tools/gate/playbooks/run-tox-tests.yaml
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-tox-tests.yaml
     vars:
       tox_envlist: py310
-      args:
-        chdir: ../porthole
-    irrelevant-files: *irrelevant-files
 
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
-    parent: porthole-base
+    parent: porthole-infra-deploy
     nodeset: porthole-5nodes-ubuntu_jammy
-    run: tools/gate/playbooks/run-tox-tests.yaml
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-tox-tests.yaml
     vars:
       tox_envlist: cover
-      args:
-        chdir: ../porthole
-    irrelevant-files: *irrelevant-files
 
 - secret:
     name: quay_credentials
