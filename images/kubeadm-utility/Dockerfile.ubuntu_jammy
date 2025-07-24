@@ -20,6 +20,7 @@ RUN set -xe \
          bash \
          ca-certificates \
          curl \
+         gettext-base \
          gnupg \
          jq \
          moreutils \
