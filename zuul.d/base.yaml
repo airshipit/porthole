@@ -96,6 +96,8 @@
     required-projects:
       - name: airship/treasuremap
         override-checkout: v1.9
+    roles:
+      - zuul: airship/treasuremap
     irrelevant-files: &irrelevant-files
       - ^.*\.rst$
       - ^doc/.*$
