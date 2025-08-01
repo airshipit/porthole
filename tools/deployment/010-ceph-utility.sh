@@ -23,17 +23,54 @@ CURRENT_DIR="$(pwd)"
 cd "${OSH_PATH}" || exit
 
 # NOTE: Lint and package ceph helm charts
-make ceph-adapter-rook SKIP_CHANGELOG=1
+for CHART in ceph-mon ceph-osd ceph-client ceph-provisioners; do
+  make "${CHART}" SKIP_CHANGELOG=1
+done
 
-./tools/deployment/ceph/ceph-rook.sh
+./tools/deployment/ceph/ceph.sh
+
+cd "${OSH_PATH}"
+
+tee /tmp/ceph-utility-config.yaml <<EOF
+endpoints:
+  identity:
+    namespace: openstack
+  object_store:
+    namespace: ceph
+  ceph_mon:
+    namespace: ceph
+network:
+  public: 172.17.0.1/16
+  cluster: 172.17.0.1/16
+deployment:
+  storage_secrets: false
+  ceph: false
+  rbd_provisioner: false
+  cephfs_provisioner: false
+  csi_rbd_provisioner: false
+  client_secrets: true
+  rgw_keystone_user_and_endpoints: false
+bootstrap:
+  enabled: false
+conf:
+  rgw_ks:
+    enabled: true
+pod:
+  mandatory_access_control:
+    type: apparmor
+    ceph-utility-config-ceph-ns-key-generator :
+      ceph-storage-keys-generator: runtime/default
+      init: runtime/default
+EOF
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
 : ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-adapter-rook ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-provisioners ${FEATURES})"}
 
-# NOTE: Deploy ceph-adapter-rook helm chart
-helm upgrade --install ceph-utility-config ./ceph-adapter-rook \
+# NOTE: Deploy ceph-provisioners helm chart
+helm upgrade --install ceph-utility-config ./ceph-provisioners \
              --namespace=${NAMESPACE} \
+             --values=/tmp/ceph-utility-config.yaml \
              ${OSH_EXTRA_HELM_ARGS} \
              ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY} \
              ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}

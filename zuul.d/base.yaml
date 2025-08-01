@@ -106,7 +106,6 @@
       - ^setup.cfg$
     vars:
       treasuremap_ref: v1.9
-      overlay_network_setup: true
       args:
         chdir: ../../airship/porthole
       zuul_osh_relative_path: ../../openstack/openstack-helm
@@ -128,7 +127,7 @@
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2024-1
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
@@ -142,7 +141,7 @@
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2023-2
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
@@ -156,7 +155,7 @@
 - job:
     name: airship-porthole-openstack-tox-py310-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
@@ -167,7 +166,7 @@
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
