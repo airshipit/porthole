@@ -50,23 +50,6 @@ class TestEtcdUtilityContainer(TestBase):
             expected, result_set, 'Unexpected value for command: {}, '
             'Command Output: {}'.format(exec_cmd, result_set))
 
-    def test_verify_apparmor(self):
-        """To verify etcdctl-utility Apparmor"""
-        failures = []
-        expected = "runtime/default"
-        etcdctl_utility_pod = \
-            self.client._get_utility_container(self.deployment_name)
-        for container in etcdctl_utility_pod.spec.containers:
-            annotations_common = \
-                'container.apparmor.security.beta.kubernetes.io/'
-            annotations_key = annotations_common + container.name
-            if expected != etcdctl_utility_pod.metadata.annotations[
-                    annotations_key]:
-                failures.append(f"container {container.name} belongs to pod "
-                                f"{etcdctl_utility_pod.metadata.name} "
-                                f"is not having expected apparmor profile set")
-        self.assertEqual(0, len(failures), failures)
-
     def test_verify_readonly_rootfs(self):
         """To verify etcdctl-utility readonly rootfs configuration"""
         failures = []

@@ -47,23 +47,6 @@ class TestMysqlclientUtilityContainer(TestBase):
                     f" in pod {mysqlclient_utility_pod.metadata.name}")
         self.assertEqual(0, len(failures), failures)
 
-    def test_verify_apparmor(self):
-        """To verify mysqlclient-utility Apparmor"""
-        failures = []
-        expected = "runtime/default"
-        mysqlclient_utility_pod = \
-            self.client._get_utility_container(self.deployment_name)
-        for container in mysqlclient_utility_pod.spec.containers:
-            annotations_common = \
-                'container.apparmor.security.beta.kubernetes.io/'
-            annotations_key = annotations_common + container.name
-            if expected != mysqlclient_utility_pod.metadata.annotations[
-                    annotations_key]:
-                failures.append(f"container {container.name} belongs to pod "
-                                f"{mysqlclient_utility_pod.metadata.name} "
-                                f"is not having expected apparmor profile set")
-        self.assertEqual(0, len(failures), failures)
-
     def test_verify_mysqlclient_utility_pod_logs(self):
         """To verify mysqlclient-utility pod logs"""
         date_1 = (self.client.exec_cmd(self.deployment_name,

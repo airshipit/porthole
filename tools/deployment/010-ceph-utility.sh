@@ -55,12 +55,6 @@ bootstrap:
 conf:
   rgw_ks:
     enabled: true
-pod:
-  mandatory_access_control:
-    type: apparmor
-    ceph-utility-config-ceph-ns-key-generator :
-      ceph-storage-keys-generator: runtime/default
-      init: runtime/default
 EOF
 
 : ${OSH_EXTRA_HELM_ARGS:=""}

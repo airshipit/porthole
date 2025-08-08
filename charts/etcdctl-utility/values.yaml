@@ -72,12 +72,6 @@ pod:
           volumeMounts:
             - name: runasuser-home
               mountPath: /root
-  mandatory_access_control:
-    type: apparmor
-    etcdctl-utility:
-      etcdctl-utility: runtime/default
-    etcd-ondemand:
-      etcd-ondemand: runtime/default
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1

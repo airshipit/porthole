@@ -85,15 +85,6 @@ pod:
         default: preferredDuringSchedulingIgnoredDuringExecution
       topologyKey:
         default: kubernetes.io/hostname
-  mandatory_access_control:
-    type: apparmor
-    mariadb-verify-server:
-      mariadb-verify-server: runtime/default
-    mysqlclient-utility:
-      mysqlclient-utility: runtime/default
-    mariadb-ondemand:
-      ondemand-perms: runtime/default
-      mariadb-ondemand: runtime/default
   probes:
     utility:
       mysqlclient-utility:

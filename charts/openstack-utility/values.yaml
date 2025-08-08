@@ -31,10 +31,6 @@ pod:
         openstack_utility:
           allowPrivilegeEscalation: true
           readOnlyRootFilesystem: false
-  mandatory_access_control:
-    type: apparmor
-    openstack-utility:
-      openstack-utility: runtime/default
   dns_policy: "ClusterFirstWithHostNet"
   replicas:
     utility: 1
