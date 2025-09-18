@@ -33,7 +33,7 @@ RUN set -xe \
          python3-pip \
     && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
-         oslo.rootwrap==7.2.0 \
+         oslo.rootwrap==7.5.1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \

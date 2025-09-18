@@ -39,9 +39,9 @@ RUN set -xe \
     && pip3 install --no-cache-dir \
           munch \
           simplejson \
-          oslo.rootwrap==7.2.0 \
-          python-openstackclient==6.6.1 \
-          python-swiftclient==4.5.0 \
+          oslo.rootwrap==7.5.1 \
+          python-openstackclient==7.5.0 \
+          python-swiftclient==4.7.0 \
     && curl --silent -L  "${DOWNLOAD_URL}/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
        | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \

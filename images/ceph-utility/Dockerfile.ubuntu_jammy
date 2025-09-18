@@ -51,7 +51,7 @@ RUN set -xe \
          orphan-sysvinit-scripts \
     && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
     && pip3 install --no-cache-dir \
-         oslo.rootwrap==7.2.0 \
+         oslo.rootwrap==7.5.1 \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
     && rm -rf /var/lib/apt/lists/*
