@@ -156,7 +156,7 @@ conf:
     Filters:
       # mysqlclient-rootwrap command filters for mysqlclient utility container
       # This file should be owned by (and only-writeable by) the root user
-      mysql: CommandFilter, mysql, root
+      mariadb: CommandFilter, mariadb, root
       kubectl: CommandFilter, kubectl, root
       dbutils: CommandFilter, dbutils, nobody
   mariadb_ondemand:

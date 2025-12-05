@@ -26,7 +26,7 @@ do
 
   if ! kubectl -n "$NAMESPACE" --no-headers=true get secret "$TLS_SECRET" > /dev/null 2>&1 ; then
 
-    MYSQL="mysql \
+    MYSQL="mariadb \
       -u $USER -p${PASSWD} \
       --host=mariadb.$NAMESPACE.svc.cluster.local \
       --port=$PORT \
@@ -38,10 +38,10 @@ do
           | jq -r '.data."ca.crt"'  | base64 -d > "$CERT_DIR"/ca.crt
     kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
           | jq -r '.data."tls.crt"'  | base64 -d > "$CERT_DIR"/tls.crt
-    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \\
           | jq -r '.data."tls.key"'  | base64 -d > "$CERT_DIR"/tls.key
 
-    MYSQL="mysql \
+    MYSQL="mariadb \
       -u $USER -p${PASSWD} \
       --host=mariadb.$NAMESPACE.svc.cluster.local \
       --port=$PORT \

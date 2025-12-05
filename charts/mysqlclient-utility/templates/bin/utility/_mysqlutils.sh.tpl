@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function database_cmd() {
-  echo "mysql --defaults-file=/etc/mysql/admin_user.cnf --connect-timeout 10"
+  echo "mariadb --defaults-file=/etc/mysql/admin_user.cnf --connect-timeout 10"
 }
 
 # Params: <namespace> <pod_name>

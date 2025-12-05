@@ -24,8 +24,8 @@ class TestMysqlclientUtilityContainer(TestBase):
         super(TestMysqlclientUtilityContainer, cls).setUpClass()
 
     def test_verify_mysql_client_is_present(self):
-        """To verify mysql-client is present"""
-        exec_cmd = ['utilscli', 'mysql', '-V']
+        """To verify mariadb-client is present"""
+        exec_cmd = ['utilscli', 'mariadb', '-V']
         expected = 'Ver'
         result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
         self.assertIn(

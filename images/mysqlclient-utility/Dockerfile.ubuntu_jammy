@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.licenses='Apache-2.0'
 
 ARG KUBE_VERSION=1.33.6
-ARG MARIADB_VERSION=10.11
+ARG MARIADB_VERSION=11.4
 ARG PERCONA_TOOLKIT_VERSION=3.5.7
 
 ARG DEBIAN_FRONTEND=noninteractive
