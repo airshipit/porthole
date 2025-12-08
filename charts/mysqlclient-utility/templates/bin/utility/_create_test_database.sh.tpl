@@ -38,7 +38,7 @@ do
           | jq -r '.data."ca.crt"'  | base64 -d > "$CERT_DIR"/ca.crt
     kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
           | jq -r '.data."tls.crt"'  | base64 -d > "$CERT_DIR"/tls.crt
-    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \\
+    kubectl -n "$NAMESPACE" get secret "$TLS_SECRET" -o json \
           | jq -r '.data."tls.key"'  | base64 -d > "$CERT_DIR"/tls.key
 
     MYSQL="mariadb \

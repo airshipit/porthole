@@ -26,7 +26,7 @@ class TestMysqlclientUtilityContainer(TestBase):
     def test_verify_mysql_client_is_present(self):
         """To verify mariadb-client is present"""
         exec_cmd = ['utilscli', 'mariadb', '-V']
-        expected = 'Ver'
+        expected = 'MariaDB'
         result_set = self.client.exec_cmd(self.deployment_name, exec_cmd)
         self.assertIn(
             expected, result_set, 'Unexpected value for command: {}, '

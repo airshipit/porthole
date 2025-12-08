@@ -29,8 +29,8 @@
         - airship-porthole-images-jammy-build-postgresql-utility
         - airship-porthole-openstack-tox-py310-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
-        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2024-1
-        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2023-2
+        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-2
+        - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-1
 
     gate:
       jobs:
@@ -125,7 +125,7 @@
         - ./tools/deployment/060-postgresql-utility.sh
 
 - job:
-    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2024-1
+    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-2
     parent: porthole-infra-deploy
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
@@ -134,12 +134,12 @@
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
       osh_params:
-        openstack_release: "2024.1"
+        openstack_release: "2025.2"
         container_distro_name: ubuntu
         container_distro_version: jammy
 
 - job:
-    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2023-2
+    name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-1
     parent: porthole-infra-deploy
     nodeset: treasuremap-airskiff-1node-ubuntu_jammy
     irrelevant-files: *irrelevant-files
@@ -148,7 +148,7 @@
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
       osh_params:
-        openstack_release: "2023.2"
+        openstack_release: "2025.1"
         container_distro_name: ubuntu
         container_distro_version: jammy
 

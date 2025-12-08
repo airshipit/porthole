@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 set -ex
+sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf
+sed -i '/imklog/s/^module/#module/' /etc/rsyslog.conf
 /etc/init.d/rsyslog start
 
 # for readiness probe

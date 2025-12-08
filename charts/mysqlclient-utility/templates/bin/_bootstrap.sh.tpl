@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 set -ex
-sudo ./tmp/start.sh
+sudo /tmp/start.sh
 
 if [ -f /tmp/create_test_database.sh ]; then
-  ./tmp/create_test_database.sh
+  /tmp/create_test_database.sh
 fi
 
 tail -f /var/log/syslog
