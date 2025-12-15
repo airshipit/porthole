@@ -45,6 +45,7 @@ RUN set -xe \
     && pip3 install --no-cache-dir \
           munch \
           simplejson \
+          urllib3==2.5.0 \
           oslo.rootwrap==7.5.1 \
           python-openstackclient==7.5.0 \
           python-swiftclient==4.7.0 \
