@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.33.6
+ARG KUBE_VERSION=1.34.3
 
 ARG DEBIAN_FRONTEND=noninteractive
 
