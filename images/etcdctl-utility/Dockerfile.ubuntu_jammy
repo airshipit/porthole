@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG ETCDCTL_VERSION=3.5.25
+ARG ETCDCTL_VERSION=3.6.5
 ARG KUBE_VERSION=1.34.3
 
 ENV GOOGLE_URL=https://storage.googleapis.com/etcd
@@ -42,7 +42,7 @@ RUN set -xe \
           urllib3==2.5.0 \
           oslo.rootwrap==7.5.1 \
           python-openstackclient==7.5.0 \
-          python-swiftclient==4.7.0 \
+          python-swiftclient==4.9.0 \
     && curl --silent -L  "${DOWNLOAD_URL}/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
        | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
