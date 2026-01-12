@@ -63,11 +63,11 @@ spec:
             - name: ETCDCTL_DIAL_TIMEOUT
               value: 10s
             - name: ETCDCTL_CACERT
-              value: /etc/etcd/tls/certs/client-ca.pem
+              value: /etc/kubernetes/pki/etcd/ca.crt
             - name: ETCDCTL_CERT
-              value: /etc/etcd/tls/certs/anchor-etcd-client.pem
+              value: /etc/kubernetes/pki/etcd/server.crt
             - name: ETCDCTL_KEY
-              value: /etc/etcd/tls/keys/anchor-etcd-client-key.pem
+              value: /etc/kubernetes/pki/etcd/server.key
             - name: ETCDCTL_ENDPOINTS
               value: https://{{ .Values.conf.etcd.endpoints }}:{{ .Values.endpoints.etcd.port.client.default }}
             - name: ONDEMAND_JOB
@@ -171,9 +171,7 @@ cat >> $TMP_FILE << EOF
             - name: pod-tmp
               mountPath: /tmp
             - name: kubernetes-etcd-certs
-              mountPath: /etc/etcd/tls/certs
-            - name: kubernetes-etcd-keys
-              mountPath: /etc/etcd/tls/keys
+              mountPath: /etc/kubernetes/pki/etcd
             - mountPath: /tmp/restore_etcd.sh
               name: kubernetes-etcd-bin
               readOnly: true
@@ -203,13 +201,9 @@ cat >> $TMP_FILE << EOF
         - name: pod-tmp
           emptyDir: {}
         - name: kubernetes-etcd-certs
-          configMap:
-            name: kubernetes-etcd-certs
-            defaultMode: 0444
-        - name: kubernetes-etcd-keys
-          secret:
-            secretName: kubernetes-etcd-keys
-            defaultMode: 0444
+          hostPath:
+            path: /etc/kubernetes/pki/etcd
+            type: DirectoryOrCreate
         - name: kubernetes-etcd-bin
           configMap:
             name: kubernetes-etcd-bin
