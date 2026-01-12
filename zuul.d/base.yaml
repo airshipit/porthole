@@ -199,4 +199,30 @@
           JXcwlGoK6kvXmYaG2c7yEiH2xNtTzVTai10fsalubQWR4FTmJA5LU9+HatHBa46XLy4gS
           vMHs2uJudmxhqLIhs5Er248FVjfxw7le5dPun3ir4J7Mjgypu5y8eLCMZAFIwpeqlJrVU
           uih8ByaTlSEh6FBzle7Hb330RjSztC4pX6xiNAmtkpxhF2rEEFS66B/ixwCphQ=
+
+- secret:
+    name: quay_credentials_2026
+    data:
+      username: !encrypted/pkcs1-oaep
+        - Y+U2SPPlorlAaXK/Tiu2NJtLiT5jznrCUB8VpeXjpdIo26JcixIaaec+806oRjcPZlA0+
+          jag67Pp4cl4OQIxJjuc1autmy+I76tP0GIQBYejoXvNOBwsCHHDkEbq3EIWVxt1KTy1bN
+          jX/8FT68DgwpM1iubpZl8V/3H1Y99+MN1cG9nSL35XZj682LfPZ7YX1B5otgs/OVDkrXZ
+          0Aw5xMpuBAdgr2tI6wgkc5vrmgGL85H/vMY+0QyCYtpuswUCkCCd6YXoodBN+u+VeqND0
+          UBKjRQN3o/15GtAnP5tNPWNwu1e01q6b/6DSFodljB2f5TDlwQmed87gk4h2SoYpg8mqR
+          nz2aiqDgMTufIpG6bjJqoeBPHRimoL3aUaRJaEROfx9dnCfh1u4HeRwE2vUpZ8lz91CFA
+          d9YPXpZF4t+mUAFcBhyIbiKnSKwOXlsUBlGXl8grSbFHqLJtg/R07KDcMQQONg3EbbEJt
+          9OtrBrrVvloddv45Jsqtp4G2VOoxqHfHz5q+D35YVmiFsXfPwKPDbYTL3zU1X4WKHHxs4
+          8j2Elno4/E0vJrlGa9PIXbM9D3/JWORwkDzSCgVW/rrRfdZjsX24/4ioiU3ZJj7UMhugd
+          S3x223fZvRroadGl7CnWk3x99vb8pjeMfZ0zAL7HBAEuib5va2sdCr5UVzzsIA=
+      password: !encrypted/pkcs1-oaep
+        - PxT9oBl5cazLCoVlOOQWKD1Knaxj2ZNstVQZmHf656NKFE/DPKKBXZG11XXjKQue/F3Va
+          H605t/z5IN4S1RSBG1QNGHXDze+1Ygp3sFoXwm6gxVfQKm+3fZW8vqW8QKVSdKCo81OJQ
+          N67mciInbuwJY0JnSKlaNpTJkhSWKGil5YoBor4pSqtfMHdhVmYWgxMdsBmjVjm9lqekr
+          u2Kd8qHfbGgse1sm7/SwIes1hueeqjjja8dA1AkEvVDO3y9nhxL8SwS9jl6xQWPV2e1q4
+          TWJ6yN8A+QH7+3qKm9RDWBh8otustP8wo/p2ytktqSTfFJP1yJ2xJHQyFmgId0v6zdQh0
+          xXPy4ink4ZtSkZOnL84wCur0OPmL8Ldh176O7nxv7zb0IwWZXuKVvL8Wek+IzKq4wo+BS
+          Y5Qb7kGyx1BGhOMN75ZuJe0xeIsUbJpeheDIb5lRT4mPCedtZBGKLLuPfB6ml5IA3JKrk
+          B/E9PV47z0xadLwfdGn7abmAKLp6tV+g45DzbWdgkRdxyuJe8UeJB8M9bAEfBAIPsenSf
+          qT9qoqAyWSRLIXjWqJUQW+rv20g0WGD9buNn/OUeoFWSnQLwuS6zkvcDx54GM81hkARZM
+          pj+iVzyKg1Fke084w3a1ckH9m6veb/B80f/pAyKmZhWddx0cK/gh3QedciY2WQ=
 ...

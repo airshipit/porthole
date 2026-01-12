@@ -31,8 +31,8 @@
     parent: airship-porthole-images
     abstract: true
     secrets: &secrets
-      - name: quay_credentials
-        secret: quay_credentials
+      - name: quay_credentials_2026
+        secret: quay_credentials_2026
         pass-to-parent: true
     vars:
       image_name: porthole-postgresql-utility

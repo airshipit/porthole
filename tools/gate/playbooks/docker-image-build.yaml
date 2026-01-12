@@ -91,8 +91,8 @@
       when: publish
       block:
         - docker_login:
-            username: "{{ quay_credentials.username }}"
-            password: "{{ quay_credentials.password }}"
+            username: "{{ quay_credentials_2026.username }}"
+            password: "{{ quay_credentials_2026.password }}"
             registry_url: "https://quay.io/api/v1/"
         - make:
             chdir: "{{ zuul.project.src_dir }}/{{ args.chdir }}"
