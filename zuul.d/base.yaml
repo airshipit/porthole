@@ -50,6 +50,7 @@
 
     post:
       jobs:
+        - porthole-upload-git-mirror
         - airship-porthole-images-jammy-publish-calicoctl-utility
         - airship-porthole-images-jammy-publish-ceph-utility
         - airship-porthole-images-jammy-publish-compute-utility
@@ -225,4 +226,33 @@
           B/E9PV47z0xadLwfdGn7abmAKLp6tV+g45DzbWdgkRdxyuJe8UeJB8M9bAEfBAIPsenSf
           qT9qoqAyWSRLIXjWqJUQW+rv20g0WGD9buNn/OUeoFWSnQLwuS6zkvcDx54GM81hkARZM
           pj+iVzyKg1Fke084w3a1ckH9m6veb/B80f/pAyKmZhWddx0cK/gh3QedciY2WQ=
+
+- job:
+    name: porthole-upload-git-mirror
+    parent: upload-git-mirror
+    description: Mirrors airship/porthole to airshipit/porthole
+    vars:
+      git_mirror_repository: airshipit/porthole
+    secrets:
+      - name: git_mirror_credentials
+        secret: porthole-airshipit-github-ed25519-secret-2026-01-13
+        pass-to-parent: true
+
+- secret:
+    name: porthole-airshipit-github-ed25519-secret-2026-01-13
+    data:
+      user: git
+      host: github.com
+      host_key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      ssh_key: !encrypted/pkcs1-oaep
+        - J09qgnA3NV9xayksrkts4LB4RkHV8INYKt/Y1BmIEz74GbC6h52yDXO441yC+YY5gmrxm
+          EiWBneSqYlvNpEYwuh9GhzS4/UJ5u6cgfNSrawOZeyHOlC0IFpAsa9NkpHRU/81OBZJLh
+          m84B8a5cgWsnefJp68eATKX7glUKDMOOUxgMI2u+x45qujAI987uJI4XmKiI69npYgtcj
+          7uXWoreJoWDZgeIBRlIsTfb7h2ztCMZJ1yPBFXFapzUtUACunDQM2NHAt+eKSxlpt8cHy
+          LYKfPpgM8ntjebEf5aWuGWBYEUeZanBailRqZ1as2aWhKjfPB02AP0aUO9cUyy95aRKTr
+          R9cuCFvP5hlGBphErohOIkUKjMPNCKYzWw+t+lxbU3kh2O+o02O/dBcCXZiksvmouBLxi
+          GSkoxwLj/P5mFwdUi5BZcVS8wE05djIUr1amSOFWTYwN0wHmDVh93QMRyfkVSaQklzOqo
+          yW/FU0XatkOitkz04wK9EVgH5eQVpNXT7NqMmzCjG/UZuj229N+lzFfWeERtsA/58I9JH
+          op9TU45Ke+Op2wi2XyTj+eSSo5MTltHQ/a3zR1xQQTB8QiUE1/kkbaGNQeYcABoPRoFSD
+          GC3OjpkI0k7SN9VUZUURAEPNuft+v+BWBhYok1wi4KVtPoeBdWcV57cFTL9jTc=
 ...
