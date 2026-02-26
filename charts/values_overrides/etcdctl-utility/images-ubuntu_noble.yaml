@@ -1,0 +1,5 @@
+---
+images:
+  tags:
+    etcdctl_utility: localhost:5000/airshipit/porthole-etcdctl-utility:latest-ubuntu_noble
+...

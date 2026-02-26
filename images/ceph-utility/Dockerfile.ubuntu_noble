@@ -1,4 +1,4 @@
-ARG FROM=quay.io/airshipit/ubuntu:jammy
+ARG FROM=quay.io/airshipit/ubuntu:noble
 FROM ${FROM}
 
 LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
@@ -8,50 +8,54 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG ETCDCTL_VERSION=3.6.5
-ARG KUBE_VERSION=1.34.3
+# Install Ceph Squid 19.2.3 from Ubuntu Canonical
+ARG CEPH_RELEASE=squid
+ARG CEPH_RELEASE_TAG=19.2.3-0ubuntu0.24.04.3
+ARG KUBE_VERSION=1.34.5
 
-ENV GOOGLE_URL=https://storage.googleapis.com/etcd
-ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
-ENV DOWNLOAD_URL=${GITHUB_URL}
+ENV VENV=/opt/porthole/venv
+ENV PATH="${VENV}/bin:$PATH"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN set -xe \
-    && sed -i '/nobody/d' /etc/passwd \
-    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
     && apt-get update && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-         curl \
-         jq \
-         locales \
          ca-certificates \
          gnupg \
+         curl \
          bash \
          moreutils \
+         vim \
          sudo \
+         screen \
+         ceph=${CEPH_RELEASE_TAG} \
+         ceph-common=${CEPH_RELEASE_TAG} \
+         python3-rbd \
+         radosgw=${CEPH_RELEASE_TAG} \
+         hexedit \
+         jq \
+         s3cmd \
          rsyslog \
-         python3.10 \
+         rsync \
+         xz-utils \
+         iperf \
+         python3.12 \
          python3-pip \
-         python3-netifaces \
+         python3-venv \
          orphan-sysvinit-scripts \
-    && curl -s https://bootstrap.pypa.io/get-pip.py | python3 \
+    && python3 -m venv ${VENV} \
+    && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
-         munch \
-         simplejson \
-         urllib3==2.5.0 \
          oslo.rootwrap==7.5.1 \
-         python-openstackclient==7.5.0 \
-         python-swiftclient==4.9.0 \
-    && curl --silent -L  "${DOWNLOAD_URL}/v${ETCDCTL_VERSION}/etcd-v${ETCDCTL_VERSION}-linux-amd64.tar.gz" \
-       | tar -zC /usr/local/bin --strip-components=1 --wildcards -x "*/etcdctl" \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
-    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
-    && apt-get install -y --no-install-recommends /tmp/rclone.deb \
-    && rm -rf \
-         /tmp/* \
-         /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && echo "Defaults:nobody secure_path=\"${PATH}\"" > /etc/sudoers.d/porthole \
+    && chmod 0440 /etc/sudoers.d/porthole
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \

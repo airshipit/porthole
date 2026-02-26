@@ -42,6 +42,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-etcdctl-utility
+    parent: airship-porthole-images-build-etcdctl-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-etcdctl-utility
+    parent: airship-porthole-images-publish-etcdctl-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-etcdctl-utility
     parent: airship-porthole-images-build-etcdctl-utility
     vars:

@@ -42,6 +42,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-ceph-utility
+    parent: airship-porthole-images-build-ceph-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-ceph-utility
+    parent: airship-porthole-images-publish-ceph-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-ceph-utility
     parent: airship-porthole-images-build-ceph-utility
     vars:

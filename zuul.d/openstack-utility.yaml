@@ -42,6 +42,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-openstack-utility
+    parent: airship-porthole-images-build-openstack-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-openstack-utility
+    parent: airship-porthole-images-publish-openstack-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-openstack-utility
     parent: airship-porthole-images-build-openstack-utility
     vars:

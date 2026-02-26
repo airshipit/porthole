@@ -42,6 +42,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-mysqlclient-utility
+    parent: airship-porthole-images-build-mysqlclient-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-mysqlclient-utility
+    parent: airship-porthole-images-publish-mysqlclient-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-mysqlclient-utility
     parent: airship-porthole-images-build-mysqlclient-utility
     vars:

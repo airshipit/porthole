@@ -1,0 +1,38 @@
+ARG FROM=quay.io/airshipit/ubuntu:noble
+FROM ${FROM}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+ARG KUBE_VERSION=1.34.5
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN set -xe \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+         bash \
+         ca-certificates \
+         curl \
+         gettext-base \
+         gnupg \
+         jq \
+         moreutils \
+         rsync \
+         sudo \
+         xz-utils \
+         python3.12 \
+         python3-pip \
+    && curl --silent -L --remote-name-all --output-dir /usr/bin \
+         https://dl.k8s.io/v${KUBE_VERSION}/bin/linux/amd64/{kubeadm,kubelet,kubectl} \
+    && chmod +x /usr/bin/kubeadm /usr/bin/kubectl /usr/bin/kubelet \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd
+
+CMD ["/bin/bash"]

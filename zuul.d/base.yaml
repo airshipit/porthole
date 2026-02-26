@@ -19,6 +19,9 @@
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
+        - airship-porthole-openstack-tox-py310-kubeadm
+        - airship-porthole-openstack-tox-cover-kubeadm
+        # Ubuntu Jammy
         - airship-porthole-images-jammy-build-calicoctl-utility
         - airship-porthole-images-jammy-build-ceph-utility
         - airship-porthole-images-jammy-build-compute-utility
@@ -27,10 +30,18 @@
         - airship-porthole-images-jammy-build-mysqlclient-utility
         - airship-porthole-images-jammy-build-openstack-utility
         - airship-porthole-images-jammy-build-postgresql-utility
-        - airship-porthole-openstack-tox-py310-kubeadm
-        - airship-porthole-openstack-tox-cover-kubeadm
         - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-2
         - airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-1
+        # Ubuntu Noble
+        - airship-porthole-images-noble-build-calicoctl-utility
+        - airship-porthole-images-noble-build-ceph-utility
+        - airship-porthole-images-noble-build-compute-utility
+        - airship-porthole-images-noble-build-kubeadm-utility
+        - airship-porthole-images-noble-build-etcdctl-utility
+        - airship-porthole-images-noble-build-mysqlclient-utility
+        - airship-porthole-images-noble-build-openstack-utility
+        - airship-porthole-images-noble-build-postgresql-utility
+        - airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2025-2
 
     gate:
       jobs:
@@ -39,6 +50,7 @@
         - openstack-tox-docs
         - airship-porthole-openstack-tox-py310-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
+        # Ubuntu Jammy
         - airship-porthole-images-jammy-build-calicoctl-utility
         - airship-porthole-images-jammy-build-ceph-utility
         - airship-porthole-images-jammy-build-compute-utility
@@ -47,10 +59,20 @@
         - airship-porthole-images-jammy-build-mysqlclient-utility
         - airship-porthole-images-jammy-build-openstack-utility
         - airship-porthole-images-jammy-build-postgresql-utility
+        # Ubuntu Noble
+        - airship-porthole-images-noble-build-calicoctl-utility
+        - airship-porthole-images-noble-build-ceph-utility
+        - airship-porthole-images-noble-build-compute-utility
+        - airship-porthole-images-noble-build-kubeadm-utility
+        - airship-porthole-images-noble-build-etcdctl-utility
+        - airship-porthole-images-noble-build-mysqlclient-utility
+        - airship-porthole-images-noble-build-openstack-utility
+        - airship-porthole-images-noble-build-postgresql-utility
 
     post:
       jobs:
         - porthole-upload-git-mirror
+        # Ubuntu Jammy
         - airship-porthole-images-jammy-publish-calicoctl-utility
         - airship-porthole-images-jammy-publish-ceph-utility
         - airship-porthole-images-jammy-publish-compute-utility
@@ -59,6 +81,15 @@
         - airship-porthole-images-jammy-publish-mysqlclient-utility
         - airship-porthole-images-jammy-publish-openstack-utility
         - airship-porthole-images-jammy-publish-postgresql-utility
+        # Ubuntu Noble
+        - airship-porthole-images-noble-publish-calicoctl-utility
+        - airship-porthole-images-noble-publish-ceph-utility
+        - airship-porthole-images-noble-publish-compute-utility
+        - airship-porthole-images-noble-publish-kubeadm-utility
+        - airship-porthole-images-noble-publish-etcdctl-utility
+        - airship-porthole-images-noble-publish-mysqlclient-utility
+        - airship-porthole-images-noble-publish-openstack-utility
+        - airship-porthole-images-noble-publish-postgresql-utility
 
 
 - job:
@@ -124,6 +155,22 @@
         - ./tools/deployment/040-mysqlclient-utility.sh
         - ./tools/deployment/050-openstack-utility.sh
         - ./tools/deployment/060-postgresql-utility.sh
+
+- job:
+    name: airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2025-2
+    parent: porthole-infra-deploy
+    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-functional-tests.yaml
+    vars:
+      osh_params:
+        openstack_release: "2025.2"
+        container_distro_name: ubuntu
+        container_distro_version: noble
+        feature_gates: images
+      DISTRO: ubuntu_noble
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-2

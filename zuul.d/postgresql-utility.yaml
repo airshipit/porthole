@@ -42,6 +42,23 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-postgresql-utility
+    parent: airship-porthole-images-build-postgresql-utility
+    vars:
+      distro_suffix: ubuntu_noble
+      ingress_setup: true
+      ingress_openstack_setup: false
+      ingress_ceph_setup: false
+      ingress_osh_infra_setup: true
+
+- job:
+    name: airship-porthole-images-noble-publish-postgresql-utility
+    parent: airship-porthole-images-publish-postgresql-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-postgresql-utility
     parent: airship-porthole-images-build-postgresql-utility
     vars:

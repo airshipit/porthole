@@ -42,6 +42,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-compute-utility
+    parent: airship-porthole-images-build-compute-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-compute-utility
+    parent: airship-porthole-images-publish-compute-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-compute-utility
     parent: airship-porthole-images-build-compute-utility
     vars:

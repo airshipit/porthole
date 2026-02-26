@@ -41,6 +41,19 @@
           commit: true
 
 - job:
+    name: airship-porthole-images-noble-build-kubeadm-utility
+    parent: airship-porthole-images-build-kubeadm-utility
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
+    name: airship-porthole-images-noble-publish-kubeadm-utility
+    parent: airship-porthole-images-publish-kubeadm-utility
+    secrets: *secrets
+    vars:
+      distro_suffix: ubuntu_noble
+
+- job:
     name: airship-porthole-images-jammy-build-kubeadm-utility
     parent: airship-porthole-images-build-kubeadm-utility
     vars:

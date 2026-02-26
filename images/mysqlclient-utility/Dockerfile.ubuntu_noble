@@ -1,0 +1,80 @@
+ARG FROM=quay.io/airshipit/ubuntu:noble
+FROM ${FROM}
+
+LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc://#airshipit@freenode' \
+      org.opencontainers.image.url='https://airshipit.org' \
+      org.opencontainers.image.documentation='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.source='https://opendev.org/airship/porthole' \
+      org.opencontainers.image.vendor='The Airship Authors' \
+      org.opencontainers.image.licenses='Apache-2.0'
+
+ARG KUBE_VERSION=1.34.5
+ARG MARIADB_VERSION=11.4
+ARG PERCONA_TOOLKIT_VERSION=3.7.1
+
+ENV VENV=/opt/porthole/venv
+ENV PATH="${VENV}/bin:$PATH"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN set -xe \
+    && apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+         apt-transport-https \
+         ca-certificates \
+         gnupg \
+         curl \
+    && curl -LsS -O https://downloads.mariadb.com/MariaDB/mariadb_repo_setup \
+    && bash mariadb_repo_setup --mariadb-server-version=${MARIADB_VERSION} --mariadb-maxscale-version=21.06 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+         bash \
+         sudo \
+         rsyslog \
+         pwgen \
+         jq \
+         libdbi-perl \
+         libdbd-mysql-perl \
+         moreutils \
+         mariadb-client \
+         mariadb-server \
+         python3.12 \
+         python3-pip \
+         python3-venv \
+         python3-netifaces \
+         orphan-sysvinit-scripts \
+    && python3 -m venv ${VENV} \
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir \
+          munch \
+          simplejson \
+          urllib3==2.5.0 \
+          oslo.rootwrap==7.5.1 \
+          python-openstackclient==7.5.0 \
+          python-swiftclient==4.7.0 \
+    && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
+    && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
+       | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
+    && curl --silent -L https://downloads.percona.com/downloads/percona-toolkit/${PERCONA_TOOLKIT_VERSION}/binary/tarball/percona-toolkit-${PERCONA_TOOLKIT_VERSION}_x86_64.tar.gz \
+       | tar -zC /usr/local/bin/ --strip-components=2 --wildcards -x "*/*/pt-show-grants" \
+    && curl -o /tmp/rclone.deb https://downloads.rclone.org/rclone-current-linux-amd64.deb \
+    && apt-get install -y --no-install-recommends /tmp/rclone.deb \
+    && apt-get purge --autoremove -y apt-transport-https \
+    && rm -rf \
+         /tmp/* \
+         /var/cache/debconf/* \
+         /var/lib/apt/lists/* \
+         /var/tmp/*
+
+RUN sed -i '/nobody/d' /etc/passwd \
+    && echo "nobody:x:65534:65534:nobody:/nonexistent:/bin/bash" >> /etc/passwd \
+    && echo "Defaults:nobody secure_path=\"${PATH}\"" > /etc/sudoers.d/porthole \
+    && chmod 0440 /etc/sudoers.d/porthole
+
+RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
+    && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
+    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+
+CMD ["/bin/bash"]
