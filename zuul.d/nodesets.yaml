@@ -52,12 +52,6 @@
           - node-4
 
 - nodeset:
-    name: airship-porthole-single-node
-    nodes:
-      - name: primary
-        label: ubuntu-bionic
-
-- nodeset:
     name: airship-porthole-jammy-single-node
     nodes:
       - name: primary

@@ -140,6 +140,10 @@
       treasuremap_ref: v1.9
       args:
         chdir: ../../airship/porthole
+      osh_values_overrides_path: ../../openstack/openstack-helm/values_overrides
+      kubeadm:
+        pod_network_cidr: "10.244.0.0/16"
+        service_cidr: "10.96.0.0/16"
       zuul_osh_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
       gate_scripts_relative_path: ../../airship/porthole
@@ -169,7 +173,7 @@
         openstack_release: "2025.2"
         container_distro_name: ubuntu
         container_distro_version: noble
-        feature_gates: images
+        feature_gates: images gateway
       DISTRO: ubuntu_noble
 
 - job:
@@ -185,6 +189,7 @@
         openstack_release: "2025.2"
         container_distro_name: ubuntu
         container_distro_version: jammy
+        feature_gates: images gateway
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-1
@@ -199,6 +204,7 @@
         openstack_release: "2025.1"
         container_distro_name: ubuntu
         container_distro_version: jammy
+        feature_gates: images gateway
 
 - job:
     name: airship-porthole-openstack-tox-py310-kubeadm
