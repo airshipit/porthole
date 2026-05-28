@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-ARG KUBE_VERSION=1.36.0
+ARG KUBE_VERSION=1.36.1
 
 ENV VENV=/opt/porthole/venv
 ENV PATH="${VENV}/bin:$PATH"
@@ -41,7 +41,7 @@ RUN set -xe \
     && python3 -m venv ${VENV} \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
-         oslo.rootwrap==7.5.1 \
+         oslo.rootwrap==7.9.0 \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \
     && rm -rf /var/lib/apt/lists/*
@@ -53,8 +53,6 @@ RUN sed -i '/nobody/d' /etc/passwd \
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+    && sed -i "/handler.setFormatter/,/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]

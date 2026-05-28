@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import time
-
 from kube_utility_container.tests.utility.base import TestBase
 
 
@@ -49,21 +47,7 @@ class TestMysqlclientUtilityContainer(TestBase):
 
     def test_verify_mysqlclient_utility_pod_logs(self):
         """To verify mysqlclient-utility pod logs"""
-        date_1 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%Y-%m-%d %H'])).replace(
-                                           '\n', '')
-        date_2 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%b %d %H'])).replace(
-                                           '\n', '')
+        logs_before = self.client._get_pod_logs(self.deployment_name)
         exec_cmd = ['utilscli', 'dbutils', 'show_databases', 'openstack']
         self.client.exec_cmd(self.deployment_name, exec_cmd)
-        time.sleep(10)
-        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
-            replace('\n', '')
-        print(pod_logs)
-        if date_1 in pod_logs:
-            latest_pod_logs = (pod_logs.split(date_1))[1:]
-        else:
-            latest_pod_logs = (pod_logs.split(date_2))[1:]
-        self.assertNotEqual(0, len(latest_pod_logs),
-                            "Not able to get the latest logs")
+        self._assert_pod_logs_grew(self.deployment_name, logs_before)

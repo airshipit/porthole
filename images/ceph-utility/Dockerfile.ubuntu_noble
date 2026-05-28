@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
 # Install Ceph Squid 19.2.3 from Ubuntu Canonical
 ARG CEPH_RELEASE=squid
 ARG CEPH_RELEASE_TAG=19.2.3-0ubuntu0.24.04.3
-ARG KUBE_VERSION=1.36.0
+ARG KUBE_VERSION=1.36.1
 
 ENV VENV=/opt/porthole/venv
 ENV PATH="${VENV}/bin:$PATH"
@@ -59,8 +59,6 @@ RUN sed -i '/nobody/d' /etc/passwd \
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+    && sed -i "/handler.setFormatter/,/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 CMD ["/bin/bash"]

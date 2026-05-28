@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 import unittest
 
 from kube_utility_container.services.utility_container_client\
@@ -25,6 +26,19 @@ class TestBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = UtilityContainerClient()
+
+    def _assert_pod_logs_grew(self, deployment_name, logs_before,
+                              timeout=30, interval=2):
+        """Poll pod logs until they grow beyond logs_before, then assert."""
+        deadline = time.monotonic() + timeout
+        logs_after = self.client._get_pod_logs(deployment_name)
+        while len(logs_after) <= len(logs_before) and \
+                time.monotonic() < deadline:
+            time.sleep(interval)
+            logs_after = self.client._get_pod_logs(deployment_name)
+        self.assertGreater(
+            len(logs_after), len(logs_before),
+            "Not able to get the latest logs")
 
     def _get_deployment_name(deployment_name):
         """

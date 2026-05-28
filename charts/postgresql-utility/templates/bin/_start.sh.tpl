@@ -15,4 +15,10 @@ limitations under the License.
 set -ex
 sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf
 sed -i '/imklog/s/^module/#module/' /etc/rsyslog.conf
+# Disable file ownership directives that require CAP_CHOWN (not available in containers)
+sed -i '/\$FileOwner/s/^/#/' /etc/rsyslog.conf
+sed -i '/\$FileGroup/s/^/#/' /etc/rsyslog.conf
+# Pre-create log files so rsyslog (running as nobody) can write without chown
+touch /var/log/syslog /var/log/auth.log
+chmod 666 /var/log/syslog /var/log/auth.log
 /etc/init.d/rsyslog start

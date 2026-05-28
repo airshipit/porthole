@@ -1,7 +1,7 @@
 ARG FROM=quay.io/airshipit/ubuntu:noble
 ARG DOCKER_REGISTRY=quay.io
 ARG CALICOCTL_IMAGE_PREFIX=calico/ctl
-ARG CALICOCTL_VERSION=v3.30.6
+ARG CALICOCTL_VERSION=v3.32.0
 ARG CALICOCTL_IMAGE="${DOCKER_REGISTRY}/${CALICOCTL_IMAGE_PREFIX}:${CALICOCTL_VERSION}"
 
 FROM ${CALICOCTL_IMAGE} as stage_calicoctl
@@ -48,9 +48,7 @@ RUN sed -i '/nobody/d' /etc/passwd \
 
 RUN PYTHON_LOCATION=$(pip3 show oslo.rootwrap|grep Location|awk '{print $2}') \
     && sed -i "/rootwrap_logger.setLevel/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/handler.setFormatter/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/os.path.basename/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py \
-    && sed -i "/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
+    && sed -i "/handler.setFormatter/,/rootwrap_logger.addHandler/s/.*/#&/" $PYTHON_LOCATION/oslo_rootwrap/wrapper.py
 
 COPY --from=stage_calicoctl /usr/bin/calicoctl /usr/local/bin/calicoctl
 

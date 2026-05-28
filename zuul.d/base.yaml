@@ -19,7 +19,7 @@
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py310-kubeadm
+        - airship-porthole-openstack-tox-py312-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
         # Ubuntu Jammy
         - airship-porthole-images-jammy-build-calicoctl-utility
@@ -41,6 +41,7 @@
         - airship-porthole-images-noble-build-mysqlclient-utility
         - airship-porthole-images-noble-build-openstack-utility
         - airship-porthole-images-noble-build-postgresql-utility
+        - airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2026-1
         - airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2025-2
 
     gate:
@@ -48,7 +49,7 @@
         - airship-porthole-linter
         - openstack-tox-pep8
         - openstack-tox-docs
-        - airship-porthole-openstack-tox-py310-kubeadm
+        - airship-porthole-openstack-tox-py312-kubeadm
         - airship-porthole-openstack-tox-cover-kubeadm
         # Ubuntu Jammy
         - airship-porthole-images-jammy-build-calicoctl-utility
@@ -97,14 +98,26 @@
     abstract: true
     timeout: 7200
     post-timeout: 7200
-    run: tools/gate/playbooks/docker-image-build.yaml
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    voting: false
+    parent: airship-docker-build-gate-base
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    required-projects:
+      - name: airship/treasuremap
+        override-checkout: v1.9
     vars:
       publish: false
+      distro: "{{ distro_suffix }}"
+      make_target: build
+      use_distro_param: false
+      extra_make_params:
+        DISTRO_SUFFIX: "{{ distro_suffix }}"
+        IMAGE_NAME: "{{ image_name }}"
+      run_verbose_build: true
+      trivy_fail_on_vulns: true
+      trivy_severity: CRITICAL,HIGH
       tags:
         dynamic:
-          branch: true
-          commit: false
+          patch_set: true
         static:
           - latest
       args:
@@ -116,7 +129,7 @@
       Lints files for trailing whitespace
     run: tools/gate/playbooks/zuul-linter.yaml
     timeout: 300
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
     vars:
       args:
         chdir: ../porthole
@@ -147,7 +160,9 @@
       zuul_osh_relative_path: ../../openstack/openstack-helm
       zuul_treasuremap_relative_path: ../../airship/treasuremap
       gate_scripts_relative_path: ../../airship/porthole
-      distro_suffix: ubuntu_jammy
+      helm_version: 4.2.0
+      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz
+      overlay_network_setup: false
       gate_scripts:
         - ./tools/deployment/002-build-charts.sh
         - ./tools/deployment/003-prepare-k8s.sh
@@ -161,9 +176,26 @@
         - ./tools/deployment/060-postgresql-utility.sh
 
 - job:
+    name: airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2026-1
+    parent: porthole-infra-deploy
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    irrelevant-files: *irrelevant-files
+    run:
+      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/run-functional-tests.yaml
+    vars:
+      osh_params:
+        openstack_release: "2026.1"
+        container_distro_name: ubuntu
+        container_distro_version: noble
+        feature_gates: images gateway
+      DISTRO: ubuntu_noble
+
+
+- job:
     name: airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2025-2
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
@@ -207,20 +239,20 @@
         feature_gates: images gateway
 
 - job:
-    name: airship-porthole-openstack-tox-py310-kubeadm
+    name: airship-porthole-openstack-tox-py312-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml
       - tools/gate/playbooks/run-tox-tests.yaml
     vars:
-      tox_envlist: py310
+      tox_envlist: py312
 
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-1node-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
       - tools/gate/playbooks/airship-run-scripts.yaml

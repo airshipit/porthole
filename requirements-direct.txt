@@ -10,6 +10,8 @@ alembic==1.16.1
 kubeconfig
 kubernetes
 pbr
+# rpds-py 2026.x.x (CalVer) has no Python 3.10 wheels; cap for Jammy CI compatibility
+rpds-py==0.30.0
 requests
 chardet
 urllib3

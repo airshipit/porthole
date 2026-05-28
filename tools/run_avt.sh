@@ -20,10 +20,12 @@ PLUGINS=kube_utility_container
 export KUBECONFIG=${KUBECONFIG:-~/.kube/config}
 
 function setup_venv() {
-    sudo  apt-get install libffi-dev libssl-dev python3-dev python3-setuptools python3-venv gcc make build-essential automake autoconf -y
+    sudo apt-get install -y libffi-dev libssl-dev python3-dev python3-setuptools \
+        python3-venv \
+        gcc make build-essential automake autoconf
     python3 -m venv ${VENV}
     if [[ -f ${VENV}/bin/activate ]] ;then
-      source $VENV/bin/activate
+      source "${VENV}/bin/activate"
       ${VENV}/bin/pip3 install -r requirements-frozen.txt
       ${VENV}/bin/python3 -m pip list --format=columns
       kubectl get deployment -n utility

@@ -42,22 +42,10 @@ class TestCephUtilityContainer(TestBase):
 
     def test_verify_ceph_utility_pod_logs(self):
         """To verify ceph-utility pod logs"""
-        date_1 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%Y-%m-%d %H'])).replace(
-                                           '\n', '')
-        date_2 = (self.client.exec_cmd(self.deployment_name,
-                                       ['date', '+%b %d %H'])).replace(
-                                           '\n', '')
+        logs_before = self.client._get_pod_logs(self.deployment_name)
         exec_cmd = ['utilscli', 'ceph', 'version']
         self.client.exec_cmd(self.deployment_name, exec_cmd)
-        pod_logs = (self.client._get_pod_logs(self.deployment_name)). \
-            replace('\n', '')
-        if date_1 in pod_logs:
-            latest_pod_logs = (pod_logs.split(date_1))[1:]
-        else:
-            latest_pod_logs = (pod_logs.split(date_2))[1:]
-        self.assertNotEqual(0, len(latest_pod_logs),
-                            "Not able to get the latest logs")
+        self._assert_pod_logs_grew(self.deployment_name, logs_before)
 
     def test_verify_readonly_rootfs(self):
         """To verify ceph-utility readonly rootfs configuration"""

@@ -33,7 +33,7 @@ function _installDep () {
       read -p "Enter kubectl version in the form of vX.X.X or enter '1' to install latest:" KUBECTL_VERSION
 
       if [ "$KUBECTL_VERSION" != "1" ]; then
-         curl -SL https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl \
+         curl -SL https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl\
                -o /usr/bin/kubectl
          chmod +x /usr/bin/kubectl
       else
