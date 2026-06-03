@@ -19,6 +19,9 @@
     abstract: true
     vars:
       image_name: porthole-postgresql-utility
+      tags:
+        dynamic:
+          patch_set: true
     files:
       - ^charts/postgresql-utility/.*$
       - ^images/postgresql-utility/.*$
@@ -30,6 +33,7 @@
     name: airship-porthole-images-publish-postgresql-utility
     parent: airship-porthole-images
     abstract: true
+    voting: true
     secrets: &secrets
       - name: quay_credentials_2026
         secret: quay_credentials_2026
@@ -41,8 +45,6 @@
         dynamic:
           branch: true
           commit: true
-        static:
-          - latest
 - job:
     name: airship-porthole-images-noble-build-postgresql-utility
     parent: airship-porthole-images-build-postgresql-utility

@@ -19,6 +19,9 @@
     abstract: true
     vars:
       image_name: porthole-compute-utility
+      tags:
+        dynamic:
+          patch_set: true
     files:
       - ^charts/compute-utility/.*$
       - ^images/compute-utility/.*$
@@ -30,6 +33,7 @@
     name: airship-porthole-images-publish-compute-utility
     parent: airship-porthole-images
     abstract: true
+    voting: true
     secrets: &secrets
       - name: quay_credentials_2026
         secret: quay_credentials_2026
@@ -41,8 +45,6 @@
         dynamic:
           branch: true
           commit: true
-        static:
-          - latest
 
 - job:
     name: airship-porthole-images-noble-build-compute-utility

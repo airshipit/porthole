@@ -116,8 +116,6 @@
       trivy_fail_on_vulns: true
       trivy_severity: CRITICAL,HIGH
       tags:
-        dynamic:
-          patch_set: true
         static:
           - latest
       args:
