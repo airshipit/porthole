@@ -34,7 +34,7 @@
     abstract: true
     voting: true
     secrets: &secrets
-      - name: quay_credentials_2026
+      - name: quay_creds
         secret: quay_credentials_2026
         pass-to-parent: true
     vars:
