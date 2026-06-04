@@ -46,12 +46,12 @@ RUN set -xe \
     && python3 -m venv ${VENV} \
     && pip3 install --no-cache-dir --upgrade pip \
     && pip3 install --no-cache-dir \
-        munch \
-        simplejson \
-        urllib3 \
-        oslo.rootwrap==7.9.0 \
-        python-openstackclient==9.0.0 \
-        python-swiftclient==4.10.0 \
+         munch \
+         simplejson \
+         urllib3 \
+         oslo.rootwrap==7.9.0 \
+         python-openstackclient==9.0.0 \
+         python-swiftclient==4.10.0 \
     && sed -i 's/$PrivDropToUser syslog/$PrivDropToUser nobody/' /etc/rsyslog.conf \
     && curl --silent -L https://dl.k8s.io/v${KUBE_VERSION}/kubernetes-client-linux-amd64.tar.gz \
        | tar -zC /usr/bin --strip-components=3 --wildcards -x "*/*/*/kubectl" \

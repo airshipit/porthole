@@ -8,10 +8,13 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-# Install Ceph Squid 19.2.3 from Ubuntu Canonical
-ARG CEPH_RELEASE=squid
-ARG CEPH_RELEASE_TAG=19.2.3-0ubuntu0.24.04.3
+# Tentacle 20.2.1
+ARG CEPH_RELEASE=tentacle
+ARG CEPH_RELEASE_TAG=20.2.1-1noble
 ARG KUBE_VERSION=1.36.1
+
+ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-${CEPH_RELEASE}/
+ARG CEPH_KEY=https://mirror.mirantis.com/acicd/ceph-${CEPH_RELEASE}/release.asc
 
 ENV VENV=/opt/porthole/venv
 ENV PATH="${VENV}/bin:$PATH"
@@ -24,6 +27,10 @@ RUN set -xe \
          ca-certificates \
          gnupg \
          curl \
+    && curl -fsSL ${CEPH_KEY} | gpg --dearmor -o /etc/apt/keyrings/ceph.acs \
+    && echo "deb [signed-by=/etc/apt/keyrings/ceph.acs] ${CEPH_REPO} noble main" | tee /etc/apt/sources.list.d/ceph.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
          bash \
          moreutils \
          vim \

@@ -8,9 +8,9 @@ LABEL org.opencontainers.image.authors='airship-discuss@lists.airshipit.org, irc
       org.opencontainers.image.vendor='The Airship Authors' \
       org.opencontainers.image.licenses='Apache-2.0'
 
-# Squid 19.2.1
-ARG CEPH_RELEASE=squid
-ARG CEPH_RELEASE_TAG=19.2.3-1jammy
+# Tentacle 20.2.1
+ARG CEPH_RELEASE=tentacle
+ARG CEPH_RELEASE_TAG=20.2.1-1jammy
 ARG KUBE_VERSION=1.36.1
 
 ARG CEPH_REPO=https://mirror.mirantis.com/acicd/ceph-${CEPH_RELEASE}/
