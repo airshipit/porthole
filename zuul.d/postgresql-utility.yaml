@@ -55,6 +55,7 @@
       ingress_openstack_setup: false
       ingress_ceph_setup: false
       ingress_osh_infra_setup: true
+      trivy_severity: CRITICAL
 
 - job:
     name: airship-porthole-images-noble-publish-postgresql-utility
@@ -74,6 +75,7 @@
       ingress_openstack_setup: false
       ingress_ceph_setup: false
       ingress_osh_infra_setup: true
+      trivy_severity: CRITICAL
 
 - job:
     name: airship-porthole-images-jammy-publish-postgresql-utility

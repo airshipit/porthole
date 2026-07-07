@@ -52,6 +52,7 @@
     vars:
       DISTRO: ubuntu_noble
       distro_suffix: ubuntu_noble
+      trivy_severity: CRITICAL
 
 - job:
     name: airship-porthole-images-noble-publish-openstack-utility
@@ -67,6 +68,7 @@
     vars:
       distro_suffix: ubuntu_jammy
       DISTRO: ubuntu_jammy
+      trivy_severity: CRITICAL
 
 - job:
     name: airship-porthole-images-jammy-publish-openstack-utility
