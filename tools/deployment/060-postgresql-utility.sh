@@ -15,6 +15,10 @@ set -xe
 
 CURRENT_DIR="$(pwd)"
 
+# NOTE: Resolve the shared helpers before any cd, so they can be called from
+# anywhere in this script.
+COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/common" && pwd)"
+
 # NOTE: Define variables
 : ${OSH_PATH:="../../openstack/openstack-helm"}
 
@@ -25,7 +29,7 @@ make postgresql SKIP_CHANGELOG=1
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
 : ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_POSTGRESQL:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c postgresql ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_POSTGRESQL:="$(${COMMON_DIR}/get-values-overrides.sh -p ${OSH_VALUES_OVERRIDES_PATH} -c postgresql ${FEATURES})"}
 
 # NOTE: Deploy postgresql helm chart
 helm upgrade --install postgresql ./postgresql \
@@ -38,14 +42,14 @@ helm upgrade --install postgresql ./postgresql \
              ${OSH_EXTRA_HELM_ARGS_POSTGRESQL}
 
 # NOTE: Wait for deploy
-helm osh wait-for-pods osh-infra
+${COMMON_DIR}/wait-for-pods.sh osh-infra
 
 cd ${CURRENT_DIR}
 
 # NOTE: Define variables
 : ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
 : ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
-: ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c postgresql-utility ${FEATURES})"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY:="$(${COMMON_DIR}/get-values-overrides.sh -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c postgresql-utility ${FEATURES})"}
 : ${NAMESPACE:=utility}
 
 # NOTE: Deploy postgresql-utility helm chart
@@ -55,5 +59,5 @@ helm upgrade --install postgresql-utility ./artifacts/postgresql-utility.tgz \
              ${PORTHOLE_EXTRA_HELM_ARGS_POSTGRESQL_UTILITY}
 
 # Wait for deploy
-helm osh wait-for-pods ${NAMESPACE}
+${COMMON_DIR}/wait-for-pods.sh ${NAMESPACE}
 

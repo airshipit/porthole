@@ -15,9 +15,30 @@ set -xe
 
 CURRENT_DIR="$(pwd)"
 
+# NOTE: Resolve the shared helpers before any cd, so they can be called from
+# anywhere in this script.
+COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/common" && pwd)"
+
 # NOTE: Define variables
 : ${OSH_PATH:="../../openstack/openstack-helm"}
 
+# NOTE: The mariadb server data volume deliberately does not use the "general"
+# (Ceph RBD) storage class. That class uses the rbd-nbd mounter, and under the
+# write load of mariadb's bootstrap the nbd session desynchronises:
+#
+#   rbd-nbd: failed to read nbd request data: (33) Numerical argument out of domain
+#   block nbd0: Double reply on req ..., cmd_cookie 20, handle cookie 18
+#   block nbd0: Dead connection, failed to find a fallback
+#
+# The device then fails every write, ext4 aborts its journal and remounts read
+# only, and mysqld dies mid-bootstrap leaving the cluster stuck in "init".
+# The Ceph cluster itself stays HEALTH_OK throughout - this is a client side
+# protocol fault, not a storage capacity or cluster problem.
+#
+# Upstream openstack-helm's own mariadb job avoids this the same way, by
+# backing a single pod cluster with a host path instead of a PVC. The volume
+# under test here is the backup PVC, not the server data volume, so this does
+# not reduce what the mysqlclient-utility test actually covers.
 tee /tmp/mariadb-server-config.yaml <<EOF
 conf:
   backup:
@@ -29,6 +50,10 @@ manifests:
   cron_job_mariadb_backup: true
   secret_backup_restore: true
   pvc_backup: true
+volume:
+  enabled: false
+  use_local_path_for_single_pod_cluster:
+    enabled: true
 EOF
 
 cd "${OSH_PATH}" || exit
@@ -38,7 +63,7 @@ make mariadb SKIP_CHANGELOG=1
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
 : ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c mariadb ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_MARIADB:="$(${COMMON_DIR}/get-values-overrides.sh -p ${OSH_VALUES_OVERRIDES_PATH} -c mariadb ${FEATURES})"}
 
 # NOTE: Deploy mariadb helm chart
 helm upgrade --install mariadb ./mariadb \
@@ -49,14 +74,14 @@ helm upgrade --install mariadb ./mariadb \
              ${OSH_EXTRA_HELM_ARGS_MARIADB}
 
 # NOTE: Wait for deploy
-helm osh wait-for-pods openstack
+${COMMON_DIR}/wait-for-pods.sh openstack
 
 cd "${CURRENT_DIR}"
 
 # NOTE: Define variables
 : ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
 : ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
-: ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c mysqlclient-utility ${FEATURES})"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY:="$(${COMMON_DIR}/get-values-overrides.sh -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c mysqlclient-utility ${FEATURES})"}
 : ${NAMESPACE:=utility}
 
 # NOTE: Deploy mysqlclient-utility helm chart
@@ -66,5 +91,5 @@ helm upgrade --install mysqlclient-utility ./artifacts/mysqlclient-utility.tgz \
              ${PORTHOLE_EXTRA_HELM_ARGS_MYSQLCLIENT_UTILITY}
 
 # Wait for deploy
-helm osh wait-for-pods ${NAMESPACE}
+${COMMON_DIR}/wait-for-pods.sh ${NAMESPACE}
 

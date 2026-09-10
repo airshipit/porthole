@@ -14,10 +14,14 @@
 
 set -xe
 
+# NOTE: Resolve the shared helpers before any cd, so they can be called from
+# anywhere in this script.
+COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/common" && pwd)"
+
 # NOTE: Define variables
 : ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
 : ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
-: ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c compute-utility ${FEATURES})"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY:="$(${COMMON_DIR}/get-values-overrides.sh -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c compute-utility ${FEATURES})"}
 : ${NAMESPACE:=utility}
 
 # NOTE: Deploy compute-utility helm chart
@@ -26,5 +30,5 @@ helm upgrade --install compute-utility ./artifacts/compute-utility.tgz \
              ${PORTHOLE_EXTRA_HELM_ARGS_COMPUTE_UTILITY}
 
 # NOTE: Wait for deploy
-helm osh wait-for-pods ${NAMESPACE}
+${COMMON_DIR}/wait-for-pods.sh ${NAMESPACE}
 

@@ -16,6 +16,10 @@ set -xe
 
 CURRENT_DIR="$(pwd)"
 
+# NOTE: Resolve the shared helpers before any cd, so they can be called from
+# anywhere in this script.
+COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/common" && pwd)"
+
 # NOTE: Define variables
 : ${OSH_PATH:="../../openstack/openstack-helm"}
 : ${NAMESPACE:=utility}
@@ -27,7 +31,12 @@ for CHART in ceph-mon ceph-osd ceph-client ceph-provisioners; do
   make "${CHART}" SKIP_CHANGELOG=1
 done
 
-./tools/deployment/ceph/ceph.sh
+# NOTE: Deploy the ceph charts. This used to be openstack-helm's
+# tools/deployment/ceph/ceph.sh, which upstream retired along with the rest of
+# tools/deployment; we now carry it in common/. It is still run from the
+# openstack-helm directory, since OSH_HELM_REPO and OSH_VALUES_OVERRIDES_PATH
+# are relative to that.
+"${COMMON_DIR}/ceph.sh"
 
 cd "${OSH_PATH}"
 
@@ -59,7 +68,7 @@ EOF
 
 : ${OSH_EXTRA_HELM_ARGS:=""}
 : ${OSH_VALUES_OVERRIDES_PATH:="../../openstack/openstack-helm/values_overrides"}
-: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(helm osh get-values-overrides -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-provisioners ${FEATURES})"}
+: ${OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY:="$(${COMMON_DIR}/get-values-overrides.sh -p ${OSH_VALUES_OVERRIDES_PATH} -c ceph-provisioners ${FEATURES})"}
 
 # NOTE: Deploy ceph-provisioners helm chart
 helm upgrade --install ceph-utility-config ./ceph-provisioners \
@@ -70,14 +79,14 @@ helm upgrade --install ceph-utility-config ./ceph-provisioners \
              ${OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE}
 
 # NOTE: Wait for deploy
-helm osh wait-for-pods ${NAMESPACE}
+${COMMON_DIR}/wait-for-pods.sh ${NAMESPACE}
 
 cd ${CURRENT_DIR}
 
 # NOTE: Define variables
 : ${HELM_CHART_ROOT_PATH:="${PORTHOLE_PATH:="../porthole/charts"}"}
 : ${PORTHOLE_VALUES_OVERRIDES_PATH:="../porthole/charts/values_overrides"}
-: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(helm osh get-values-overrides -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c ceph-utility ${FEATURES})"}
+: ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY:="$(${COMMON_DIR}/get-values-overrides.sh -p ${PORTHOLE_VALUES_OVERRIDES_PATH} -c ceph-utility ${FEATURES})"}
 
 # NOTE: Deploy ceph-utility helm chart
 helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz \
@@ -85,5 +94,5 @@ helm upgrade --install ceph-utility ./artifacts/ceph-utility.tgz \
              ${PORTHOLE_EXTRA_HELM_ARGS_CEPH_UTILITY}
 
 # NOTE: Wait for deploy
-helm osh wait-for-pods ${NAMESPACE}
+${COMMON_DIR}/wait-for-pods.sh ${NAMESPACE}
 

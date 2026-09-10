@@ -245,6 +245,16 @@
       - tools/gate/playbooks/airship-run-scripts.yaml
       - tools/gate/playbooks/run-tox-tests.yaml
     vars:
+      # NOTE: osh_params drives FEATURES, which is what selects the
+      # charts/values_overrides/*/images-<distro>.yaml files pointing the
+      # charts at the images built by 004-make-images.sh. Without it the
+      # charts silently fall back to the published quay.io images.
+      osh_params:
+        openstack_release: "2026.1"
+        container_distro_name: ubuntu
+        container_distro_version: noble
+        feature_gates: images gateway
+      DISTRO: ubuntu_noble
       tox_envlist: py312
 
 - job:
@@ -256,6 +266,14 @@
       - tools/gate/playbooks/airship-run-scripts.yaml
       - tools/gate/playbooks/run-tox-tests.yaml
     vars:
+      # NOTE: see the py312 job above - osh_params is what makes the charts
+      # use the locally built images rather than the published ones.
+      osh_params:
+        openstack_release: "2026.1"
+        container_distro_name: ubuntu
+        container_distro_version: noble
+        feature_gates: images gateway
+      DISTRO: ubuntu_noble
       tox_envlist: cover
 
 - secret:
