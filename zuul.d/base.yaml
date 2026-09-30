@@ -149,130 +149,101 @@
       - ^setup.cfg$
     vars:
       treasuremap_ref: v1.9
+      zuul_treasuremap_relative_path: ../../airship/treasuremap
       args:
         chdir: ../../airship/porthole
-      osh_values_overrides_path: ../../openstack/openstack-helm/values_overrides
       kubeadm:
         pod_network_cidr: "10.244.0.0/16"
         service_cidr: "10.96.0.0/16"
-      zuul_osh_relative_path: ../../openstack/openstack-helm
-      zuul_treasuremap_relative_path: ../../airship/treasuremap
-      gate_scripts_relative_path: ../../airship/porthole
-      helm_version: 4.2.0
-      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v4.2.0-linux-amd64.tar.gz
+      osh_git_repo: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/../../openstack/openstack-helm"
+      osh_helm_repo: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/../../openstack/openstack-helm"
+      helm_version: 4.2.2
+      HELM_ARTIFACT_URL: https://get.helm.sh/helm-v4.2.2-linux-amd64.tar.gz
       overlay_network_setup: false
-      gate_scripts:
-        - ./tools/deployment/002-build-charts.sh
-        - ./tools/deployment/003-prepare-k8s.sh
-        - ./tools/deployment/004-make-images.sh
-        - ./tools/deployment/005-calicoctl-utility.sh
-        - ./tools/deployment/010-ceph-utility.sh
-        - ./tools/deployment/020-compute-utility.sh
-        - ./tools/deployment/030-etcdctl-utility.sh
-        - ./tools/deployment/040-mysqlclient-utility.sh
-        - ./tools/deployment/050-openstack-utility.sh
-        - ./tools/deployment/060-postgresql-utility.sh
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2026-1
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      osh_params:
-        openstack_release: "2026.1"
-        container_distro_name: ubuntu
-        container_distro_version: noble
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2026.1-ubuntu_noble.yaml"
+        - "gateway.yaml"
       DISTRO: ubuntu_noble
-
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_noble-kubeadm-2025-2
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      osh_params:
-        openstack_release: "2025.2"
-        container_distro_name: ubuntu
-        container_distro_version: noble
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2025.2-ubuntu_noble.yaml"
+        - "gateway.yaml"
       DISTRO: ubuntu_noble
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-2
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      osh_params:
-        openstack_release: "2025.2"
-        container_distro_name: ubuntu
-        container_distro_version: jammy
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2025.2-ubuntu_jammy.yaml"
+        - "gateway.yaml"
+      DISTRO: ubuntu_jammy
 
 - job:
     name: airship-porthole-run-functional-tests-ubuntu_jammy-kubeadm-2025-1
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_jammy
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_jammy
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-functional-tests.yaml
     vars:
-      osh_params:
-        openstack_release: "2025.1"
-        container_distro_name: ubuntu
-        container_distro_version: jammy
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2025.1-ubuntu_jammy.yaml"
+        - "gateway.yaml"
+      DISTRO: ubuntu_jammy
 
 - job:
     name: airship-porthole-openstack-tox-py312-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-tox-tests.yaml
     vars:
-      # NOTE: osh_params drives FEATURES, which is what selects the
-      # charts/values_overrides/*/images-<distro>.yaml files pointing the
-      # charts at the images built by 004-make-images.sh. Without it the
-      # charts silently fall back to the published quay.io images.
-      osh_params:
-        openstack_release: "2026.1"
-        container_distro_name: ubuntu
-        container_distro_version: noble
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2026.1-ubuntu_noble.yaml"
+        - "gateway.yaml"
       DISTRO: ubuntu_noble
       tox_envlist: py312
 
 - job:
     name: airship-porthole-openstack-tox-cover-kubeadm
     parent: porthole-infra-deploy
-    nodeset: treasuremap-airskiff-1node-ubuntu_noble
+    nodeset: treasuremap-airskiff-5nodes-ubuntu_noble
     irrelevant-files: *irrelevant-files
     run:
-      - tools/gate/playbooks/airship-run-scripts.yaml
+      - tools/gate/playbooks/deploy-utilities.yaml
       - tools/gate/playbooks/run-tox-tests.yaml
     vars:
-      # NOTE: see the py312 job above - osh_params is what makes the charts
-      # use the locally built images rather than the published ones.
-      osh_params:
-        openstack_release: "2026.1"
-        container_distro_name: ubuntu
-        container_distro_version: noble
-        feature_gates: images gateway
+      osh_values_overrides:
+        - "2026.1-ubuntu_noble.yaml"
+        - "gateway.yaml"
       DISTRO: ubuntu_noble
       tox_envlist: cover
 

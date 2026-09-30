@@ -33,34 +33,22 @@ The recommended minimum system requirements for a full deployment are:
 
 ## To deploy utility pods
 
-1. To Deploy Utility containers, Please run required scripts
+The utility charts, together with the Ceph, MariaDB and PostgreSQL services
+they operate on, are deployed by the
+`tools/gate/playbooks/deploy-utilities.yaml` playbook. It uses the
+`deploy-ceph` and `deploy-charts` roles from
+[openstack-helm](https://opendev.org/openstack/openstack-helm) and deploys:
 
-        cd porthole
-2. Deploy `Calico-utility`.
-         ./tools/deployment/utilities/005-calicoctl-utility.sh
+1. `calicoctl-utility`
+2. `ceph-utility`
+3. `compute-utility`
+4. `etcdctl-utility`
+5. `mysqlclient-utility`
+6. `openstack-utility`
+7. `postgresql-utility`
 
-3. Deploy `Ceph-utility`.
-
-        ./tools/deployment/utilities/010-ceph-utility.sh
-
-4. Deploy `Compute-utility`.
-
-        ./tools/deployment/utilities/020-compute-utility.sh
-
-5. Deploy `Etcdctl-utility`.
-
-        ./tools/deployment/utilities/030-etcdctl-utility.sh
-
-6. Deploy `Mysqlclient-utility`.
-
-        ./tools/deployment/utilities/040-Mysqlclient-utility.sh
-
-7. Deploy `Openstack-utility`.
-
-        ./tools/deployment/utilities/050-openstack-utility.sh
-
-8. Deploy `Postgresql-utility'.
-        ./tools/deployment/utilities/060-postgresql-utility.sh
+See the `porthole-infra-deploy` job in `zuul.d/base.yaml` for the variables
+it expects.
 
 ## NOTE
 
