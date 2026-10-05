@@ -20,9 +20,13 @@
 #   osh_values_overrides        - OSH override files for mariadb/postgresql
 #   DISTRO                      - distro suffix of the locally built images
 #   DOCKER_REGISTRY             - registry reachable from all nodes
+#
+# Optional job variables:
+#   porthole_build_local_images - build, push and register porthole's own
+#                                 images locally (default: true).
 - hosts: primary
   vars:
-    porthole_dir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+    porthole_dir: "{{ ansible_user_dir }}/{{ zuul.projects['opendev.org/airship/porthole'].src_dir }}"
     porthole_utility_namespace: utility
     # Point the porthole charts at the images built below.
     porthole_chart_vars: &porthole_chart_vars
@@ -68,32 +72,35 @@
         - mariadb
         - postgresql
 
-    - name: Start local docker registry
-      shell: |
-        set -xe
-        docker rm registry --force || true
-        docker run -d -p 5000:5000 --restart=always --name registry registry:2
+    - name: Build, push and re-point porthole's own images
+      when: porthole_build_local_images | default(true) | bool
+      block:
+      - name: Start local docker registry
+        shell: |
+          set -xe
+          docker rm registry --force || true
+          docker run -d -p 5000:5000 --restart=always --name registry registry:2
 
-    # The registry runs on the primary node only, so the images are pushed
-    # and pulled through DOCKER_REGISTRY, which every node resolves to it.
-    # deploy-env configures it as an insecure registry on all nodes.
-    - name: Build porthole images and push them to the local registry
-      make:
-        chdir: "{{ porthole_dir }}"
-        target: images
-        params:
-          DOCKER_REGISTRY: "{{ DOCKER_REGISTRY }}"
-          PUSH_IMAGE: "true"
-          DISTRO: "{{ DISTRO }}"
+      # The registry runs on the primary node only, so the images are pushed
+      # and pulled through DOCKER_REGISTRY, which every node resolves to it.
+      # deploy-env configures it as an insecure registry on all nodes.
+      - name: Build porthole images and push them to the local registry
+        make:
+          chdir: "{{ porthole_dir }}"
+          target: images
+          params:
+            DOCKER_REGISTRY: "{{ DOCKER_REGISTRY }}"
+            PUSH_IMAGE: "true"
+            DISTRO: "{{ DISTRO }}"
 
-    - name: Point the porthole image overrides at the local registry
-      shell: |
-        set -xe
-        sed -i "s#localhost:5000/#{{ DOCKER_REGISTRY }}/#g" \
-          charts/values_overrides/*/images-{{ DISTRO }}.yaml
-        grep -h "{{ DOCKER_REGISTRY }}" charts/values_overrides/*/images-{{ DISTRO }}.yaml
-      args:
-        chdir: "{{ porthole_dir }}"
+      - name: Point the porthole image overrides at the local registry
+        shell: |
+          set -xe
+          sed -i "s#localhost:5000/#{{ DOCKER_REGISTRY }}/#g" \
+            charts/values_overrides/*/images-{{ DISTRO }}.yaml
+          grep -h "{{ DOCKER_REGISTRY }}" charts/values_overrides/*/images-{{ DISTRO }}.yaml
+        args:
+          chdir: "{{ porthole_dir }}"
 
     - name: Deploy calicoctl-utility
       include_role:
