@@ -122,6 +122,8 @@
         osh_chart: ceph-adapter-rook
         osh_release: ceph-utility-config
         osh_namespace: "{{ porthole_utility_namespace }}"
+        osh_set_values:
+          conf.ceph.global.mon_count: "{{ ceph_mon_count | default(3) }}"
 
     - name: Deploy ceph-utility
       include_role:
