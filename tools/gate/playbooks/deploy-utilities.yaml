@@ -67,6 +67,7 @@
         target: "{{ item }}"
         params:
           SKIP_CHANGELOG: 1
+          SKIP_ANNOTATIONS: 1
       loop:
         - ceph-adapter-rook
         - mariadb
