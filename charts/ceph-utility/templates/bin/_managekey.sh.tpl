@@ -14,7 +14,8 @@ limitations under the License.
 */}}
 set -ex
 input="/opt/client-keyring"
-while IFS= read -r var
+# Handle the absence of a terminating newline
+while IFS= read -r var || [[ -n "$var" ]]
 do
   echo -e "[client.admin]\nkey = $var"| tee /etc/ceph/ceph.client.admin.keyring > /dev/null
 done < "$input"
